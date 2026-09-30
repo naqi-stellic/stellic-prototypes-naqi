@@ -52,6 +52,7 @@ const SECTIONS = [
         ],
       },
       { href: "/explain.html", name: "Explain Progress" },
+      { href: "/courses.html", name: "Courses" },
       { href: "/staff-home.html", name: "Staff Home" },
     ],
   },

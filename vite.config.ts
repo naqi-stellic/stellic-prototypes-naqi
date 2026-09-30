@@ -27,6 +27,7 @@ export default defineConfig({
         'program-instruction': path.resolve(import.meta.dirname, 'program-instruction.html'),
         'advanced-what-if': path.resolve(import.meta.dirname, 'advanced-what-if.html'),
         compliance: path.resolve(import.meta.dirname, 'compliance.html'),
+        courses: path.resolve(import.meta.dirname, 'courses.html'),
         explain: path.resolve(import.meta.dirname, 'explain.html'),
         'staff-home': path.resolve(import.meta.dirname, 'staff-home.html'),
         explore: path.resolve(import.meta.dirname, 'explore.html'),
