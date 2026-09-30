@@ -64,7 +64,7 @@ const SECTIONS = [
   },
 ]
 
-const REPO = "https://github.com/naqi-stellic/stellic-summit-2026"
+const REPO = "https://github.com/naqi-stellic/stellic-prototypes-naqi"
 
 type Entry = {
   href: string
@@ -175,7 +175,6 @@ export function Landing() {
       <main className="flex flex-1 flex-col items-center justify-center gap-12 px-6 py-16">
         <div className="flex w-full max-w-[720px] flex-col items-center gap-3 text-center">
           <img src="/brand/stellic-wordmark.svg" alt="Stellic" className="h-8 w-[139.156px]" />
-          <h1 className="text-h400 font-semibold text-gray-100">Summit 2026</h1>
         </div>
 
         {/* One column. The headings are what the eye is scanning for, and a
@@ -202,7 +201,7 @@ export function Landing() {
         <Button asChild>
           <a href={REPO} target="_blank" rel="noreferrer">
             <Icon name="github" size={16} />
-            naqi-stellic/stellic-summit-2026
+            naqi-stellic/stellic-prototypes-naqi
           </a>
         </Button>
       </footer>

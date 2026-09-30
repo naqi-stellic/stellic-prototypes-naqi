@@ -1,6 +1,6 @@
-# stellic-summit-2026
+# stellic-prototypes-naqi
 
-Prototypes for Stellic Summit 2026, built from Figma on a shadcn/ui foundation.
+Internal prototypes for the team, built from Figma on a shadcn/ui foundation.
 One app, one shared design system, a prototype per surface.
 
 ```bash
