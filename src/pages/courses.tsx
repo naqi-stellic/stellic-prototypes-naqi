@@ -145,6 +145,10 @@ const SENT = new Set<Detail>(
   ])
 )
 
+/** The menu is a future option, not part of PROG-12920: off until it is
+ *  picked up, and everything below shows as it would with it untouched. */
+const DETAILS_MENU = false
+
 /** Everything on: the summary is today's header, and the context is on
  *  wherever it was sent. */
 const DETAILS_DEFAULT = new Set<Detail>(DETAIL_GROUPS.flatMap((group) => group.fields.map((f) => f.id)))
@@ -175,7 +179,9 @@ function CoursesCard({ onSelectTab }: { onSelectTab: (id: string) => void }) {
       <div className="flex flex-col gap-10 px-6">
         <div className="flex justify-end gap-2">
           <Button>Simulate GPA</Button>
-          <DetailsMenu shown={shown} onToggle={(id) => setShown((was) => flip(was, id))} />
+          {DETAILS_MENU && (
+            <DetailsMenu shown={shown} onToggle={(id) => setShown((was) => flip(was, id))} />
+          )}
           <Button size="icon" aria-label="Sort terms">
             <Icon name="filter-list" size={16} />
           </Button>
@@ -364,7 +370,8 @@ function TermSection({
             </div>
           )}
         </div>
-        {context}
+        {/* Part of what the term holds, so it folds away with the courses. */}
+        {open && context}
       </div>
 
       {open && (
