@@ -376,7 +376,7 @@ function TermSection({
 
       {open && (
         <>
-          <div className="flex flex-col gap-2 pl-5">{children}</div>
+          <div className="flex flex-col gap-2">{children}</div>
           {total && <p className="text-body-md text-gray-80">{total}</p>}
         </>
       )}
