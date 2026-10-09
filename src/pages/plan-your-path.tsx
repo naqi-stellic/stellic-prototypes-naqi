@@ -38,8 +38,10 @@ import { ReviewPanel } from "@/components/stellic/review-panel"
 import { PlanIssuesProvider, useRegistrable } from "@/components/stellic/plan-issues"
 import { PendingReviewProvider } from "@/components/stellic/review-state"
 import {
+  ADD_REMAINING,
   cameFrom,
   PlanHeader,
+  reviewAction,
   type PlanAction,
   type TabTerm,
   type YearTab,
@@ -69,7 +71,13 @@ import {
 } from "@/data/catalog"
 import { INCOMING_CREDITS, incomingTotals } from "@/data/incoming"
 import type { Preview } from "@/components/stellic/term-calendar"
-import { INITIAL_REVIEWS, planSignature, requestedLine, type Review } from "@/data/review"
+import {
+  changesSince,
+  INITIAL_REVIEWS,
+  planSignature,
+  requestedLine,
+  type Review,
+} from "@/data/review"
 import { releasableTerms } from "@/components/stellic/keep-picker"
 import {
   TERM_OPTIONS,
@@ -168,14 +176,16 @@ const CUSTOM_ID = "custom"
 
 
 
-/** Plan details gets its menu built per render, since it has to show which
- *  details are currently on. The other two act on their own. */
-function planActions(metadata: MetadataField[], generators: boolean): PlanAction[] {
+/** The plan's actions in the order the work goes: decide what the cards show,
+ *  fill the plan — for you, or by hand — and have it looked at. Plan details
+ *  gets its menu built per render, since it has to show which details are
+ *  currently on. */
+function planActions(
+  metadata: MetadataField[],
+  generators: boolean,
+  requested: boolean
+): PlanAction[] {
   return [
-    { label: "Request review", icon: "assignment" },
-    ...(generators
-      ? [{ label: "Generate plan", icon: "design-services" as const, toggles: true }]
-      : []),
     {
       label: "Plan details",
       icon: "remove-red-eye",
@@ -184,6 +194,11 @@ function planActions(metadata: MetadataField[], generators: boolean): PlanAction
         shown: metadata.includes(field.id),
       })),
     },
+    ...(generators
+      ? [{ label: "Generate plan", icon: "design-services" as const, toggles: true }]
+      : []),
+    ADD_REMAINING,
+    reviewAction(requested),
   ]
 }
 
@@ -408,6 +423,9 @@ export function PlanYourPath({
      itself, whether it is on the canvas or opened on its own. */
   const pendingTerms = reviews.filter((r) => r.status === "pending").flatMap((r) => r.terms)
   const pending = reviews.find((r) => r.status === "pending")
+  /* A request is out on the plan exactly as it stands. Any change and there
+     is something new to ask about. */
+  const requested = pending != null && changesSince(pending.at, years) === 0
 
   const optionSummaries = [
     ...(drafts?.made ?? []).map((d) => ({
@@ -682,6 +700,17 @@ export function PlanYourPath({
       setOpenPlanned(null)
       setSearching(null)
     }
+  }
+
+  /* The request already out, opened beside the plan rather than made again. */
+  function openReviewPanel() {
+    closeGenerators()
+    setReviewPanel(true)
+    setReqsOpen(false)
+    setOpenSeat(null)
+    setOpenPlanned(null)
+    setOpenCourse(null)
+    setSearching(null)
   }
 
   function openSeatPanel(courseId: string, view: "detail" | "search") {
@@ -1028,6 +1057,8 @@ export function PlanYourPath({
               setGeneratingTerm(openTerm.id)
             }}
             onRequestReview={() => setRequesting({ term: openTerm })}
+            requested={requested && pending!.terms.includes(openTerm.id)}
+            onShowReview={openReviewPanel}
             generators={generators}
             sidebar={{ open: reqsOpen, onToggle: openRequirements }}
             addable={addable}
@@ -1049,7 +1080,7 @@ export function PlanYourPath({
              opening matters as much as the viewport shrinking. */
           <main className="@container flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
           <PlanHeader
-            actions={planActions(metadata, generators)}
+            actions={planActions(metadata, generators, requested)}
             tabs={yearTabs(shown, undefined, () => setOpenTermId(null), openTermView)}
             pressed={generateOpen}
             onAction={(action) => {
@@ -1059,6 +1090,7 @@ export function PlanYourPath({
                 setGenerateOpen(!generateOpen)
               }
               else if (action.label === "Request review") setRequesting({ term: null })
+              else if (action.label === "Requested") openReviewPanel()
             }}
             onToggleField={toggleMetadata}
             sidebar={{ open: reqsOpen, onToggle: openRequirements }}

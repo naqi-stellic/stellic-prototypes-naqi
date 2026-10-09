@@ -22,6 +22,26 @@ export type PlanAction = {
   /** Given, the action opens a menu of details to show on or hide from the
    *  course cards, rather than acting on its own. */
   fields?: { id: string; label: string; shown: boolean }[]
+  /** The requirements panel's toggle, drawn pressed while it is open. Left
+   *  out of the row where the page has no panel to open. */
+  sidebar?: boolean
+}
+
+/** What the degree still wants, to be dragged into the plan. It sits beside
+ *  Generate plan: one is the plan filled for you, the other by hand. */
+export const ADD_REMAINING: PlanAction = {
+  label: "Add remaining courses",
+  icon: "view-sidebar",
+  sidebar: true,
+}
+
+/** Request review, or — once a request is out on the plan as it stands —
+ *  Requested, which opens the request rather than making another. Any change
+ *  to the plan makes it something to ask about again. */
+export function reviewAction(requested: boolean): PlanAction {
+  return requested
+    ? { label: "Requested", icon: "check-circle-outline" }
+    : { label: "Request review", icon: "assignment" }
 }
 
 /** A term as the year filter offers it: its own state, not its year's. */
@@ -209,13 +229,17 @@ export function PlanHeader({
    * pane is resizable and the panel beside it opens and closes, so the window
    * is not what decides how much room this row has.
    *
-   * Where each step happens depends on how many actions there are: two of them
-   * are 377px of buttons, three are 560px — a term view carries Generate
+   * Where each step happens depends on how many actions there are, Add
+   * remaining courses not counted: two of them are 377px of buttons, three
+   * are 560px — a term view carries Generate
    * Schedule, which is the longest label any of them has — and the years are
    * 541px beside them. All four widths are measured off the rendered rows
    * rather than guessed, and written out in full because Tailwind reads the
    * source for class names and cannot see one assembled at runtime. */
-  const crowded = actions.length > 2
+  /* Only the actions this page will draw: Add remaining goes where there is
+     no panel for it to open. */
+  const shown = actions.filter((action) => !action.sidebar || sidebar)
+  const crowded = shown.length > 3
 
   /* Step one: the actions keep their glyphs and lose their words. */
   /* Add remaining courses carries its words too, which is 148px more row
@@ -236,12 +260,14 @@ export function PlanHeader({
 
   const actionButtons = (
         <div className="flex flex-wrap items-center gap-2">
-          {actions.map((action) => {
+          {shown.map((action) => {
             const button = (
               <Button
-                aria-pressed={action.toggles ? pressed : undefined}
+                aria-pressed={
+                  action.toggles ? pressed : action.sidebar ? sidebar?.open : undefined
+                }
                 aria-label={action.label}
-                onClick={() => onAction?.(action)}
+                onClick={() => (action.sidebar ? sidebar?.onToggle() : onAction?.(action))}
                 className={cn("data-[state=open]:bg-gray-5", iconOnly)}
               >
                 <Icon name={action.icon} size={16} />
@@ -281,17 +307,6 @@ export function PlanHeader({
               </DropdownMenu>
             )
           })}
-          {/* Opens what the degree still wants, to be dragged into the plan.
-              Its words say so: the glyph alone reads as a sidebar toggle. */}
-          <Button
-            aria-label="Add remaining courses"
-            aria-pressed={sidebar ? sidebar.open : undefined}
-            onClick={sidebar?.onToggle}
-            className={iconOnly}
-          >
-            <Icon name="view-sidebar" size={16} />
-            <span className={labelsGo}>Add remaining courses</span>
-          </Button>
           <Button size="icon" aria-label="More options">
             <Icon name="more-horiz" size={16} />
           </Button>

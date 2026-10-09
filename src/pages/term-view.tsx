@@ -2,7 +2,13 @@ import { cn } from "cn"
 import { useEffect, useState } from "react"
 
 import { Icon } from "@/components/icon"
-import { PlanHeader, type PlanAction, type YearTab } from "@/components/stellic/plan-header"
+import {
+  ADD_REMAINING,
+  PlanHeader,
+  reviewAction,
+  type PlanAction,
+  type YearTab,
+} from "@/components/stellic/plan-header"
 import { TermCalendar, type Preview } from "@/components/stellic/term-calendar"
 import { TermList } from "@/components/stellic/term-list"
 import { ActionLines } from "@/components/stellic/term-actions"
@@ -143,6 +149,8 @@ export function TermView({
   preview,
   onGenerateTerm,
   onRequestReview,
+  requested = false,
+  onShowReview,
   generators = true,
   sidebar,
   addable,
@@ -170,6 +178,10 @@ export function TermView({
   /** Asks for a review of this term alone — the plan-wide first step is
    *  already answered, so the dialog opens on its second. */
   onRequestReview?: () => void
+  /** A request is out on this term, and nothing has moved since. */
+  requested?: boolean
+  /** Opens the request that is out, beside the term. */
+  onShowReview?: () => void
   /** Whether this prototype offers to generate the term or its schedule. */
   generators?: boolean
   /** The requirements panel the header's sidebar button opens. */
@@ -204,8 +216,17 @@ export function TermView({
   const actions = useTermIssues(term)
   const pending = usePendingReview(term.id)
 
+  /* The same order as the plan's: what the cards show, filling the term,
+     and having it looked at. */
   const plannerActions: PlanAction[] = [
-    { label: "Request review", icon: "assignment" },
+    {
+      label: "Plan details",
+      icon: "remove-red-eye",
+      fields: METADATA_FIELDS.map((field) => ({
+        ...field,
+        shown: metadata.includes(field.id),
+      })),
+    },
     ...(generators
       ? [
           {
@@ -222,14 +243,8 @@ export function TermView({
         term.scheduled
         ? [{ label: "Generate Schedule", icon: "design-services" as const }]
         : []),
-    {
-      label: "Plan details",
-      icon: "remove-red-eye",
-      fields: METADATA_FIELDS.map((field) => ({
-        ...field,
-        shown: metadata.includes(field.id),
-      })),
-    },
+    ADD_REMAINING,
+    reviewAction(requested),
   ]
 
   return (
@@ -250,6 +265,7 @@ export function TermView({
         onAction={(action) => {
           if (action.toggles) onGenerateTerm?.()
           else if (action.label === "Request review") onRequestReview?.()
+          else if (action.label === "Requested") onShowReview?.()
         }}
       />
 
