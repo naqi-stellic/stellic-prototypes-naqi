@@ -23,6 +23,7 @@ import { GenerateTermPanel } from "@/components/stellic/generate-term-panel"
 import { IncomingCredits, INCOMING_LABEL } from "@/components/stellic/incoming-credits"
 import type { IncomingGroup } from "@/data/incoming"
 import { CoursePanel } from "@/components/stellic/course-panel"
+import { termIssues } from "@/data/issues"
 import type { Instance } from "@/data/course-sidebar"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
 import { PlaceholderPanel } from "@/components/stellic/placeholder-panel"
@@ -244,10 +245,16 @@ function RegistrationAlert({ term, onRegister }: { term: Term; onRegister?: () =
 }
 
 /** A term's banner: the registration deadline when it has one, and — while a
- *  draft is on the canvas — the reassurance that it needs nothing otherwise. */
-function termBanner(term: Term, drafting: boolean, onRegister: (term: Term) => void) {
+ *  draft is on the canvas — the reassurance that it needs nothing otherwise,
+ *  said only where that is true of the draft as it stands. */
+function termBanner(
+  term: Term,
+  years: Year[],
+  drafting: boolean,
+  onRegister: (term: Term) => void
+) {
   if (term.alert) return <RegistrationAlert term={term} onRegister={() => onRegister(term)} />
-  return drafting && !term.locked ? <NoActionsAlert /> : null
+  return drafting && !term.locked && termIssues(term, years).length === 0 ? <NoActionsAlert /> : null
 }
 
 /** Where a course panel's way back leads, where it is another course. */
@@ -1197,7 +1204,7 @@ export function PlanYourPath({
                 settling={accepting}
                 revealed={revealed}
                 drop={drop}
-                renderAlert={(term) => termBanner(term, draft != null, setRegistering)}
+                renderAlert={(term) => termBanner(term, shown, draft != null, setRegistering)}
                 onRemoveCourse={handleRemoveCourse}
                 onSearchCourses={(termId) => {
                   closeGenerators()

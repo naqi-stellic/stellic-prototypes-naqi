@@ -53,7 +53,12 @@ export function termIssues(term: Term, years: Year[]): TermIssue[] {
     /* A seat is a requirement with no course against it. That is a thing the
        plan is waiting for, but not a thing to warn about — it is plain from
        the seat itself, and calling it an error only invites the argument. */
-    if (course.placeholder || course.draft != null) continue
+    if (course.placeholder) continue
+    /* A draft is read as the plan it would become: what it adds is checked
+       like anything else, so "No actions required" is never said over a term
+       that would need one the moment it is applied. What it takes away is on
+       its way out and has nothing left to fix. */
+    if (course.draft?.mark === "moved" || course.draft?.mark === "removed") continue
 
     /* Where a class has to be chosen, that is the first thing to say. */
     if (term.scheduled && !course.section) {
