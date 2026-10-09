@@ -64,26 +64,28 @@ function Fold({
   children: ReactNode
 }) {
   return (
-    <section className="flex w-full flex-col border-t border-gray-40">
-      <div className="flex w-full items-center gap-2 px-6 py-4">
+    /* Ruled above, and below too where it is the last of them, so the list
+       of sections ends on a line rather than trailing into the panel. */
+    <section className="flex w-full flex-col border-t border-gray-40 last:border-b">
+      {/* The whole row folds it: the title's button reaches across the row,
+          and anything else on the row sits above that reach. */}
+      <div className="relative flex w-full items-center gap-2 px-6 py-4 transition-colors hover:bg-gray-0">
         <button
           type="button"
           onClick={onToggle}
           aria-expanded={open}
-          className="min-w-0 flex-1 cursor-pointer text-left text-caption-lg font-semibold text-gray-100"
+          aria-label={`${open ? "Collapse" : "Expand"} ${title}`}
+          className="min-w-0 flex-1 cursor-pointer text-left text-caption-lg font-semibold text-gray-100 after:absolute after:inset-0"
         >
           {title}
         </button>
         {summary}
-        {extra}
-        <button
-          type="button"
-          onClick={onToggle}
-          aria-label={`${open ? "Collapse" : "Expand"} ${title}`}
-          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-        >
-          <Icon name={open ? "unfold-less" : "unfold-more"} size={16} />
-        </button>
+        {extra && <span className="relative z-10 flex">{extra}</span>}
+        <Icon
+          name={open ? "unfold-less" : "unfold-more"}
+          size={16}
+          className="shrink-0 text-gray-100"
+        />
       </div>
       {open && <div className="flex w-full flex-col gap-4 px-6 pb-4">{children}</div>}
     </section>
