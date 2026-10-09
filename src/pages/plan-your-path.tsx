@@ -816,9 +816,9 @@ export function PlanYourPath({
             ? openTerm.name
             : undefined
       }
-      assistLabel={
-        generators ? (draft ? "Make changes to Generated plan" : "Generate with Assistant") : null
-      }
+      /* Drawn and going nowhere: neither the assistant nor the pill beside it
+         does anything in these prototypes, so they are not offered. */
+      assistant={false}
       panel={
         (generatingTerm && findTerm(years, generatingTerm) ? (
           <GenerateTermPanel
