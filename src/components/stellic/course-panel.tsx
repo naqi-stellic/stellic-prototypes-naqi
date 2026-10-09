@@ -487,7 +487,7 @@ export function CoursePanel({
         </Button>
       </div>
 
-      <div role="tablist" aria-label="Where this course is" className="flex w-full flex-wrap gap-1 px-6">
+      <div role="tablist" aria-label="Where this course is" className="flex w-full flex-wrap gap-1 px-6 pb-2">
         {instances.map((instance) => {
           const mark = TAB_MARK[stageOf(instance.term, instance.course)]
           const key = keyOf(instance)
@@ -499,8 +499,8 @@ export function CoursePanel({
               aria-selected={tab === key}
               onClick={() => setTab(key)}
               className={cn(
-                "flex cursor-pointer items-center gap-2 rounded-t-md px-3 py-2 text-body-md text-gray-100",
-                tab === key ? "bg-gray-0" : "hover:bg-gray-5"
+                "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-body-md text-gray-100",
+                tab === key ? "bg-gray-5" : "hover:bg-gray-0"
               )}
             >
               <Icon name={mark.icon} size={16} className={mark.tone} />
@@ -514,8 +514,8 @@ export function CoursePanel({
           aria-selected={tab === CATALOG}
           onClick={() => setTab(CATALOG)}
           className={cn(
-            "flex cursor-pointer items-center gap-2 rounded-t-md px-3 py-2 text-body-md text-gray-100",
-            tab === CATALOG ? "bg-gray-0" : "hover:bg-gray-5"
+            "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-body-md text-gray-100",
+            tab === CATALOG ? "bg-gray-5" : "hover:bg-gray-0"
           )}
         >
           <Icon name="menu-book" size={16} />
@@ -732,7 +732,7 @@ function CatalogBody({
 
   return (
     <>
-      <div className="mx-6 mb-6 flex flex-col gap-4 rounded-b-md rounded-tr-md bg-gray-0 p-4">
+      <div className="mx-6 mb-6 flex flex-col gap-4 rounded-md bg-gray-0 p-4">
         <Picker label="Campus" value={campus} options={["Main", "Downtown"]} onChange={setCampus} />
         <div className="flex flex-col gap-2">
           <Picker
@@ -812,7 +812,7 @@ function InstanceBody({
 
   return (
     <>
-      <div className="mx-6 mb-6 flex flex-col gap-3 rounded-b-md rounded-tr-md bg-gray-0 p-4">
+      <div className="mx-6 mb-6 flex flex-col gap-3 rounded-md bg-gray-0 p-4">
         <div className="flex w-full items-center gap-2">
           <h3 className="min-w-0 flex-1 text-caption-lg font-semibold text-gray-100">
             {STAGE_LABEL[stage]}
