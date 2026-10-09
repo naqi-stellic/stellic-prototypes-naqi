@@ -503,7 +503,7 @@ export function CoursePanel({
               <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
             </button>
           )}
-          <h2 className="text-caption-lg font-semibold text-gray-100">{entry.name}</h2>
+          <h2 className="text-h400 font-semibold text-gray-100">{entry.name}</h2>
           <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-80">
             <span>{entry.code}</span>
             <span className="flex items-center gap-1">
