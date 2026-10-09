@@ -23,6 +23,9 @@ import { type PlannedCourse, type Term } from "@/data/plan"
  * one action — closing it halfway through would leave the question of whether
  * it happened. */
 
+/** Stands in while the dialog is closed, so its hooks run the same way. */
+const NO_TERM: Term = { id: "", name: "", window: "", reviewed: false, state: "planned", courses: [] }
+
 /** How long the request appears to take. Long enough to read, short enough
  *  that nobody on stage is waiting on it. */
 const SENDING_MS = 1600
@@ -175,9 +178,12 @@ export function RegisterDialog({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, termId])
 
+  /* Called whether or not the dialog is up: a hook skipped on the closed
+     render and called on the open one is a different list of hooks. */
+  const ready = useRegistrable(term ?? NO_TERM)
+
   if (!term) return null
 
-  const ready = useRegistrable(term)
   /* Everything the term is holding that has not already gone through — the
      seats and the blocked courses included, because a dialog that lists three
      courses when the term shows five leaves the other two unaccounted for. */
