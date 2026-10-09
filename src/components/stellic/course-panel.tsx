@@ -87,7 +87,9 @@ function Fold({
           className="shrink-0 text-gray-100"
         />
       </div>
-      {open && <div className="flex w-full flex-col gap-4 px-6 pb-4">{children}</div>}
+      {/* A little clear of the row, so its hover gray never sits against
+          the first line of what it opened. */}
+      {open && <div className="flex w-full flex-col gap-4 px-6 pt-2 pb-4">{children}</div>}
     </section>
   )
 }
