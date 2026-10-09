@@ -205,14 +205,23 @@ function planActions(
   ]
 }
 
-function RegistrationAlert({ term, onRegister }: { term: Term; onRegister?: () => void }) {
+function RegistrationAlert({
+  term,
+  onRegister,
+  onOpenSeat,
+}: {
+  term: Term
+  onRegister?: () => void
+  /** Opens a placeholder still waiting for a course. */
+  onOpenSeat?: (courseId: string) => void
+}) {
   const banner = registrationBanner(term, useRegistrable(term).length)
   const done = banner.state === "registered"
 
   /* 92px is the design's height for a banner with a button under its line; a
      minimum rather than a fixed value so it can grow when the closing date
      wraps. With nothing under the line, it is one line and sized like one. */
-  const tall = banner.register != null || banner.note != null
+  const tall = banner.register != null || banner.note != null || banner.seat != null
   return (
     <Alert variant={done ? "success" : "info"} className={cn(tall && "min-h-[92px]")}>
       <AlertBody>
@@ -232,6 +241,16 @@ function RegistrationAlert({ term, onRegister }: { term: Term; onRegister?: () =
           </AlertDescription>
         </AlertHeader>
         {banner.note && <p className="text-body-md text-gray-80">{banner.note}</p>}
+        {/* With something left, the way to it: the elective still to choose. */}
+        {banner.seat && onOpenSeat && (
+          <button
+            type="button"
+            onClick={() => onOpenSeat(banner.seat!.id)}
+            className="cursor-pointer text-body-md text-gray-100 underline [text-underline-position:from-font]"
+          >
+            Choose course for {banner.seat.name}
+          </button>
+        )}
         {/* There or not there: a button offering to register nothing is not
             an offer, so it goes rather than greying out. */}
         {banner.register != null && (
@@ -251,9 +270,14 @@ function termBanner(
   term: Term,
   years: Year[],
   drafting: boolean,
-  onRegister: (term: Term) => void
+  onRegister: (term: Term) => void,
+  onOpenSeat: (courseId: string) => void
 ) {
-  if (term.alert) return <RegistrationAlert term={term} onRegister={() => onRegister(term)} />
+  if (term.alert) {
+    return (
+      <RegistrationAlert term={term} onRegister={() => onRegister(term)} onOpenSeat={onOpenSeat} />
+    )
+  }
   return drafting && !term.locked && termIssues(term, years).length === 0 ? <NoActionsAlert /> : null
 }
 
@@ -1204,7 +1228,11 @@ export function PlanYourPath({
                 settling={accepting}
                 revealed={revealed}
                 drop={drop}
-                renderAlert={(term) => termBanner(term, shown, draft != null, setRegistering)}
+                renderAlert={(term) =>
+                  termBanner(term, shown, draft != null, setRegistering, (id) =>
+                    openSeatPanel(id, "detail")
+                  )
+                }
                 onRemoveCourse={handleRemoveCourse}
                 onSearchCourses={(termId) => {
                   closeGenerators()

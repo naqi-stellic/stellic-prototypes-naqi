@@ -817,6 +817,9 @@ export type RegistrationBanner = {
   note?: string
   /** What the button registers; absent where there is no button. */
   register?: number
+  /** A placeholder still waiting for a course, where something is left to
+   *  register: the banner offers to choose one for it. */
+  seat?: PlannedCourse
 }
 
 export function registrationBanner(term: Term, ready: number): RegistrationBanner {
@@ -842,6 +845,7 @@ export function registrationBanner(term: Term, ready: number): RegistrationBanne
     state: "left",
     title: `${left} course${left === 1 ? "" : "s"} left to register`,
     closesLabel: "Closes",
+    seat: term.courses.find((c) => c.placeholder && !c.registered),
   }
 }
 

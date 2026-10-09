@@ -34,10 +34,13 @@ import {
 function RegistrationAlert({
   term,
   onRegister,
+  onOpenSeat,
   stuck,
 }: {
   term: Term
   onRegister?: () => void
+  /** Opens a placeholder still waiting for a course. */
+  onOpenSeat?: (courseId: string) => void
   /** Whether it is holding at the top of the pane rather than sitting in the
    *  page. Held, it is a strip across the top; at rest it is a card among the
    *  cards, the same as the line about what is wrong with the term below it. */
@@ -78,6 +81,15 @@ function RegistrationAlert({
           {banner.closesLabel}: {term.alert?.closes}
         </span>
         {banner.note && <span className="basis-full text-gray-80">{banner.note}</span>}
+        {banner.seat && onOpenSeat && (
+          <button
+            type="button"
+            onClick={() => onOpenSeat(banner.seat!.id)}
+            className="cursor-pointer text-gray-100 underline [text-underline-position:from-font]"
+          >
+            Choose course for {banner.seat.name}
+          </button>
+        )}
       </span>
       {/* There or not there: the window stays open and the banner stays where
           it is, but a button offering to register none of them is not an
@@ -259,7 +271,14 @@ export function TermView({
            belongs beside the term it is about. */
         banner={
           term.scheduled && term.alert
-            ? (stuck) => <RegistrationAlert term={term} onRegister={onRegister} stuck={stuck} />
+            ? (stuck) => (
+                <RegistrationAlert
+                  term={term}
+                  onRegister={onRegister}
+                  onOpenSeat={onOpenSeat}
+                  stuck={stuck}
+                />
+              )
             : undefined
         }
         sidebar={sidebar}
