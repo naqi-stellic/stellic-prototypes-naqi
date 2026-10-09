@@ -1212,7 +1212,14 @@ export function PlanYourPath({
 
         <DiscardDraftDialog
           open={leaving != null}
-          selected={optionSummaries.find((o) => o.id === optionId)?.label ?? null}
+          /* Named the way the panel lists it: the generated ones by number,
+             the one holding your own changes by its name. */
+          selected={(() => {
+            const at = optionSummaries.findIndex((o) => o.id === optionId)
+            if (at < 0) return null
+            const o = optionSummaries[at]
+            return o.blurb ? `Option ${at + 1}` : o.label
+          })()}
           others={Math.max(0, optionSummaries.length - 1)}
           onKeep={() => setLeaving(null)}
           onDiscard={() => {
