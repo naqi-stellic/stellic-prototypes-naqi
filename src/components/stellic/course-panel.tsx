@@ -489,33 +489,22 @@ export function CoursePanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      <div className="flex w-full shrink-0 items-center gap-2 border-b border-gray-40 px-6 py-4">
-        {backLabel ? (
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-body-md font-medium text-gray-80"
-          >
-            <Icon name="chevron-left" size={16} className="shrink-0" />
-            <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
-          </button>
-        ) : (
-          <span className="flex-1" />
-        )}
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close course"
-          className="shrink-0 cursor-pointer rounded-md text-gray-100"
-        >
-          <Icon name="close" size={20} />
-        </button>
-      </div>
-
-      <div className="flex w-full items-start gap-4 px-6 pt-6 pb-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-2">
-          <h2 className="text-h400 font-semibold text-gray-100">{entry.name}</h2>
-          <p className="flex flex-wrap items-center gap-4 text-body-md text-gray-80">
+      {/* The course's name sits in the bar beside the close, the way any
+          sidebar heads itself; a way back, where there is one, sits above it. */}
+      <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {backLabel && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
+            >
+              <Icon name="chevron-left" size={14} className="shrink-0" />
+              <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
+            </button>
+          )}
+          <h2 className="text-caption-lg font-semibold text-gray-100">{entry.name}</h2>
+          <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-80">
             <span>{entry.code}</span>
             <span className="flex items-center gap-1">
               <Icon name="watch-later" size={14} />
@@ -523,18 +512,31 @@ export function CoursePanel({
             </span>
           </p>
         </div>
-        <Button
-          size="icon"
-          aria-label={saved ? "Remove bookmark" : "Bookmark course"}
-          aria-pressed={saved}
-          onClick={() => setSaved((was) => !was)}
-          className="shrink-0"
-        >
-          <Icon name={saved ? "bookmark" : "bookmark-border"} size={16} />
-        </Button>
+        {/* Centred on the name's line: the 32px buttons are pulled up by the
+            6px they stand above a 20px line, and down past the way back where
+            there is one. */}
+        <div className={cn("flex shrink-0 items-center gap-1", backLabel ? "mt-[14px]" : "-mt-1.5")}>
+          <button
+            type="button"
+            aria-label={saved ? "Remove bookmark" : "Bookmark course"}
+            aria-pressed={saved}
+            onClick={() => setSaved((was) => !was)}
+            className="flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
+          >
+            <Icon name={saved ? "bookmark" : "bookmark-border"} size={20} />
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close course"
+            className="flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
+          >
+            <Icon name="close" size={20} />
+          </button>
+        </div>
       </div>
 
-      <div role="tablist" aria-label="Where this course is" className="flex w-full flex-wrap gap-1 px-6 pb-2">
+      <div role="tablist" aria-label="Where this course is" className="flex w-full flex-wrap gap-1 px-6 pt-4 pb-2">
         {instances.map((instance) => {
           const mark = TAB_MARK[stageOf(instance.term, instance.course)]
           const key = keyOf(instance)
