@@ -82,9 +82,6 @@ export function PlaceholderPanel({
               <Badge variant="secondary">3</Badge>
               <Icon name="expand-less" size={16} className="text-gray-100" />
             </h2>
-            <p className="text-body-md text-gray-80">
-              For {name} · {term.name}
-            </p>
           </div>
           <button
             type="button"
