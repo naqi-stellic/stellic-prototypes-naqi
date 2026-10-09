@@ -74,7 +74,8 @@ export type CourseDetail = {
   prerequisites: { directive?: string; options: PrereqOption[] }
   equivalents: string[]
   countsFor: { name: string; under: string }[]
-  repeatable: string
+  /** How many times the course can be taken, as Eligibility says it. */
+  repeatLimit: string
 }
 
 const INSTRUCTORS = [
@@ -366,7 +367,7 @@ export function courseDetail(entry: CatalogEntry): CourseDetail {
       { name: "120 Total Credits", under: "Degree Checks" },
       { name: "Residency Credit", under: "Degree Checks" },
     ],
-    repeatable: seed % 2 === 0 ? "Course may be repeated" : "Course may be taken once",
+    repeatLimit: seed % 2 === 0 ? "Can be repeated up to 2 times" : "Cannot be repeated",
   }
 }
 

@@ -613,6 +613,7 @@ function EligibilityFold({
   onToggle: () => void
 }) {
   const { met, lines } = eligibility(entry, at)
+  const { repeatLimit } = courseDetail(entry)
   return (
     <Fold
       title="Eligibility"
@@ -635,6 +636,12 @@ function EligibilityFold({
             ))}
           </ul>
         )}
+      </div>
+      {/* Whether it can be taken again is a question of whether it can be
+          taken at all, so it is answered here rather than under About. */}
+      <div className="flex w-full flex-col gap-1">
+        <Heading>Repeat limits</Heading>
+        <p className="text-body-md text-gray-100">{repeatLimit}</p>
       </div>
     </Fold>
   )
@@ -756,10 +763,6 @@ function AboutFold({
               </span>
             </div>
           ))}
-        </div>
-        <div className="flex flex-col gap-1">
-          <Heading>Repeatable</Heading>
-          <p className="text-body-md text-gray-80">{detail.repeatable}</p>
         </div>
       </div>
     </Fold>
