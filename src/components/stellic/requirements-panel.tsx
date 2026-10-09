@@ -286,12 +286,18 @@ export function RequirementsPanel({
       <div className="flex w-full flex-col gap-6 rounded-md bg-gray-0 p-4">
         <PlanFacet
           label="Programs"
+          add="add program"
           values={[
             `${DEGREE.credential} (${DEGREE.concentration})`,
             `Minor in ${DEGREE.minor}`,
           ]}
         />
-        <PlanFacet label="Pathway" values={[`${DEGREE.major}: Fall Start 2026`]} />
+        <PlanFacet
+          label="Pathway"
+          add="add pathway"
+          values={[`${DEGREE.major}: Fall Start 2026`]}
+        />
+
       <div className="flex w-full flex-col gap-2">
         <span className="text-body-md font-semibold text-foreground">Courses</span>
         <Meter
@@ -419,24 +425,27 @@ export function RequirementsPanel({
 }
 
 /** A label on its own line over its tags, the way the meter below is a label
- *  over its bar. */
-function PlanFacet({ label, values }: { label: string; values: string[] }) {
+ *  over its bar. Adding another sits at the end of the label's line, so the
+ *  tags under it are only ever what the plan answers to. */
+function PlanFacet({ label, add, values }: { label: string; add: string; values: string[] }) {
   return (
     <div className="flex w-full flex-col gap-2">
-      <span className="text-body-md font-semibold text-foreground">{label}</span>
-      <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+      <div className="flex w-full items-center justify-between gap-2">
+        <span className="text-body-md font-semibold text-foreground">{label}</span>
+        <a
+          href="#"
+          className="shrink-0 text-body-md text-gray-80 underline [text-underline-position:from-font]"
+        >
+          + {add}
+        </a>
+      </div>
+      <div className="flex flex-wrap items-center gap-1">
         {values.map((value) => (
           <Badge key={value} variant="outline" className="max-w-full">
             <span className="min-w-0 truncate">{value}</span>
             <Icon name="close" size={12} className="shrink-0" />
           </Badge>
         ))}
-        <a
-          href="#"
-          className="text-body-md text-gray-80 underline [text-underline-position:from-font]"
-        >
-          + add another
-        </a>
       </div>
     </div>
   )
