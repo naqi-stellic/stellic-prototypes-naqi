@@ -289,10 +289,6 @@ export function RequirementsPanel({
       </header>
 
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
-      <p className="text-body-md text-gray-80">
-        Your plan isn't done until every requirement has a term. Drag each one into the term you
-        plan to take it.
-      </p>
 
       {/* What the plan answers to, which is what decides what is left, and
           then how much of it is. Three blocks read the same way — a label
