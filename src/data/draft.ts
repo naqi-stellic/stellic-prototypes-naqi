@@ -408,8 +408,25 @@ export function generateDraft(
    * is the more useful answer that far ahead. */
   const SEATS_BY_TERM = [2, 1, 1]
   let reached = 0
+  /* The terms already filled in this run, in order: what a course placed next
+     can count as behind it. Terms are filled front to back, so this is exactly
+     everything before the term being filled. */
+  const sofar: Term[] = []
+  const behind = (): Year[] => [{ label: "", phase: "future", terms: sofar }]
+  /* Allowed here: not the term it was released from, offered in this season,
+     and with everything it asks for already behind it. A run that drops a
+     course into a term that does not run it, or ahead of what it needs, hands
+     the student work to fix; the next requirement down goes instead. */
+  const allowed = (entry: QueueEntry, term: Term) =>
+    entry.avoid !== term.id && fits(entry, term, behind())
 
   const fillTerm = (term: Term): Term => {
+    const filled = fillOne(term)
+    sofar.push(filled)
+    return filled
+  }
+
+  const fillOne = (term: Term): Term => {
     if (term.locked) return term
     /* The term the student asked about answers to what they said rather than
        to the pace. */
@@ -451,7 +468,7 @@ export function generateDraft(
 
     while (room > 0) {
       /* The first entry that is allowed to be here. */
-      const next = queue.findIndex((entry) => entry.avoid !== term.id)
+      const next = queue.findIndex((entry) => allowed(entry, term))
       if (next === -1) break
       const [entry] = queue.splice(next, 1)
       if (entry.ghostFor) placed.set(entry.ghostFor, term.name)
@@ -474,6 +491,23 @@ export function generateDraft(
     const next = emptyYear(start)
     const terms = option.summers ? [...next.terms, summerTerm(start + 1)] : next.terms
     years = [...years, { ...next, terms: terms.map(fillTerm) }]
+  }
+
+  /* Whatever no term would take — nowhere left in the years the plan can
+   * reach that runs it after what it needs — still goes in rather than off
+   * the plan: into the last terms with room, where the term will say what is
+   * wrong with it. A requirement that quietly vanished would be worse. */
+  if (queue.length > 0) {
+    years = years.map((year) => ({
+      ...year,
+      terms: year.terms.map((term) => {
+        if (term.locked || queue.length === 0) return term
+        const room = option.coursesPerTerm - keptCourses(term).length
+        if (room <= 0) return term
+        const extra = queue.splice(0, room).map((entry) => draftCourse(entry, order++))
+        return spreadAccents({ ...term, courses: [...term.courses, ...extra] })
+      }),
+    }))
   }
 
   /* Now that the placement is known, the card left behind can say where its
