@@ -296,7 +296,13 @@ export function PlanHeader({
   return (
     <>
     <section className="relative flex flex-col gap-4">
-      <span ref={sentinel} aria-hidden="true" className="absolute inset-x-0 bottom-0 h-6" />
+      {/* Never in the way of a click: with the header down to one row, it sits
+          over the action buttons. */}
+      <span
+        ref={sentinel}
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-6"
+      />
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         {/* Which of their plans. A student knows whose plan it is; the name
             only appears for staff, as the way back to the record they came
