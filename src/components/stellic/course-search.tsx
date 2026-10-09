@@ -108,7 +108,11 @@ export function CourseSearch({
   )
 }
 
-/** The search as a panel of its own, opened from a term rather than a seat. */
+/** The search as a sidebar of its own, headed the way the course sidebar is:
+ *  "Course Search" in the bar beside the close, with a way back above it where
+ *  there is somewhere to go back to — a placeholder's own view. Opened from a
+ *  term on the plan there is nothing behind it but the plan. Below the bar,
+ *  the filters it was run with, then the results on the sidebar's white. */
 export function CourseSearchPanel({
   entries,
   backLabel,
@@ -117,34 +121,48 @@ export function CourseSearchPanel({
   onClose,
 }: {
   entries: CatalogEntry[]
-  /** What the way back is to. */
-  backLabel: string
+  /** What the way back is to, where there is one. */
+  backLabel?: string
   onOpenCourse?: (entry: CatalogEntry) => void
-  onBack: () => void
+  onBack?: () => void
   onClose: () => void
 }) {
   return (
-    <aside className="flex h-full w-full flex-col gap-4 overflow-x-clip overflow-y-auto bg-background p-6 pb-28">
-      <div className="flex w-full shrink-0 items-center gap-2">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-body-md text-gray-80"
-        >
-          <Icon name="chevron-left" size={14} className="shrink-0" />
-          <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
-        </button>
+    <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
+      <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
+        <div className="flex min-w-0 flex-1 flex-col gap-1">
+          {backLabel && (
+            <button
+              type="button"
+              onClick={onBack}
+              className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
+            >
+              <Icon name="chevron-left" size={14} className="shrink-0" />
+              <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
+            </button>
+          )}
+          <h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>
+        </div>
         <button
           type="button"
           onClick={onClose}
           aria-label="Close course search"
-          className="shrink-0 cursor-pointer rounded-md text-gray-100"
+          className="-mt-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
         >
-          <Icon name="close" size={24} />
+          <Icon name="close" size={20} />
         </button>
       </div>
-
-      <CourseSearch entries={entries} onOpenCourse={onOpenCourse} />
+      <div className="flex w-full flex-col gap-4 px-6 pt-4">
+        {/* What the search was run with. In a working planner the chevron
+            opens the filters; here it is what it says it is. */}
+        <p className="flex items-center gap-2 text-caption-md font-medium text-gray-100">
+          <Icon name="filter-alt" size={16} className="shrink-0" />
+          Filters
+          <Badge variant="secondary">3</Badge>
+          <Icon name="chevron-right" size={16} className="shrink-0" />
+        </p>
+        <CourseSearch entries={entries} onOpenCourse={onOpenCourse} bare />
+      </div>
     </aside>
   )
 }

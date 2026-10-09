@@ -1017,9 +1017,8 @@ export function PlanYourPath({
           <CourseSearchPanel
             key={searchTerm.id}
             entries={addable}
-            backLabel={searchTerm.name}
+            /* Opened straight from a term on the plan: nothing to go back to. */
             onOpenCourse={(entry) => setOpenCourse({ entry, from: "course search" })}
-            onBack={() => setSearching(null)}
             onClose={() => setSearching(null)}
           />
         )) ||

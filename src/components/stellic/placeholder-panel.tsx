@@ -3,7 +3,7 @@ import { useState } from "react"
 
 import { Icon } from "@/components/icon"
 import { Fold, Heading } from "@/components/stellic/course-panel"
-import { CourseSearch } from "@/components/stellic/course-search"
+import { CourseSearchPanel } from "@/components/stellic/course-search"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -62,43 +62,13 @@ export function PlaceholderPanel({
   const eligible = ELECTIVE_COURSES[seat.code] ?? ALL_ELECTIVES
   if (searching) {
     return (
-      <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-        {/* The search heads the sidebar the way a course's name does, with the
-            way back to the placeholder above it. */}
-        <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <button
-              type="button"
-              onClick={() => setSearching(false)}
-              className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
-            >
-              <Icon name="chevron-left" size={14} className="shrink-0" />
-              <span className="min-w-0 truncate text-left">Back to {name}</span>
-            </button>
-            <h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>
-          </div>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close course search"
-            className="-mt-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-          >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-        <div className="flex w-full flex-col gap-4 px-6 pt-4">
-          {/* What the search was run with: the placeholder's own filters. In a
-              working planner the chevron folds them open; here it is what it
-              says it is. */}
-          <p className="flex items-center gap-2 text-caption-md font-medium text-gray-100">
-            <Icon name="filter-alt" size={16} className="shrink-0" />
-            Filters
-            <Badge variant="secondary">3</Badge>
-            <Icon name="chevron-right" size={16} className="shrink-0" />
-          </p>
-          <CourseSearch entries={eligible} onOpenCourse={onOpenCourse} bare />
-        </div>
-      </aside>
+      <CourseSearchPanel
+        entries={eligible}
+        backLabel={name}
+        onBack={() => setSearching(false)}
+        onOpenCourse={onOpenCourse}
+        onClose={onClose}
+      />
     )
   }
 
