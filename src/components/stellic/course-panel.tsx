@@ -175,6 +175,8 @@ const TAB_MARK: Record<Stage, { icon: IconName; tone: string }> = {
 }
 
 const CATALOG = "catalog"
+/** Prefix for "just added to this term", until the plan says where it is. */
+const ADDED = "added:"
 
 const keyOf = ({ course, term }: Instance) => `${term.id}:${course.id}`
 
@@ -440,8 +442,14 @@ export function CoursePanel({
   const [tab, setTab] = useState(
     opened ? keyOf(opened) : instances[0] ? keyOf(instances[0]) : CATALOG
   )
-  const current = instances.find((instance) => keyOf(instance) === tab) ?? null
-  const shown = current ?? (tab === CATALOG ? null : instances[0] ?? null)
+  /* Just added to a term: the new place it sits is the tab to be on, once
+     the plan has it. Until then, and if a term turns it away, the catalogue. */
+  const added = tab.startsWith(ADDED) ? tab.slice(ADDED.length) : null
+  const current =
+    instances.find((instance) => keyOf(instance) === tab) ??
+    (added ? (instances.find((instance) => instance.term.id === added) ?? null) : null)
+  const shown = current ?? (tab === CATALOG || added ? null : (instances[0] ?? null))
+  const selected = shown ? keyOf(shown) : CATALOG
   const [saved, setSaved] = useState(false)
 
   return (
@@ -496,11 +504,11 @@ export function CoursePanel({
               key={key}
               type="button"
               role="tab"
-              aria-selected={tab === key}
+              aria-selected={selected === key}
               onClick={() => setTab(key)}
               className={cn(
                 "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-body-md text-gray-100",
-                tab === key ? "bg-gray-5" : "hover:bg-gray-0"
+                selected === key ? "bg-gray-5" : "hover:bg-gray-0"
               )}
             >
               <Icon name={mark.icon} size={16} className={mark.tone} />
@@ -511,11 +519,11 @@ export function CoursePanel({
         <button
           type="button"
           role="tab"
-          aria-selected={tab === CATALOG}
+          aria-selected={selected === CATALOG}
           onClick={() => setTab(CATALOG)}
           className={cn(
             "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-body-md text-gray-100",
-            tab === CATALOG ? "bg-gray-5" : "hover:bg-gray-0"
+            selected === CATALOG ? "bg-gray-5" : "hover:bg-gray-0"
           )}
         >
           <Icon name="menu-book" size={16} />
@@ -526,7 +534,7 @@ export function CoursePanel({
       {/* Keyed on the tab, so each one opens the sections its own point in
           the course's life calls for rather than whatever the last tab left
           open. */}
-      {shown && tab !== CATALOG ? (
+      {shown ? (
         <InstanceBody
           key={keyOf(shown)}
           entry={entry}
@@ -538,7 +546,15 @@ export function CoursePanel({
           onRegister={onRegister}
         />
       ) : (
-        <CatalogBody key={CATALOG} entry={entry} terms={terms} onAdd={onAdd} />
+        <CatalogBody
+          key={CATALOG}
+          entry={entry}
+          terms={terms}
+          onAdd={(termId) => {
+            onAdd(termId)
+            setTab(`${ADDED}${termId}`)
+          }}
+        />
       )}
     </aside>
   )

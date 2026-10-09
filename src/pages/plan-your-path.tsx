@@ -932,14 +932,18 @@ export function PlanYourPath({
             plan={allTerms}
             opened={{ course: plannedOpen.course, term: plannedOpen.term }}
             backLabel={plannedOpen.term.name}
-            onAdd={(termId) => {
-              handleAddCourse(termId, findEntry(plannedOpen.course.code) ?? {
-                code: plannedOpen.course.code,
-                name: plannedOpen.course.name,
-                reason: "Business core",
-              })
-              setOpenPlanned(null)
-            }}
+            /* Planned again, and the sidebar stays on the course with a tab
+               for the new term. */
+            onAdd={(termId) =>
+              handleAddCourse(
+                termId,
+                findEntry(plannedOpen.course.code) ?? {
+                  code: plannedOpen.course.code,
+                  name: plannedOpen.course.name,
+                  reason: "Business core",
+                }
+              )
+            }
             {...courseHandlers}
             onBack={() => setOpenPlanned(null)}
             onClose={() => setOpenPlanned(null)}
@@ -957,10 +961,15 @@ export function PlanYourPath({
               /* Opened from a seat and put back in that seat's own term, this
                  fills the seat rather than landing beside it — which is what
                  the student asked for by searching from it. */
-              if (seat && seat.term.id === termId) handleFillSeat(seat.course.id, course.entry)
-              else handleAddCourse(termId, course.entry, course.requirement)
-              setOpenCourse(null)
-              setOpenSeat(null)
+              if (seat && seat.term.id === termId) {
+                handleFillSeat(seat.course.id, course.entry)
+                setOpenCourse(null)
+                setOpenSeat(null)
+                return
+              }
+              /* Anywhere else, the sidebar stays on the course, now on a tab
+                 for the term it went to. */
+              handleAddCourse(termId, course.entry, course.requirement)
             }}
             onBack={() => {
               /* Walked here from another course, the way back is that course

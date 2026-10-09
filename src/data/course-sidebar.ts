@@ -36,7 +36,15 @@ export function instancesOf(code: string, plan: Term[]): Instance[] {
   return plan
     .flatMap((term) =>
       term.courses
-        .filter((course) => !course.placeholder && !course.draft && course.code === code)
+        .filter(
+          (course) =>
+            !course.placeholder &&
+            course.code === code &&
+            /* A course a draft is taking away is on its way out, not a
+               place the course is. */
+            course.draft?.mark !== "moved" &&
+            course.draft?.mark !== "removed"
+        )
         .map((course) => ({ course, term }))
     )
     .reverse()
