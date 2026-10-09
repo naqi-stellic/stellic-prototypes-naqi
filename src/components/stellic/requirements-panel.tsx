@@ -277,23 +277,20 @@ export function RequirementsPanel({
         </p>
       </header>
 
-      {/* What the plan answers to, which is what decides what is left. The
-          programme and the minor beside it: two of them, because a plan that
-          answers to both is the case no pathway is ever built for. */}
-      <div className="flex w-full flex-col gap-4">
+      {/* What the plan answers to, which is what decides what is left, and
+          then how much of it is. Three blocks read the same way — a label
+          over its content — and stand evenly apart. The programme and the
+          minor beside it: two of them, because a plan that answers to both
+          is the case no pathway is ever built for. */}
+      <div className="flex w-full flex-col gap-6">
         <PlanFacet
-          label="Programs:"
+          label="Programs"
           values={[
             `${DEGREE.credential} (${DEGREE.concentration})`,
             `Minor in ${DEGREE.minor}`,
           ]}
         />
-        <PlanFacet label="Pathway:" values={[`${DEGREE.major}: Fall Start 2026`]} />
-      </div>
-
-      {/* The two meters are one reading of the degree, so they stand closer to
-          each other than to what is above and below them. */}
-      <div className="flex w-full flex-col gap-4">
+        <PlanFacet label="Pathway" values={[`${DEGREE.major}: Fall Start 2026`]} />
       <div className="flex w-full flex-col gap-2">
         <span className="text-body-md font-semibold text-foreground">Courses</span>
         <Meter
@@ -420,22 +417,26 @@ export function RequirementsPanel({
   )
 }
 
+/** A label on its own line over its tags, the way the meter below is a label
+ *  over its bar. */
 function PlanFacet({ label, values }: { label: string; values: string[] }) {
   return (
-    <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+    <div className="flex w-full flex-col gap-2">
       <span className="text-body-md font-semibold text-foreground">{label}</span>
-      {values.map((value) => (
-        <Badge key={value} variant="outline" className="max-w-full">
-          <span className="min-w-0 truncate">{value}</span>
-          <Icon name="close" size={12} className="shrink-0" />
-        </Badge>
-      ))}
-      <a
-        href="#"
-        className="text-body-md text-gray-80 underline [text-underline-position:from-font]"
-      >
-        + add another
-      </a>
+      <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+        {values.map((value) => (
+          <Badge key={value} variant="outline" className="max-w-full">
+            <span className="min-w-0 truncate">{value}</span>
+            <Icon name="close" size={12} className="shrink-0" />
+          </Badge>
+        ))}
+        <a
+          href="#"
+          className="text-body-md text-gray-80 underline [text-underline-position:from-font]"
+        >
+          + add another
+        </a>
+      </div>
     </div>
   )
 }
