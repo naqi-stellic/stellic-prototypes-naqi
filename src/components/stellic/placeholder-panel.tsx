@@ -75,13 +75,7 @@ export function PlaceholderPanel({
               <Icon name="chevron-left" size={14} className="shrink-0" />
               <span className="min-w-0 truncate text-left">Back to {name}</span>
             </button>
-            {/* The count is the filters it was run with, and the chevron folds
-                them open; here it is what it says it is. */}
-            <h2 className="flex items-center gap-2 text-h400 font-semibold text-gray-100">
-              Course Search
-              <Badge variant="secondary">3</Badge>
-              <Icon name="expand-less" size={16} className="text-gray-100" />
-            </h2>
+            <h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>
           </div>
           <button
             type="button"
@@ -92,7 +86,16 @@ export function PlaceholderPanel({
             <Icon name="close" size={20} />
           </button>
         </div>
-        <div className="flex w-full flex-col px-6 pt-4">
+        <div className="flex w-full flex-col gap-4 px-6 pt-4">
+          {/* What the search was run with: the placeholder's own filters. In a
+              working planner the chevron folds them open; here it is what it
+              says it is. */}
+          <p className="flex items-center gap-2 text-caption-md font-medium text-gray-100">
+            <Icon name="filter-alt" size={16} className="shrink-0" />
+            Filters
+            <Badge variant="secondary">3</Badge>
+            <Icon name="expand-more" size={16} className="shrink-0" />
+          </p>
           <CourseSearch entries={eligible} onOpenCourse={onOpenCourse} bare />
         </div>
       </aside>
