@@ -509,7 +509,7 @@ export function CoursePanel({
         {/* Always in the top right corner, whatever stands to their left: the
             32px buttons are pulled up by the 6px they stand above the bar's
             first 20px line. */}
-        <div className="-mt-1.5 flex shrink-0 items-center gap-1">
+        <div className="-my-1.5 flex shrink-0 items-center gap-1">
           <button
             type="button"
             aria-label={saved ? "Remove bookmark" : "Bookmark course"}

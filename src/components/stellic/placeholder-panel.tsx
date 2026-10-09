@@ -113,7 +113,7 @@ export function PlaceholderPanel({
           type="button"
           onClick={onClose}
           aria-label="Close placeholder"
-          className="-mt-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
+          className="-my-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
         >
           <Icon name="close" size={20} />
         </button>
