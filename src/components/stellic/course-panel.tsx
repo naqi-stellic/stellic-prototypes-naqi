@@ -168,10 +168,12 @@ function Picker({
 /** Which glyph and colour a tab carries for the point its course is at, so
  *  the tabs say which attempt is which before any of them is opened. */
 const TAB_MARK: Record<Stage, { icon: IconName; tone: string }> = {
-  planned: { icon: "check", tone: "text-warning-100" },
-  registered: { icon: "event-available", tone: "text-warning-100" },
-  progress: { icon: "watch-later", tone: "text-success-100" },
-  taken: { icon: "check", tone: "text-success-100" },
+  /* The plan's own colours for the same states: orange for anything not yet
+     done — planned, registered, under way — and green once it is. */
+  planned: { icon: "check", tone: "text-warning-50" },
+  registered: { icon: "event-available", tone: "text-warning-50" },
+  progress: { icon: "watch-later", tone: "text-warning-50" },
+  taken: { icon: "check", tone: "text-success-50" },
 }
 
 const CATALOG = "catalog"
