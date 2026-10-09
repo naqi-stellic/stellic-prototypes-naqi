@@ -209,8 +209,13 @@ export function PlanHeader({
     const at =
       mark.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop
 
+    /* The band cannot reach above the top of the pane: with only the plan's
+       name above it, the toolbar sticks within SLACK of the top, and a
+       threshold below zero is one scrolling back up can never cross. At the
+       top, it always lets go. */
+    const release = Math.max(0, at - SLACK)
     const read = () =>
-      setStuck((held) => (held ? pane.scrollTop > at - SLACK : pane.scrollTop >= at))
+      setStuck((held) => (held ? pane.scrollTop > release : pane.scrollTop >= at))
 
     read()
     pane.addEventListener("scroll", read, { passive: true })
