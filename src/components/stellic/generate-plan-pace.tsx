@@ -122,7 +122,7 @@ export function keepChoices(planned: number) {
     {
       value: "yes",
       label: "Yes",
-      detail: `Keep all ${planned}, fill the gaps`,
+      detail: `Keep all ${planned} course${planned === 1 ? "" : "s"}, fill the gaps`,
     },
     {
       value: "no",
