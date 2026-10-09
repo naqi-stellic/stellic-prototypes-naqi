@@ -264,7 +264,9 @@ export function PlanHeader({
   const yearsGo = crowded ? "@max-[780px]/toolbar:hidden" : "@max-[740px]/toolbar:hidden"
 
   const actionButtons = (
-        <div className="flex flex-wrap items-center gap-2">
+        /* Named for anything that has to find the plan's actions on the page —
+           the onboarding spotlight, which points at them. */
+        <div data-tour="plan-actions" className="flex flex-wrap items-center gap-2">
           {shown.map((action) => {
             const button = (
               <Button

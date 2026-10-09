@@ -1,6 +1,7 @@
 import { cameFrom } from "@/components/stellic/plan-header"
 import { PLANNED_YEARS } from "@/data/planned-plan"
 import { recordIncoming, recordPlan } from "@/data/record-plan"
+import { PlannerIntro } from "@/components/stellic/planner-intro"
 import { PlanYourPath } from "@/pages/plan-your-path"
 
 /* The second prototype: the same planner on the same plan, with nothing on
@@ -18,6 +19,7 @@ export function Planner() {
   const fromRecord = cameFrom()
 
   return (
+    <>
     <PlanYourPath
       generators={false}
       /* Opened on its own it is Team Plan's own plan — and a made one: this
@@ -26,5 +28,9 @@ export function Planner() {
       initialYears={fromRecord ? recordPlan() : PLANNED_YEARS}
       incoming={fromRecord ? recordIncoming() : undefined}
     />
+    {/* The introduction is for the student. Staff opening a student's plan
+        from a record are not being introduced to anything. */}
+    {!fromRecord && <PlannerIntro generators={false} />}
+    </>
   )
 }
