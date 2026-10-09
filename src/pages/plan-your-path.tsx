@@ -960,7 +960,9 @@ export function PlanYourPath({
         )) ||
         (course && (
           <CoursePanel
-            key={course.entry.code}
+            /* Per placeholder as well as per course: the same course opened to
+               fill another placeholder starts on that placeholder's term. */
+            key={`${course.entry.code}-${seat?.course.id ?? "plan"}`}
             entry={course.entry}
             terms={plannableTerms}
             plan={allTerms}
