@@ -46,6 +46,8 @@ export type PlannedCourse = {
   /** Put through registration. Only possible once a class has been chosen and
    *  only while the term's registration window is open. */
   registered?: boolean
+  /** The grade, where the term has one to give: final once the term is done. */
+  grade?: string
   /** Registration detail, known once a class has been chosen. */
   classNo?: string
   campus?: string

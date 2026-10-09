@@ -23,6 +23,7 @@ import { GenerateTermPanel } from "@/components/stellic/generate-term-panel"
 import { IncomingCredits, INCOMING_LABEL } from "@/components/stellic/incoming-credits"
 import type { IncomingGroup } from "@/data/incoming"
 import { CoursePanel } from "@/components/stellic/course-panel"
+import type { Instance } from "@/data/course-sidebar"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
 import { PlaceholderPanel } from "@/components/stellic/placeholder-panel"
 import { DiscardDraftDialog } from "@/components/stellic/discard-draft-dialog"
@@ -119,6 +120,7 @@ import {
   removeCourse,
   selectableTerms,
   type MetadataField,
+  type Meeting,
   type Term,
   type Year,
 } from "@/data/plan"
@@ -747,20 +749,22 @@ export function PlanYourPath({
     return brought ? { code, name: brought.name, reason: "Incoming credit" } : null
   }
 
-  /* Opening a course a prerequisite tree names. One already in the plan opens
-     as what it is — in its term, with what the plan chose about it — rather
-     than as a catalogue entry offering to be added a second time. */
-  function openCode(code: string, from: { name: string; back: OpenBack }) {
-    const inPlan = allTerms.flatMap((t) => t.courses).find((c) => !c.placeholder && c.code === code)
-    if (inPlan) {
-      openPlannedPanel(inPlan.id)
-      return
-    }
-    const entry = findEntry(code)
-    if (entry) {
+  /* What the course sidebar does to whichever place in the plan its tab is
+     on — the same whether it was opened from the plan or from a search. */
+  const courseHandlers = {
+    onPickSection: (at: Instance, section: string, meetings: Meeting[]) => {
+      setPreview(null)
+      setYears((current) => setSection(current, at.term.id, at.course.id, section, meetings))
+    },
+    onPreviewSection: (
+      at: Instance,
+      hovered: { section: string; meetings: Meeting[] } | null
+    ) => setPreview(hovered ? { courseId: at.course.id, ...hovered } : null),
+    onRemove: (at: Instance) => {
+      handleRemoveCourse(at.course.id)
       setOpenPlanned(null)
-      setOpenCourse({ entry, from: from.name, back: from.back })
-    }
+    },
+    onRegister: (term: Term) => setRegistering(term),
   }
 
   /* A course already in the plan, opened beside it. */
@@ -917,40 +921,26 @@ export function PlanYourPath({
         (plannedOpen && (
           <CoursePanel
             key={plannedOpen.course.id}
-            entry={{
-              code: plannedOpen.course.code,
-              name: plannedOpen.course.name,
-              reason: "Business core",
-            }}
+            entry={
+              findEntry(plannedOpen.course.code) ?? {
+                code: plannedOpen.course.code,
+                name: plannedOpen.course.name,
+                reason: "Business core",
+              }
+            }
             terms={plannableTerms}
             plan={allTerms}
-            planned={{ course: plannedOpen.course, term: plannedOpen.term }}
-            onOpenCode={(code) =>
-              openCode(code, {
+            opened={{ course: plannedOpen.course, term: plannedOpen.term }}
+            backLabel={plannedOpen.term.name}
+            onAdd={(termId) => {
+              handleAddCourse(termId, findEntry(plannedOpen.course.code) ?? {
+                code: plannedOpen.course.code,
                 name: plannedOpen.course.name,
-                back: { planned: plannedOpen.course.id },
+                reason: "Business core",
               })
-            }
-            onAdd={() => setOpenPlanned(null)}
-            /* Picked by name, so the week draws that class and not whichever
-               hour happened to be free. */
-            onPickSection={(section, meetings) => {
-              setPreview(null)
-              setYears((current) =>
-                setSection(current, plannedOpen.term.id, plannedOpen.course.id, section, meetings)
-              )
+              setOpenPlanned(null)
             }}
-            onPreviewSection={(hovered) =>
-              setPreview(hovered ? { courseId: plannedOpen.course.id, ...hovered } : null)
-            }
-            onRemove={
-              plannedOpen.term.locked
-                ? undefined
-                : () => {
-                    handleRemoveCourse(plannedOpen.course.id)
-                    setOpenPlanned(null)
-                  }
-            }
+            {...courseHandlers}
             onBack={() => setOpenPlanned(null)}
             onClose={() => setOpenPlanned(null)}
           />
@@ -962,12 +952,7 @@ export function PlanYourPath({
             terms={plannableTerms}
             plan={allTerms}
             backLabel={course.from}
-            onOpenCode={(code) =>
-              openCode(code, {
-                name: course.entry.name,
-                back: { entry: course.entry, from: course.from },
-              })
-            }
+            {...courseHandlers}
             onAdd={(termId) => {
               /* Opened from a seat and put back in that seat's own term, this
                  fills the seat rather than landing beside it — which is what
