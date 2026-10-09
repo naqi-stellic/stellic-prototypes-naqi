@@ -72,6 +72,7 @@ export function GeneratePlanPanel({
   onSelectOption,
   onGenerated,
   onDiscardDraft,
+  onApply,
   onClose,
 }: {
   standing: PlanStanding
@@ -95,6 +96,8 @@ export function GeneratePlanPanel({
   onGenerated: (coursesPerTerm: number, released: string[]) => void
   /** Take the draft back off the canvas so the answers can be changed. */
   onDiscardDraft: () => void
+  /** Asks to apply the option on the canvas; absent until there is one. */
+  onApply?: () => void
   onClose: () => void
 }) {
   const [view, setView] = useState<View>(1)
@@ -246,6 +249,7 @@ export function GeneratePlanPanel({
               setEditing(false)
               setView("building")
             }}
+            onApply={editing ? undefined : onApply}
           />
         )}
 

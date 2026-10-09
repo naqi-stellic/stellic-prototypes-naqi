@@ -44,6 +44,7 @@ export function GeneratePlanOptions({
   onStartOver,
   onRegenerate,
   canRegenerate,
+  onApply,
 }: {
   /** One line reading back what the draft was built from. */
   instructions: string
@@ -59,6 +60,9 @@ export function GeneratePlanOptions({
   onStartOver: () => void
   onRegenerate: () => void
   canRegenerate: boolean
+  /** Applies the chosen option. Absent while the settings are open, where
+   *  the answer to give is Regenerate rather than Apply. */
+  onApply?: () => void
 }) {
   return (
     <>
@@ -133,6 +137,14 @@ export function GeneratePlanOptions({
           })}
         </RadioGroup>
       </Section>
+
+      {/* The end of the panel is the end of the decision: read the options,
+          pick one, apply it. */}
+      {onApply && (
+        <Button variant="primary" className="animate-fade w-full" onClick={onApply}>
+          Apply plan
+        </Button>
+      )}
     </>
   )
 }

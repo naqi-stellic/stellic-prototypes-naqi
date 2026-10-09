@@ -17,7 +17,7 @@ import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
 import { AppShell } from "@/components/layout/app-shell"
-import { DraftBar, DraftOutline } from "@/components/stellic/draft-frame"
+import { ApplyPlanDialog, DraftBar, DraftOutline } from "@/components/stellic/draft-frame"
 import { MetadataProvider } from "@/components/stellic/course-metadata"
 import { GenerateTermPanel } from "@/components/stellic/generate-term-panel"
 import { IncomingCredits, INCOMING_LABEL } from "@/components/stellic/incoming-credits"
@@ -309,6 +309,8 @@ export function PlanYourPath({
   /* What leaving a generated plan would do, held while the student is asked
      whether to throw the plan away. */
   const [leaving, setLeaving] = useState<(() => void) | null>(null)
+  /* Whether "Apply this plan?" is up. */
+  const [applying, setApplying] = useState(false)
   /* The term whose registration dialog is up, if any. */
   const [registering, setRegistering] = useState<Term | null>(null)
   /* The term whose Generate Term panel is open, if any. */
@@ -877,6 +879,7 @@ export function PlanYourPath({
             onFraming={() => setFraming(true)}
             onGenerated={startDraft}
             onDiscardDraft={dropDraft}
+            onApply={draft && !accepting ? () => setApplying(true) : undefined}
             onClose={() =>
               confirmLeave(() => {
                 dropDraft()
@@ -1048,6 +1051,7 @@ export function PlanYourPath({
               })
             }
             onAccept={keepDraft}
+            applyHere={!generateOpen}
           />
         )}
 
@@ -1194,6 +1198,18 @@ export function PlanYourPath({
 
         {/* Kept level with the plan rather than inside a term, so it survives
             moving between the canvas and a term while it is open. */}
+        <ApplyPlanDialog
+          open={applying}
+          added={landedTally.added}
+          removed={landedTally.removed}
+          terms={touchedTerms}
+          onCancel={() => setApplying(false)}
+          onAccept={() => {
+            setApplying(false)
+            keepDraft()
+          }}
+        />
+
         <DiscardDraftDialog
           open={leaving != null}
           selected={optionSummaries.find((o) => o.id === optionId)?.label ?? null}
