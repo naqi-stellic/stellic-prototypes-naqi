@@ -185,16 +185,13 @@ const STEP_MARK: Record<Step["state"], ReactNode> = {
   blocked: <Icon name="error-outline" size={16} className="shrink-0 text-alert-100" />,
 }
 
-export function Checklist({
+function Checklist({
   steps,
   onCalendar,
-  onChoose,
   onRegister,
 }: {
   steps: Step[]
   onCalendar?: () => void
-  /** Opens the course on its sections, where one is chosen with its +. */
-  onChoose?: () => void
   onRegister?: () => void
 }) {
   return (
@@ -214,12 +211,6 @@ export function Checklist({
               View in Calendar
             </Button>
           )}
-          {step.action === "choose" && onChoose && (
-            <Button size="sm" className="shrink-0" onClick={onChoose}>
-              Choose
-            </Button>
-          )}
-          {step.note && <span className="shrink-0 text-gray-80">{step.note}</span>}
           {step.action === "register" && onRegister && (
             <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
               Register Now

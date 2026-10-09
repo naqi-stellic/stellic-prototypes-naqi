@@ -2,55 +2,37 @@ import { cn } from "cn"
 import { useState } from "react"
 
 import { Icon } from "@/components/icon"
-import { Checklist, Fold, Heading } from "@/components/stellic/course-panel"
+import { Fold, Heading } from "@/components/stellic/course-panel"
 import { CourseSearch } from "@/components/stellic/course-search"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ELECTIVE_COURSES, ALL_ELECTIVES, type CatalogEntry } from "@/data/catalog"
 import { activityFor } from "@/data/course-detail"
-import {
-  eligibility,
-  placeholderChecklist,
-  STAGE_LABEL,
-  stageOf,
-  TAB_MARK,
-} from "@/data/course-sidebar"
 import { DEGREE, type PlannedCourse, type Term } from "@/data/plan"
 
 /* A placeholder opened on its own, read the way the course sidebar reads a
- * course: its name in the bar, its term as a tab over a gray block that says
- * where it stands, then the sections that matter. It has no course yet — no
- * catalogue entry, no sections, no prerequisites — so it shows only what a
- * placeholder has: the requirement it answers, its credits, a note, and the
- * way to fill it. Filled, the course standing in it is named in the block,
- * and everything about that course — its sections above all — is in the
- * course's own sidebar, which Choose and the course row open. */
+ * course: its name in the bar, then sections that fold. It has no course yet —
+ * no catalogue entry, no sections, no prerequisites — so it shows only what a
+ * placeholder has: the course to choose for it at the credits it holds, the
+ * requirement it answers, a note, and its history. Filled, the course
+ * standing in it is named there, and everything about that course — its
+ * sections, its registration — is in the course's own sidebar, which the
+ * course's row opens. */
 
 export function PlaceholderPanel({
   course,
   term,
-  plan,
   initialView = "detail",
   onOpenCourse,
   onOpenFilled,
   onEmpty,
-  onRemove,
-  onRegister,
   onClose,
 }: {
   course: PlannedCourse
   /** The term the placeholder is held in. */
   term: Term
-  /** Every term in the plan, for reading the filling course's eligibility. */
-  plan: Term[]
   /** Opened from the card's search button, it starts on the courses. */
   initialView?: "detail" | "search"
   /** Opens one of the courses that could fill the placeholder, on its own. */
@@ -59,10 +41,6 @@ export function PlaceholderPanel({
   onOpenFilled?: () => void
   /** Takes the chosen course back out, leaving the placeholder as it was. */
   onEmpty?: () => void
-  /** Takes the placeholder off the plan altogether. */
-  onRemove?: () => void
-  /** Opens the term's registration. */
-  onRegister?: (term: Term) => void
   onClose: () => void
 }) {
   const [searching, setSearching] = useState(initialView === "search")
@@ -76,20 +54,12 @@ export function PlaceholderPanel({
   const [credits, setCredits] = useState(String(course.credits))
   const [editingCredits, setEditingCredits] = useState(false)
   const [note, setNote] = useState("")
-  const [open, setOpen] = useState({ checklist: true, counting: true, notes: false, history: false })
+  const [open, setOpen] = useState({ choose: true, counting: true, notes: false, history: false })
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
 
   /* A finance placeholder lists finance courses; a general one lists general
      ones. Anything else falls back to every elective there is. */
   const eligible = ELECTIVE_COURSES[seat.code] ?? ALL_ELECTIVES
-  const stage = stageOf(term, course)
-  const mark = TAB_MARK[stage]
-  /* The filling course's prerequisites decide whether it can be registered;
-     an empty placeholder has none to read. */
-  const met = filled
-    ? eligibility({ code: course.code, name: course.name, reason: seat.name }, { term, plan }).met
-    : true
-
   if (searching) {
     return (
       <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-background pb-28">
@@ -126,8 +96,9 @@ export function PlaceholderPanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      {/* The placeholder's name in the bar beside the close, as a course's is. */}
-      <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
+      {/* The placeholder's name in the bar beside the close, as a course's is.
+          No rule of its own: the first section's rule is the line under it. */}
+      <div className="flex w-full shrink-0 items-start gap-2 px-6 py-4">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {renaming ? (
             <Input
@@ -170,45 +141,9 @@ export function PlaceholderPanel({
         </button>
       </div>
 
-      {/* One term, so one tab: there is no catalogue for a placeholder. */}
-      <div role="tablist" aria-label="Where this placeholder is" className="flex w-full gap-1 px-6 pt-4 pb-2">
-        <span
-          role="tab"
-          aria-selected="true"
-          className="flex items-center gap-2 rounded-md bg-gray-5 px-3 py-2 text-body-md text-gray-100"
-        >
-          <Icon name={mark.icon} size={16} className={mark.tone} />
-          {term.name}
-        </span>
-      </div>
-
-      <div className="mx-6 mb-6 flex flex-col gap-3 rounded-md bg-gray-0 p-4">
-        <div className="flex w-full items-center gap-2">
-          <h3 className="min-w-0 flex-1 text-caption-lg font-semibold text-gray-100">
-            {STAGE_LABEL[stage]}
-          </h3>
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button>Actions</Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-[180px]">
-              <DropdownMenuItem
-                onSelect={() => setOpen((was) => ({ ...was, notes: true }))}
-                className="gap-2 py-1.5 text-body-md"
-              >
-                <Icon name="sticky-note-2" size={16} />
-                Write a note
-              </DropdownMenuItem>
-              {onRemove && !term.locked && (
-                <DropdownMenuItem onSelect={onRemove} className="gap-2 py-1.5 text-body-md">
-                  <Icon name="close" size={16} />
-                  Remove from plan
-                </DropdownMenuItem>
-              )}
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
+      {/* What the placeholder is for: a course to stand in it, at the credits
+          it holds. Empty, the way to find one; filled, the course itself. */}
+      <Fold title="Choose course" open={open.choose} onToggle={() => toggle("choose")}>
         <div className="flex w-full items-center gap-4 text-body-md">
           <span className="w-14 shrink-0 font-semibold text-gray-100">Credits</span>
           {editingCredits ? (
@@ -241,7 +176,8 @@ export function PlaceholderPanel({
           <div className="flex w-full flex-col gap-2">
             <Heading>Selected course</Heading>
             {/* The course standing in it: the row opens the course's own
-                sidebar; the bin gives the placeholder back. */}
+                sidebar, where its sections and registration are; the bin
+                gives the placeholder back. */}
             <div className="flex w-full items-stretch rounded-md border border-gray-40 bg-card">
               <button
                 type="button"
@@ -272,14 +208,6 @@ export function PlaceholderPanel({
             Find eligible courses
           </Button>
         )}
-      </div>
-
-      <Fold title="Planning checklist" open={open.checklist} onToggle={() => toggle("checklist")}>
-        <Checklist
-          steps={placeholderChecklist(term, course, met)}
-          onChoose={onOpenFilled}
-          onRegister={onRegister && (() => onRegister(term))}
-        />
       </Fold>
 
       <Fold

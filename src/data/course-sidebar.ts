@@ -145,12 +145,8 @@ export type Step = {
   state: StepState
   chip?: string
   /** What the step offers to do about itself, on the right: see the classes
-   *  on the term's week, choose one in the course's own sidebar, or register
-   *  once the window is open. */
-  action?: "calendar" | "choose" | "register"
-  /** What the step came to, said on the right in place of an action — the
-   *  section chosen, say. */
-  note?: string
+   *  on the term's week, or register once the window is open. */
+  action?: "calendar" | "register"
 }
 
 /** The four things between planning a course and sitting in it, each with the
@@ -202,34 +198,6 @@ export function planningChecklist(term: Term, course: PlannedCourse, met: boolea
       ? { label: "Meet eligibility: prerequisites", state: "done" }
       : { label: "Meet eligibility: prerequisites not met", state: "blocked" },
     select,
-    register,
-    addDrop,
-  ]
-}
-
-/** The same four steps for a placeholder, which has one more thing to do
- *  before any of them: have a course chosen for it. Until then nothing after
- *  is the step to do. Once filled, sections are chosen in the course's own
- *  sidebar, which Choose opens, and the section chosen is said in its place. */
-export function placeholderChecklist(term: Term, course: PlannedCourse, met: boolean): Step[] {
-  const filled = !course.placeholder
-  const [, select, register, addDrop] = planningChecklist(term, course, met)
-  const choose: Step = filled
-    ? { label: "Choose a course", state: "done" }
-    : { label: "Choose a course", state: "current" }
-  if (!filled) {
-    return [
-      choose,
-      { ...select, state: "todo", action: undefined },
-      { ...register, state: "todo", action: undefined, chip: undefined },
-      { ...addDrop, chip: undefined },
-    ]
-  }
-  return [
-    choose,
-    course.section
-      ? { label: "Select sections", state: "done", note: course.section }
-      : { ...select, action: select.state === "current" ? "choose" : undefined },
     register,
     addDrop,
   ]

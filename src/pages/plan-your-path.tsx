@@ -916,7 +916,6 @@ export function PlanYourPath({
             key={`${seat.course.id}-${openSeat?.view}`}
             course={seat.course}
             term={seat.term}
-            plan={allTerms}
             initialView={openSeat!.view}
             onOpenFilled={() =>
               openPlannedPanel(seat!.course.id, {
@@ -924,11 +923,6 @@ export function PlanYourPath({
                 name: (seat!.course.seat ?? seat!.course).name,
               })
             }
-            onRemove={() => {
-              handleRemoveCourse(seat!.course.id)
-              setOpenSeat(null)
-            }}
-            onRegister={(term) => setRegistering(term)}
             /* The seat stays open underneath, and is remembered on its list
                rather than its detail, so coming back from a course lands where
                the course was picked from. */
