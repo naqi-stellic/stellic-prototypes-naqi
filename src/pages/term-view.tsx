@@ -203,13 +203,11 @@ export function TermView({
    *  proposed, rather than the proposal on its own. */
   compare?: boolean
 }) {
-  /* A term under way or already taken opens on its calendar: the week is
-   * settled and the week is the thing to look at. A term still being planned
-   * opens on its list, even once its schedule is published — what is being
-   * done there is choosing courses, and half of them may have no class yet. */
-  const [mode, setMode] = useState<string>(
-    startOn ?? (term.scheduled && term.state !== "planned" ? "calendar" : "list")
-  )
+  /* Any term whose classes are out opens on its calendar — under way, or
+   * still to come — because the week is the thing to look at once there is
+   * one. A term with no schedule yet has no week to draw, so it opens on its
+   * list. */
+  const [mode, setMode] = useState<string>(startOn ?? (term.scheduled ? "calendar" : "list"))
 
   /* Unless a generated week arrives, which is a week to be read against the
    * one it replaces — so the term turns to its calendar to show it. */
