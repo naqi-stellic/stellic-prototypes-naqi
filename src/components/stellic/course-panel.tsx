@@ -506,10 +506,10 @@ export function CoursePanel({
             </span>
           </p>
         </div>
-        {/* Centred on the name's line: the 32px buttons are pulled up by the
-            6px they stand above a 20px line, and down past the way back where
-            there is one. */}
-        <div className={cn("flex shrink-0 items-center gap-1", backLabel ? "mt-[14px]" : "-mt-1.5")}>
+        {/* Always in the top right corner, whatever stands to their left: the
+            32px buttons are pulled up by the 6px they stand above the bar's
+            first 20px line. */}
+        <div className="-mt-1.5 flex shrink-0 items-center gap-1">
           <button
             type="button"
             aria-label={saved ? "Remove bookmark" : "Bookmark course"}
