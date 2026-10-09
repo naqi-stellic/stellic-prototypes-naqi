@@ -970,17 +970,15 @@ export function PlanYourPath({
             filling={seat?.term.id}
             {...courseHandlers}
             onAdd={(termId) => {
-              /* Opened from a seat and put back in that seat's own term, this
-                 fills the seat rather than landing beside it — which is what
-                 the student asked for by searching from it. */
-              if (seat && seat.term.id === termId) {
+              /* Opened from a seat still waiting for a course, and put in that
+                 seat's own term, this fills the seat rather than landing beside
+                 it — which is what the student asked for by searching from it. */
+              if (seat?.course.placeholder && seat.term.id === termId) {
                 handleFillSeat(seat.course.id, course.entry)
-                setOpenCourse(null)
-                setOpenSeat(null)
                 return
               }
-              /* Anywhere else, the sidebar stays on the course, now on a tab
-                 for the term it went to. */
+              /* Either way the sidebar stays on the course, now on a tab for
+                 the term it went to. Closing it is the student's call. */
               handleAddCourse(termId, course.entry, course.requirement)
             }}
             onBack={() => {
