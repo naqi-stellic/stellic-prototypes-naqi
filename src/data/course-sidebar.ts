@@ -166,7 +166,7 @@ export function planningChecklist(term: Term, course: PlannedCourse, met: boolea
     ? { label: "Select sections", state: "done", ...calendar }
     : sectionsOut
       ? { label: "Select sections", state: "current", ...calendar }
-      : { label: `Select sections, available ${longDate(dates.sections)}`, state: "todo" }
+      : { label: "Select sections", detail: `Available ${longDate(dates.sections)}`, state: "todo" }
 
   const register: Step = registered
     ? { label: "Register course", state: "done" }
@@ -180,7 +180,8 @@ export function planningChecklist(term: Term, course: PlannedCourse, met: boolea
           ...(picked && met ? { action: "register" as const } : {}),
         }
       : {
-          label: `Register ${longDate(dates.registerOpens)}`,
+          label: "Registration",
+          detail: `Opens ${longDate(dates.registerOpens)}`,
           state: "todo",
           /* Counting down only once there is a class to register for. */
           chip: picked ? (countdown(dates.registerOpens) ?? undefined) : undefined,
