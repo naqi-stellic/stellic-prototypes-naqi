@@ -296,6 +296,8 @@ export function PlanYourPath({
   /* A term opened on its own. The planner stays mounted behind it, so coming
    * back does not cost the plan its scroll position or its draft. */
   const [openTermId, setOpenTermId] = useState<string | null>(null)
+  /* Which view the open term was asked to open on, where it was asked. */
+  const [openTermOn, setOpenTermOn] = useState<"calendar" | undefined>(undefined)
   /* What is finished comes folded away; the rest come open. */
   /* What the plan opens folded: the credit brought in, and any year already
      finished. Both are a record rather than a plan — there is nothing left to
@@ -632,6 +634,7 @@ export function PlanYourPath({
    * the bar and the options stay where they are and the term shows the draft's
    * version of itself. */
   function openTermView(termId: string) {
+    setOpenTermOn(undefined)
     setOpenTermId(termId)
   }
 
@@ -765,6 +768,11 @@ export function PlanYourPath({
       setOpenPlanned(null)
     },
     onRegister: (term: Term) => setRegistering(term),
+    /* The term on its week, with the sidebar still beside it. */
+    onViewCalendar: (term: Term) => {
+      setOpenTermOn("calendar")
+      setOpenTermId(term.id)
+    },
   }
 
   /* A course already in the plan, opened beside it. */
@@ -1055,8 +1063,9 @@ export function PlanYourPath({
             /* Keyed on the term so switching to another one opens it as itself
                — on its calendar if it has one — rather than inheriting the view
                the last term was being read in. */
-            key={openTerm.id}
+            key={`${openTerm.id}-${openTermOn ?? "default"}`}
             term={openTerm}
+            startOn={openTermOn}
             tabs={yearTabs(
               shown,
               yearOf(shown, openTerm.id),

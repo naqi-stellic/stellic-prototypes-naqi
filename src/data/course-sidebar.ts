@@ -1,5 +1,11 @@
 import { offeredIn, type CatalogEntry } from "@/data/catalog"
-import { courseDetail, meetingLines, type PrereqNode, type PrereqState } from "@/data/course-detail"
+import {
+  courseDetail,
+  meetingLines,
+  prerequisiteCodes,
+  type PrereqNode,
+  type PrereqState,
+} from "@/data/course-detail"
 import type { Meeting, PlannedCourse, Term } from "@/data/plan"
 import { NOW } from "@/data/review"
 
@@ -120,7 +126,16 @@ export function termDates(term: Term): {
 
 export type StepState = "done" | "current" | "todo" | "blocked"
 
-export type Step = { label: string; state: StepState; chip?: string }
+export type Step = {
+  label: string
+  /** A second line under the label: the date the step turns on. */
+  detail?: string
+  state: StepState
+  chip?: string
+  /** What the step offers to do about itself, on the right: see the classes
+   *  on the term's week, or register once the window is open. */
+  action?: "calendar" | "register"
+}
 
 /** The four things between planning a course and sitting in it, each with the
  *  date it turns on. Done, the one to do now, the ones still to come — and a
@@ -133,16 +148,25 @@ export function planningChecklist(term: Term, course: PlannedCourse, met: boolea
   const registered = course.registered === true
   const deadline = dates.closesLabel ?? longDate(dates.registerCloses)
 
+  /* Once the classes are out they can be read on the term's week. */
+  const calendar = sectionsOut ? { action: "calendar" as const } : {}
   const select: Step = picked
-    ? { label: "Select sections", state: "done" }
+    ? { label: "Select sections", state: "done", ...calendar }
     : sectionsOut
-      ? { label: "Select sections", state: "current" }
+      ? { label: "Select sections", state: "current", ...calendar }
       : { label: `Select sections, available ${longDate(dates.sections)}`, state: "todo" }
 
   const register: Step = registered
     ? { label: "Register course", state: "done" }
     : open
-      ? { label: `Register now, deadline ${deadline}`, state: picked ? "current" : "todo" }
+      ? {
+          label: "Registration Open",
+          detail: `Deadline ${deadline}`,
+          state: picked ? "current" : "todo",
+          /* Only with a class to register for and the prerequisites met —
+             never offered for a course registration would turn away. */
+          ...(picked && met ? { action: "register" as const } : {}),
+        }
       : {
           label: `Register ${longDate(dates.registerOpens)}`,
           state: "todo",
@@ -151,7 +175,8 @@ export function planningChecklist(term: Term, course: PlannedCourse, met: boolea
         }
 
   const addDrop: Step = {
-    label: `Add/drop deadline ${longDate(dates.addDrop)}`,
+    label: "Add/drop",
+    detail: `Deadline ${longDate(dates.addDrop)}`,
     state: "todo",
     chip: registered ? (countdown(dates.addDrop) ?? undefined) : undefined,
   }
@@ -183,13 +208,18 @@ const STANDING: Record<PrereqState, string> = {
 
 /** The prerequisites on the route the student is on — the first option — as
  *  one flat list. A group where any one will do shows the best of its
- *  members, because that is the one that answers it. */
-export function eligibility(entry: CatalogEntry): { met: boolean; lines: PrereqLine[] } {
+ *  members, because that is the one that answers it.
+ *
+ *  Read against a term in the plan, a prerequisite the plan has put before
+ *  that term is met by then, and one it has put in the same term or after is
+ *  not — the same reading the term itself gives, so the sidebar and the
+ *  term's "Pre-requisites not met" line never disagree. */
+export function eligibility(
+  entry: CatalogEntry,
+  at?: { term: Term; plan: Term[] }
+): { met: boolean; lines: PrereqLine[] } {
   const { options } = courseDetail(entry).prerequisites
   if (options.length === 0) return { met: true, lines: [] }
-  /* Met once some route is earned or on its way: a course under way now is
-     done before any term the plan is still choosing for. */
-  const met = options.some((option) => option.state === "earned" || option.state === "progress")
   const rank = (state?: PrereqState) =>
     state === "earned" ? 3 : state === "progress" ? 2 : state === "planned" ? 1 : 0
   const flat = (nodes: PrereqNode[]): PrereqNode[] =>
@@ -198,17 +228,51 @@ export function eligibility(entry: CatalogEntry): { met: boolean; lines: PrereqL
       const inside = flat(node.children)
       return node.any ? [inside.reduce((a, b) => (rank(b.state) > rank(a.state) ? b : a))] : inside
     })
-  const route = options.find((o) => o.state === "earned" || o.state === "progress") ?? options[0]
+  /* Met once some route is earned or on its way: a course under way now is
+     done before any term the plan is still choosing for. */
+  const onWay = (o: { state: PrereqState }) => o.state === "earned" || o.state === "progress"
+  const route = options.find(onWay) ?? options[0]
+  const index = at ? at.plan.findIndex((t) => t.id === at.term.id) : -1
+  const placed = (code?: string) =>
+    code && index >= 0
+      ? at!.plan
+          .map((t, i) => ({ t, i }))
+          .find(({ t }) => t.courses.some((c) => !c.placeholder && c.code === code)) ?? null
+      : null
+
   const lines = flat(route.children).map((node) => {
     const state = node.state ?? "remaining"
+    const where = state === "earned" || state === "progress" ? null : placed(node.code)
+    if (where) {
+      return {
+        label: [node.code ?? node.label, node.note].filter(Boolean).join(", "),
+        met: where.i < index,
+        status: `Planned ${where.t.name}`,
+      }
+    }
     const ok = state === "earned" || state === "progress" || state === "planned"
     return {
       label: [node.code ?? node.label, node.note].filter(Boolean).join(", "),
       met: ok,
-      status: state === "remaining" || state === "neutral" ? STANDING[state] : (node.meta ?? STANDING[state]),
+      status:
+        state === "remaining" || state === "neutral" ? STANDING[state] : (node.meta ?? STANDING[state]),
     }
   })
-  return { met, lines }
+  /* The courses the term itself checks — every one on the first route,
+     either side of a "take any one of" — and any of them the plan has put in
+     this term or after. Each is named, so the sidebar says which one the
+     term's "Pre-requisites not met" is about. */
+  const late = (index >= 0 ? prerequisiteCodes(entry.code) : []).flatMap((code) => {
+    const where = placed(code)
+    return where != null && where.i >= index ? [{ code, where }] : []
+  })
+  for (const { code, where } of late) {
+    const line = lines.find((l) => l.label.split(",")[0] === code)
+    const status = `Planned ${where.t.name}`
+    if (line) Object.assign(line, { met: false, status })
+    else lines.push({ label: code, met: false, status })
+  }
+  return { met: options.some(onWay) && late.length === 0, lines }
 }
 
 /** "Usually offered: Fall, Spring". */

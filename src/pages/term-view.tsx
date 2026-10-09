@@ -151,6 +151,7 @@ export function TermView({
   onRequestReview,
   requested = false,
   onShowReview,
+  startOn,
   generators = true,
   sidebar,
   addable,
@@ -178,6 +179,9 @@ export function TermView({
   /** Asks for a review of this term alone — the plan-wide first step is
    *  already answered, so the dialog opens on its second. */
   onRequestReview?: () => void
+  /** Which view to open on, where something asked for one — the course
+   *  sidebar's View in Calendar. */
+  startOn?: "calendar" | "list"
   /** A request is out on this term, and nothing has moved since. */
   requested?: boolean
   /** Opens the request that is out, beside the term. */
@@ -203,8 +207,8 @@ export function TermView({
    * settled and the week is the thing to look at. A term still being planned
    * opens on its list, even once its schedule is published — what is being
    * done there is choosing courses, and half of them may have no class yet. */
-  const [mode, setMode] = useState(
-    term.scheduled && term.state !== "planned" ? "calendar" : "list"
+  const [mode, setMode] = useState<string>(
+    startOn ?? (term.scheduled && term.state !== "planned" ? "calendar" : "list")
   )
 
   /* Unless a generated week arrives, which is a week to be read against the

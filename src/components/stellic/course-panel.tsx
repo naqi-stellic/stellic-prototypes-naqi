@@ -191,13 +191,37 @@ const STEP_MARK: Record<Step["state"], ReactNode> = {
   blocked: <Icon name="error-outline" size={16} className="shrink-0 text-alert-100" />,
 }
 
-function Checklist({ steps }: { steps: Step[] }) {
+function Checklist({
+  steps,
+  onCalendar,
+  onRegister,
+}: {
+  steps: Step[]
+  onCalendar?: () => void
+  onRegister?: () => void
+}) {
   return (
     <ol className="flex w-full flex-col gap-3">
       {steps.map((step) => (
         <li key={step.label} className="flex w-full items-center gap-2 text-body-md text-gray-100">
-          {STEP_MARK[step.state]}
-          <span className="min-w-0 flex-1">{step.label}</span>
+          {/* Level with the step's first line, where it has a second. */}
+          <span className={cn("flex h-5 shrink-0 items-center", step.detail && "self-start")}>
+            {STEP_MARK[step.state]}
+          </span>
+          <span className="flex min-w-0 flex-1 flex-col">
+            {step.label}
+            {step.detail && <span className="text-gray-80">{step.detail}</span>}
+          </span>
+          {step.action === "calendar" && onCalendar && (
+            <Button size="sm" className="shrink-0" onClick={onCalendar}>
+              View in Calendar
+            </Button>
+          )}
+          {step.action === "register" && onRegister && (
+            <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
+              Register Now
+            </Button>
+          )}
           {step.chip && (
             <span className="flex shrink-0 items-center gap-1 rounded-md bg-gray-5 px-1.5 py-0.5 text-label-md text-gray-100">
               <Icon name="timer" size={12} />
@@ -412,6 +436,7 @@ export function CoursePanel({
   onPreviewSection,
   onRemove,
   onRegister,
+  onViewCalendar,
   onBack,
   onClose,
 }: {
@@ -434,6 +459,8 @@ export function CoursePanel({
   onRemove?: (at: Instance) => void
   /** Opens the term's registration. */
   onRegister?: (term: Term) => void
+  /** Opens the term on its week, where its classes can be seen. */
+  onViewCalendar?: (term: Term) => void
   onBack: () => void
   onClose: () => void
 }) {
@@ -546,12 +573,14 @@ export function CoursePanel({
           onPreviewSection={onPreviewSection}
           onRemove={onRemove}
           onRegister={onRegister}
+          onViewCalendar={onViewCalendar}
         />
       ) : (
         <CatalogBody
           key={CATALOG}
           entry={entry}
           terms={terms}
+          plan={plan}
           onAdd={(termId) => {
             onAdd(termId)
             setTab(`${ADDED}${termId}`)
@@ -566,14 +595,17 @@ export function CoursePanel({
 
 function EligibilityFold({
   entry,
+  at,
   open,
   onToggle,
 }: {
   entry: CatalogEntry
+  /** The term it is read against, and the plan around it. */
+  at?: { term: Term; plan: Term[] }
   open: boolean
   onToggle: () => void
 }) {
-  const { met, lines } = eligibility(entry)
+  const { met, lines } = eligibility(entry, at)
   return (
     <Fold
       title="Eligibility"
@@ -735,16 +767,21 @@ function AboutFold({
 function CatalogBody({
   entry,
   terms,
+  plan,
   onAdd,
 }: {
   entry: CatalogEntry
   terms: Term[]
+  plan: Term[]
   onAdd: (termId: string) => void
 }) {
-  const { met } = eligibility(entry)
   const [campus, setCampus] = useState(courseDetail(entry).campus)
   const [termId, setTermId] = useState(terms[0]?.id ?? "")
   const term = terms.find((t) => t.id === termId)
+  /* Read against the term it would be added to, so changing the term says
+     whether it could be taken then. */
+  const against = term ? { term, plan } : undefined
+  const { met } = eligibility(entry, against)
   const [open, setOpen] = useState({ eligibility: !met, counting: false, about: met })
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
 
@@ -769,7 +806,12 @@ function CatalogBody({
           </Button>
         )}
       </div>
-      <EligibilityFold entry={entry} open={open.eligibility} onToggle={() => toggle("eligibility")} />
+      <EligibilityFold
+        entry={entry}
+        at={against}
+        open={open.eligibility}
+        onToggle={() => toggle("eligibility")}
+      />
       <CountingFold
         entry={entry}
         title="Can count for"
@@ -792,6 +834,7 @@ function InstanceBody({
   onPreviewSection,
   onRemove,
   onRegister,
+  onViewCalendar,
 }: {
   entry: CatalogEntry
   at: Instance
@@ -800,10 +843,11 @@ function InstanceBody({
   onPreviewSection?: (at: Instance, hovered: { section: string; meetings: Meeting[] } | null) => void
   onRemove?: (at: Instance) => void
   onRegister?: (term: Term) => void
+  onViewCalendar?: (term: Term) => void
 }) {
   const { course, term } = at
   const stage = stageOf(term, course)
-  const { met } = eligibility(entry)
+  const { met } = eligibility(entry, { term, plan })
   const grade = gradeOf(course)
   /* A failed attempt counts for nothing; the retake is the one that does. */
   const unmatched = stage === "taken" && grade === "F"
@@ -821,9 +865,6 @@ function InstanceBody({
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
   const [campus, setCampus] = useState(course.campus ?? "Main")
   const [editingCampus, setEditingCampus] = useState(false)
-  /* Register Now is there only while the window is open and there is a class
-     to register for — never greyed out ahead of either. */
-  const canRegister = stage === "planned" && term.alert != null && course.section != null
   const canRemove = onRemove != null && !term.locked && stage !== "taken"
   const moved = plan.find((t) => t.id !== term.id && !t.locked)?.name
   const activity = activityFor(entry.code, term.name, moved)
@@ -835,11 +876,6 @@ function InstanceBody({
           <h3 className="min-w-0 flex-1 text-caption-lg font-semibold text-gray-100">
             {STAGE_LABEL[stage]}
           </h3>
-          {canRegister && (
-            <Button variant="primary" onClick={() => onRegister?.(term)}>
-              Register Now
-            </Button>
-          )}
           {stage !== "taken" && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -910,7 +946,11 @@ function InstanceBody({
 
       {planning && (
         <Fold title="Planning checklist" open={open.checklist} onToggle={() => toggle("checklist")}>
-          <Checklist steps={planningChecklist(term, course, met)} />
+          <Checklist
+            steps={planningChecklist(term, course, met)}
+            onCalendar={onViewCalendar && (() => onViewCalendar(term))}
+            onRegister={onRegister && (() => onRegister(term))}
+          />
         </Fold>
       )}
 
@@ -953,7 +993,12 @@ function InstanceBody({
         />
       )}
 
-      <EligibilityFold entry={entry} open={open.eligibility} onToggle={() => toggle("eligibility")} />
+      <EligibilityFold
+        entry={entry}
+        at={{ term, plan }}
+        open={open.eligibility}
+        onToggle={() => toggle("eligibility")}
+      />
       <CountingFold
         entry={entry}
         title="Counting for"
