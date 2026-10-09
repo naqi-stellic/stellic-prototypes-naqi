@@ -428,7 +428,12 @@ export function PlanYourPath({
      classes come out. */
   const scheduleTerms = allTerms
     .filter((term) => term.scheduled)
-    .map((term) => ({ name: term.name, inProgress: term.state === "registered" }))
+    .map((term) => ({
+      name: term.name,
+      inProgress: term.state === "registered",
+      /* Each one opens its term, as the term's name on the plan does. */
+      onSelect: () => openTermView(term.id),
+    }))
   /* The term whose course search is open. */
   const searchTerm = searching ? findTerm(shown, searching) : null
   /* The seat whose panel is open, if it is still in the plan. */

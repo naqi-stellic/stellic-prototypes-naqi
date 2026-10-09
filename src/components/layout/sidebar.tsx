@@ -21,6 +21,9 @@ type NavItem = {
   /** A small chip after the label. Unlike `badge` this one is meant to be
    *  read: it says the row is new, not that something is waiting in it. */
   chip?: string
+  /** What the row does on this page, where it opens something here rather
+   *  than leading to another page — a term in the planner, say. */
+  onSelect?: () => void
 }
 
 /* Which product the page belongs to. The nav is the same nav either way — what
@@ -36,7 +39,12 @@ const SCHEDULE: NavItem = {
 
 /** A term the schedule reaches: the one under way, and any whose classes are
  *  out. A term that is only planned has no schedule to open. */
-export type ScheduleTerm = { name: string; inProgress?: boolean }
+export type ScheduleTerm = {
+  name: string
+  inProgress?: boolean
+  /** Opens the term, where the page can. */
+  onSelect?: () => void
+}
 
 const TERMS: ScheduleTerm[] = [
   { name: "Fall 2026", inProgress: true },
@@ -90,6 +98,7 @@ function nav(section: NavSection, current?: string, terms: ScheduleTerm[] = TERM
           spacerRing: true,
           badge: term.inProgress ? "In Progress" : undefined,
           active: current === term.name,
+          onSelect: term.onSelect,
         }))
       : []),
     { label: "Plan Your Path", glyph: "s-navigation", strong: true, active: here("Plan Your Path") },
@@ -197,6 +206,13 @@ export function SidebarNav({
             <a
               key={item.label}
               href={item.href ?? "#"}
+              onClick={
+                item.onSelect &&
+                ((event) => {
+                  event.preventDefault()
+                  item.onSelect?.()
+                })
+              }
               aria-current={item.active ? "page" : undefined}
               className={cn(
                 "flex h-9 w-60 shrink-0 items-center gap-2 px-6 py-2 text-white",
