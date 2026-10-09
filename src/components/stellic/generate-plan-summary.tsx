@@ -1,5 +1,6 @@
 import type { PaceState } from "@/components/stellic/generate-plan-pace"
 import {
+  AccountingFor,
   SettingsSection,
   planSettings,
   type SettingStep,
@@ -53,8 +54,8 @@ export function GeneratePlanSummary({
 
       <div className="flex w-full flex-col gap-2 rounded-md border border-gray-40 bg-gray-0 p-[15px]">
         <SettingsSection title="Your choices" rows={choices} onEdit={onEdit} />
-        <SettingsSection title="Also accounting for" rows={rules} onEdit={onEdit} />
       </div>
+      <AccountingFor rows={rules} onEdit={onEdit} />
     </>
   )
 }

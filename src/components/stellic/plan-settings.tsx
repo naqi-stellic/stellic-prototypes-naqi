@@ -1,5 +1,7 @@
 import { cn } from "cn"
+import { useState } from "react"
 
+import { Icon } from "@/components/icon"
 import { describePace, type PaceState } from "@/components/stellic/generate-plan-pace"
 import { DEGREE, INSTITUTION_INSTRUCTIONS, PLANNING_RULES, type PlanStanding } from "@/data/plan"
 
@@ -85,18 +87,23 @@ export function SettingsSection({
   rows,
   onEdit,
 }: {
-  title: string
+  /** Left out where something else already heads the rows. */
+  title?: string
   rows: SettingRow[]
   /** Given, every row that belongs to a step offers a way back to it. */
   onEdit?: (step: SettingStep) => void
 }) {
   return (
     <div className="flex w-full flex-col gap-2 overflow-clip">
-      <p className="text-overline font-medium tracking-[0.5px] text-gray-100 uppercase">{title}</p>
+      {title && (
+        <p className="text-overline font-medium tracking-[0.5px] text-gray-100 uppercase">
+          {title}
+        </p>
+      )}
       {rows.map((row, i) => (
         <div
           key={row.label}
-          className={cn("flex w-full items-start gap-2 text-body-md", i === 0 && "pt-2")}
+          className={cn("flex w-full items-start gap-2 text-body-md", title && i === 0 && "pt-2")}
         >
           <p className="w-[148px] shrink-0 text-gray-80">{row.label}</p>
           <div className="flex min-w-0 flex-1 flex-col gap-1 text-gray-100">
@@ -116,6 +123,34 @@ export function SettingsSection({
           )}
         </div>
       ))}
+    </div>
+  )
+}
+
+/** The institution's settings, folded away under one line. They apply
+ *  whatever the student answers, so they are there to check rather than to
+ *  read every time: the line opens and closes all of them at once. */
+export function AccountingFor({
+  rows,
+  onEdit,
+}: {
+  rows: SettingRow[]
+  onEdit?: (step: SettingStep) => void
+}) {
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="flex w-full flex-col gap-3">
+      <button
+        type="button"
+        aria-expanded={open}
+        onClick={() => setOpen((shown) => !shown)}
+        className="flex cursor-pointer items-center gap-1 self-start text-body-md font-semibold text-gray-100"
+      >
+        Also accounting for
+        <Icon name={open ? "expand-more" : "chevron-right"} size={16} className="shrink-0" />
+      </button>
+      {open && <SettingsSection rows={rows} onEdit={onEdit} />}
     </div>
   )
 }
