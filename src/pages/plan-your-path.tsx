@@ -346,6 +346,8 @@ export function PlanYourPath({
   } | null>(null)
   /* A course already in the plan, opened on its own. */
   const [openPlanned, setOpenPlanned] = useState<string | null>(null)
+  /* The placeholder the open course was reached from, where it was. */
+  const [plannedBack, setPlannedBack] = useState<{ id: string; name: string } | null>(null)
   /* The course search, opened from a term's own "+ Add to Term". */
   const [searching, setSearching] = useState<string | null>(null)
   /* The held seat opened on its own, and whether it opened on the courses that
@@ -776,10 +778,12 @@ export function PlanYourPath({
     },
   }
 
-  /* A course already in the plan, opened beside it. */
-  function openPlannedPanel(courseId: string) {
+  /* A course already in the plan, opened beside it. Opened from the
+     placeholder it fills, the way back is to that placeholder. */
+  function openPlannedPanel(courseId: string, fromSeat?: { id: string; name: string }) {
     closeGenerators()
     setPreview(null)
+    setPlannedBack(fromSeat ?? null)
     setOpenPlanned(courseId)
     setOpenSeat(null)
     setOpenCourse(null)
@@ -912,7 +916,19 @@ export function PlanYourPath({
             key={`${seat.course.id}-${openSeat?.view}`}
             course={seat.course}
             term={seat.term}
+            plan={allTerms}
             initialView={openSeat!.view}
+            onOpenFilled={() =>
+              openPlannedPanel(seat!.course.id, {
+                id: seat!.course.id,
+                name: (seat!.course.seat ?? seat!.course).name,
+              })
+            }
+            onRemove={() => {
+              handleRemoveCourse(seat!.course.id)
+              setOpenSeat(null)
+            }}
+            onRegister={(term) => setRegistering(term)}
             /* The seat stays open underneath, and is remembered on its list
                rather than its detail, so coming back from a course lands where
                the course was picked from. */
@@ -940,6 +956,7 @@ export function PlanYourPath({
             terms={plannableTerms}
             plan={allTerms}
             opened={{ course: plannedOpen.course, term: plannedOpen.term }}
+            backLabel={plannedBack?.name}
             /* Planned again, and the sidebar stays on the course with a tab
                for the new term. */
             onAdd={(termId) =>
@@ -953,8 +970,16 @@ export function PlanYourPath({
               )
             }
             {...courseHandlers}
-            onBack={() => setOpenPlanned(null)}
-            onClose={() => setOpenPlanned(null)}
+            onBack={() => {
+              /* Back to the placeholder it was opened from. */
+              if (plannedBack) setOpenSeat({ id: plannedBack.id, view: "detail" })
+              setPlannedBack(null)
+              setOpenPlanned(null)
+            }}
+            onClose={() => {
+              setPlannedBack(null)
+              setOpenPlanned(null)
+            }}
           />
         )) ||
         (course && (

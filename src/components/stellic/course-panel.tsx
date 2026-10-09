@@ -1,7 +1,7 @@
 import { cn } from "cn"
 import { useState, type ReactNode } from "react"
 
-import { Icon, type IconName } from "@/components/icon"
+import { Icon } from "@/components/icon"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -24,6 +24,7 @@ import {
   sectionsFor,
   STAGE_LABEL,
   stageOf,
+  TAB_MARK,
   usuallyOffered,
   type Instance,
   type SidebarSection,
@@ -46,7 +47,7 @@ import { DEGREE, type Meeting, type Term } from "@/data/plan"
 
 /** One of the sidebar's sections: its name, what it comes to while folded,
  *  and everything under it. */
-function Fold({
+export function Fold({
   title,
   summary,
   extra,
@@ -94,7 +95,7 @@ function Fold({
   )
 }
 
-function Heading({ children }: { children: ReactNode }) {
+export function Heading({ children }: { children: ReactNode }) {
   return <h4 className="text-body-md font-semibold text-gray-100">{children}</h4>
 }
 
@@ -169,17 +170,6 @@ function Picker({
 
 /* ------------------------------------------------------------------- tabs */
 
-/** Which glyph and colour a tab carries for the point its course is at, so
- *  the tabs say which attempt is which before any of them is opened. */
-const TAB_MARK: Record<Stage, { icon: IconName; tone: string }> = {
-  /* The plan's own colours for the same states: orange for anything not yet
-     done — planned, registered, under way — and green once it is. */
-  planned: { icon: "check", tone: "text-warning-50" },
-  registered: { icon: "event-available", tone: "text-warning-50" },
-  progress: { icon: "watch-later", tone: "text-warning-50" },
-  taken: { icon: "check", tone: "text-success-50" },
-}
-
 const CATALOG = "catalog"
 /** Prefix for "just added to this term", until the plan says where it is. */
 const ADDED = "added:"
@@ -195,13 +185,16 @@ const STEP_MARK: Record<Step["state"], ReactNode> = {
   blocked: <Icon name="error-outline" size={16} className="shrink-0 text-alert-100" />,
 }
 
-function Checklist({
+export function Checklist({
   steps,
   onCalendar,
+  onChoose,
   onRegister,
 }: {
   steps: Step[]
   onCalendar?: () => void
+  /** Opens the course on its sections, where one is chosen with its +. */
+  onChoose?: () => void
   onRegister?: () => void
 }) {
   return (
@@ -221,6 +214,12 @@ function Checklist({
               View in Calendar
             </Button>
           )}
+          {step.action === "choose" && onChoose && (
+            <Button size="sm" className="shrink-0" onClick={onChoose}>
+              Choose
+            </Button>
+          )}
+          {step.note && <span className="shrink-0 text-gray-80">{step.note}</span>}
           {step.action === "register" && onRegister && (
             <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
               Register Now
