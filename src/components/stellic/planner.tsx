@@ -653,8 +653,15 @@ export function SemesterCard({
                  search, by number or by section — and an activity is a flow of
                  its own, drawn here and going nowhere in this prototype. */
               <div className="flex w-full gap-2">
-                <AddSlot onClick={() => onSearchCourses?.()}>+ Add Course</AddSlot>
-                <AddSlot>+ Add Activity</AddSlot>
+                <AddSlot
+                  onClick={() => onSearchCourses?.()}
+                  className="cursor-pointer text-gray-100 transition-colors hover:bg-gray-0"
+                >
+                  + Add Course
+                </AddSlot>
+                <AddSlot className="cursor-pointer text-gray-100 transition-colors hover:bg-gray-0">
+                  + Add Activity
+                </AddSlot>
               </div>
             )}
           </div>
