@@ -31,7 +31,7 @@ export type PlanAction = {
  *  Generate plan: one is the plan filled for you, the other by hand. */
 export const ADD_REMAINING: PlanAction = {
   label: "Add remaining courses",
-  icon: "view-sidebar",
+  icon: "checklist",
   sidebar: true,
 }
 
