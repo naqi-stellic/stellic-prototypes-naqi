@@ -53,7 +53,8 @@ export function GeneratePlanSummary({
       </div>
 
       <div className="flex w-full flex-col gap-2 rounded-md border border-gray-40 bg-gray-0 p-[15px]">
-        <SettingsSection title="Your choices" rows={choices} onEdit={onEdit} />
+        <h4 className="text-caption-md font-medium text-gray-100">Your choices</h4>
+        <SettingsSection rows={choices} onEdit={onEdit} />
       </div>
       <AccountingFor rows={rules} onEdit={onEdit} />
     </>
