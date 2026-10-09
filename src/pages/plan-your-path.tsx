@@ -940,7 +940,6 @@ export function PlanYourPath({
             terms={plannableTerms}
             plan={allTerms}
             opened={{ course: plannedOpen.course, term: plannedOpen.term }}
-            backLabel={plannedOpen.term.name}
             /* Planned again, and the sidebar stays on the course with a tab
                for the new term. */
             onAdd={(termId) =>

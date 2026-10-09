@@ -449,8 +449,10 @@ export function CoursePanel({
   plan: Term[]
   /** The place in the plan it was opened from, where it was opened from one. */
   opened?: Instance
-  /** What the way back is to. */
-  backLabel: string
+  /** What the way back is to, where there is somewhere to go back to — a
+   *  search or a placeholder's list. Opened from a card on the plan, there is
+   *  nothing behind it but the plan, and no way back is drawn. */
+  backLabel?: string
   /** Opened to fill a placeholder in this term: the catalogue is where that
    *  is done, set to the placeholder's term, whatever else the plan holds. */
   filling?: string
@@ -488,14 +490,18 @@ export function CoursePanel({
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
       <div className="flex w-full shrink-0 items-center gap-2 border-b border-gray-40 px-6 py-4">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-body-md font-medium text-gray-80"
-        >
-          <Icon name="chevron-left" size={16} className="shrink-0" />
-          <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
-        </button>
+        {backLabel ? (
+          <button
+            type="button"
+            onClick={onBack}
+            className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 text-body-md font-medium text-gray-80"
+          >
+            <Icon name="chevron-left" size={16} className="shrink-0" />
+            <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
+          </button>
+        ) : (
+          <span className="flex-1" />
+        )}
         <button
           type="button"
           onClick={onClose}
