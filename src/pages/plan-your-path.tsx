@@ -666,6 +666,17 @@ export function PlanYourPath({
     setReviewPanel(false)
     setOpenSeat(null)
     setOpenCourse(null)
+    /* A generator, a course or a search would keep the space beside the plan
+       and leave this button pressed over a panel nobody can see, so they step
+       aside. Only the generator's panel
+       goes: a draft it made stays on the canvas, the same as when Generate
+       plan is pressed again. */
+    if (!reqsOpen) {
+      setGenerateOpen(false)
+      setGeneratingTerm(null)
+      setOpenPlanned(null)
+      setSearching(null)
+    }
   }
 
   function openSeatPanel(courseId: string, view: "detail" | "search") {
