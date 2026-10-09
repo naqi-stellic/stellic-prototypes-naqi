@@ -659,6 +659,15 @@ export function PlanYourPath({
     setGeneratingTerm(null)
   }
 
+  /* A generator keeps the space beside the plan ahead of every other panel,
+     so anything else opening there has to move it aside or open unseen. Only
+     the panel goes: a draft it made stays on the canvas, the same as when
+     Generate plan is pressed off. */
+  function closeGenerators() {
+    setGenerateOpen(false)
+    setGeneratingTerm(null)
+  }
+
   /* One panel at a time: they answer different questions and the space beside
      the plan only holds one of them. */
   function openRequirements() {
@@ -666,20 +675,17 @@ export function PlanYourPath({
     setReviewPanel(false)
     setOpenSeat(null)
     setOpenCourse(null)
-    /* A generator, a course or a search would keep the space beside the plan
-       and leave this button pressed over a panel nobody can see, so they step
-       aside. Only the generator's panel
-       goes: a draft it made stays on the canvas, the same as when Generate
-       plan is pressed again. */
+    /* A course or a search would keep the space and leave this button
+       pressed over a panel nobody can see. */
     if (!reqsOpen) {
-      setGenerateOpen(false)
-      setGeneratingTerm(null)
+      closeGenerators()
       setOpenPlanned(null)
       setSearching(null)
     }
   }
 
   function openSeatPanel(courseId: string, view: "detail" | "search") {
+    closeGenerators()
     setOpenSeat({ id: courseId, view })
     setOpenPlanned(null)
     setReqsOpen(false)
@@ -716,6 +722,7 @@ export function PlanYourPath({
 
   /* A course already in the plan, opened beside it. */
   function openPlannedPanel(courseId: string) {
+    closeGenerators()
     setPreview(null)
     setOpenPlanned(courseId)
     setOpenSeat(null)
@@ -1026,6 +1033,7 @@ export function PlanYourPath({
             addable={addable}
             onAddCourse={(entry) => handleAddCourse(openTerm.id, entry)}
             onSearchCourses={() => {
+              closeGenerators()
               setSearching(openTerm.id)
               setOpenCourse(null)
               setOpenPlanned(null)
@@ -1101,6 +1109,7 @@ export function PlanYourPath({
                 renderAlert={(term) => termBanner(term, draft != null, setRegistering)}
                 onRemoveCourse={handleRemoveCourse}
                 onSearchCourses={(termId) => {
+                  closeGenerators()
                   setSearching(termId)
                   setOpenCourse(null)
                   setOpenPlanned(null)
