@@ -741,6 +741,10 @@ export function PlanYourPath({
   function openSeatPanel(courseId: string, view: "detail" | "search") {
     closeGenerators()
     setOpenSeat({ id: courseId, view })
+    /* A course or a search already open would stand in front of it. */
+    setOpenCourse(null)
+    setSearching(null)
+    setPlannedBack(null)
     setOpenPlanned(null)
     setReqsOpen(false)
     setReviewPanel(false)
