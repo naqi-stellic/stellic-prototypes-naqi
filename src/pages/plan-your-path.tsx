@@ -25,6 +25,7 @@ import type { IncomingGroup } from "@/data/incoming"
 import { CoursePanel } from "@/components/stellic/course-panel"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
 import { PlaceholderPanel } from "@/components/stellic/placeholder-panel"
+import { DiscardDraftDialog } from "@/components/stellic/discard-draft-dialog"
 import { RegisterDialog } from "@/components/stellic/register-dialog"
 import {
   NARROWING_DEFAULT,
@@ -305,6 +306,9 @@ export function PlanYourPath({
   /* Which details the cards are showing. Plan details owns this, and every
      card in the plan — canvas or term — answers to the same list. */
   const [metadata, setMetadata] = useState<MetadataField[]>(METADATA_DEFAULT)
+  /* What leaving a generated plan would do, held while the student is asked
+     whether to throw the plan away. */
+  const [leaving, setLeaving] = useState<(() => void) | null>(null)
   /* The term whose registration dialog is up, if any. */
   const [registering, setRegistering] = useState<Term | null>(null)
   /* The term whose Generate Term panel is open, if any. */
@@ -686,6 +690,13 @@ export function PlanYourPath({
     setGeneratingTerm(null)
   }
 
+  /* Exiting a generated plan, or closing the generator that made it, throws
+     the plan away — so where there is one, or one arriving, it asks first. */
+  function confirmLeave(leave: () => void) {
+    if (drafts || framing) setLeaving(() => leave)
+    else leave()
+  }
+
   /* One panel at a time: they answer different questions and the space beside
      the plan only holds one of them. */
   function openRequirements() {
@@ -844,10 +855,12 @@ export function PlanYourPath({
             onCompareChange={setCompare}
             onFraming={() => setFraming(true)}
             onGenerate={startTermDraft}
-            onClose={() => {
-              dropDraft()
-              setGeneratingTerm(null)
-            }}
+            onClose={() =>
+              confirmLeave(() => {
+                dropDraft()
+                setGeneratingTerm(null)
+              })
+            }
           />
         ) : null) ||
         (generateOpen && (
@@ -864,10 +877,12 @@ export function PlanYourPath({
             onFraming={() => setFraming(true)}
             onGenerated={startDraft}
             onDiscardDraft={dropDraft}
-            onClose={() => {
-              dropDraft()
-              setGenerateOpen(false)
-            }}
+            onClose={() =>
+              confirmLeave(() => {
+                dropDraft()
+                setGenerateOpen(false)
+              })
+            }
           />
         )) ||
         /* Last in line: a generator being open is what you are doing now, and
@@ -1026,10 +1041,12 @@ export function PlanYourPath({
             terms={touchedTerms}
             pending={draft == null}
             leaving={accepting}
-            onExit={() => {
-              dropDraft()
-              setGenerateOpen(false)
-            }}
+            onExit={() =>
+              confirmLeave(() => {
+                dropDraft()
+                setGenerateOpen(false)
+              })
+            }
             onAccept={keepDraft}
           />
         )}
@@ -1177,6 +1194,17 @@ export function PlanYourPath({
 
         {/* Kept level with the plan rather than inside a term, so it survives
             moving between the canvas and a term while it is open. */}
+        <DiscardDraftDialog
+          open={leaving != null}
+          selected={optionSummaries.find((o) => o.id === optionId)?.label ?? null}
+          others={Math.max(0, optionSummaries.length - 1)}
+          onKeep={() => setLeaving(null)}
+          onDiscard={() => {
+            leaving?.()
+            setLeaving(null)
+          }}
+        />
+
         <RegisterDialog
           term={registering && (findTerm(years, registering.id) ?? registering)}
           onClose={() => setRegistering(null)}
