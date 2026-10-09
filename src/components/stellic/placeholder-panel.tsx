@@ -70,7 +70,7 @@ export function PlaceholderPanel({
             <button
               type="button"
               onClick={() => setSearching(false)}
-              className="flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
+              className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
             >
               <Icon name="chevron-left" size={14} className="shrink-0" />
               <span className="min-w-0 truncate text-left">Back to {name}</span>
@@ -94,7 +94,7 @@ export function PlaceholderPanel({
             <Icon name="filter-alt" size={16} className="shrink-0" />
             Filters
             <Badge variant="secondary">3</Badge>
-            <Icon name="expand-more" size={16} className="shrink-0" />
+            <Icon name="chevron-right" size={16} className="shrink-0" />
           </p>
           <CourseSearch entries={eligible} onOpenCourse={onOpenCourse} bare />
         </div>

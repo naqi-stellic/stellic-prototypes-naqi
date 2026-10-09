@@ -491,7 +491,7 @@ export function CoursePanel({
             <button
               type="button"
               onClick={onBack}
-              className="flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
+              className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
             >
               <Icon name="chevron-left" size={14} className="shrink-0" />
               <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
