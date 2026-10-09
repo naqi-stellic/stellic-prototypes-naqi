@@ -30,6 +30,9 @@ export type DraftOption = {
   id: string
   label: string
   blurb: string
+  /** The blurb as a short list, where the option is read as one: the
+   *  generator's account of a plan option is easier to scan point by point. */
+  points?: string[]
   /** How full the option packs a term. Every course is CREDITS_PER_COURSE. */
   coursesPerTerm: number
   /** Adds a summer term to each academic year and plans through it. */
@@ -76,6 +79,12 @@ export function planOptions(coursesPerTerm: number): DraftOption[] {
         `which is held to ${steady - 1} while you are working. Graduation does not move: ` +
         "Investments still runs before Financial Modeling, and the capstone still lands in your " +
         "final term.",
+      points: [
+        `${steady} courses a term, the pace you asked for, with no summers`,
+        `This spring is held to ${steady - 1} while you are working`,
+        "Graduation does not move: Investments still runs before Financial Modeling",
+        "The capstone still lands in your final term",
+      ],
       coursesPerTerm: steady,
       summers: false,
       /* The concentration elective is the one thing in that term with
@@ -99,6 +108,11 @@ export function planOptions(coursesPerTerm: number): DraftOption[] {
       blurb:
         `${sooner} courses a term and a summer term each year. Heavier than you asked for, but it ` +
         "clears the degree sooner.",
+      points: [
+        `${sooner} courses a term, plus a summer term each year`,
+        "Heavier than you asked for",
+        "Clears the degree sooner",
+      ],
       coursesPerTerm: sooner,
       summers: true,
       move: { courseId: "c6", toTermId: "summer-2027", reason: "the term is full at six" },
@@ -110,6 +124,11 @@ export function planOptions(coursesPerTerm: number): DraftOption[] {
         `${lighter} courses a term, which leaves room for work or a co-op but adds a year. ` +
         "Financial Modeling is not offered late enough to keep, so its requirement is held as an " +
         "elective seat.",
+      points: [
+        `${lighter} courses a term, leaving room for work or a co-op`,
+        "Adds a year",
+        "Financial Modeling is not offered late enough to keep, so its requirement is held as an elective placeholder",
+      ],
       coursesPerTerm: lighter,
       summers: false,
       drop: { courseId: "c6", reason: "Not offered again before you graduate" },

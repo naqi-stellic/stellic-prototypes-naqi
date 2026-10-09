@@ -443,6 +443,7 @@ export function PlanYourPath({
     id: meta.id,
     label: meta.label,
     blurb: meta.blurb,
+    points: meta.points,
     graduation: d.graduation,
     added: d.added,
     removed: d.removed,

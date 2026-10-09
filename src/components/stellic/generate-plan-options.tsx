@@ -15,6 +15,8 @@ export type PlanOptionSummary = {
   id: string
   label: string
   blurb: string
+  /** The blurb as bullets, where the option has them. */
+  points?: string[]
   graduation: string
   added: number
   removed: number
@@ -124,14 +126,24 @@ export function GeneratePlanOptions({
                     {option.removed > 0 && <Badge variant="danger">-{option.removed}</Badge>}
                   </span>
                 </label>
-                {option.blurb && (
-                  <p className="w-full text-label-md text-gray-100">
-                    {/* The strategy names the option rather than replacing its
-                        number, so "Option 2" stays the thing you refer to. It
-                        reads as a label on the sentence, not a heading over it. */}
-                    {option.label}: {option.blurb}
-                  </p>
-                )}
+                {option.blurb &&
+                  (option.points ? (
+                    /* The strategy names the option rather than replacing its
+                       number, so "Option 2" stays the thing you refer to; what
+                       it does follows point by point. */
+                    <div className="flex w-full flex-col gap-1 text-label-md text-gray-100">
+                      <p className="font-semibold">{option.label}</p>
+                      <ul className="flex list-disc flex-col gap-1 pl-5">
+                        {option.points.map((point) => (
+                          <li key={point}>{point}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : (
+                    <p className="w-full text-label-md text-gray-100">
+                      {option.label}: {option.blurb}
+                    </p>
+                  ))}
               </div>
             )
           })}
