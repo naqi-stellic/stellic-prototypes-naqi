@@ -70,12 +70,8 @@ export function planSettings({
       value: `${standing.completed.reqs} courses, ${standing.completed.credits} credits`,
     },
     { label: "Prerequisites, co-reqs, anti-reqs", value: PLANNING_RULES.prerequisites },
-    {
-      label: "Term offerings",
-      value: `confirmed through ${PLANNING_RULES.offeringsThrough}, projected after`,
-    },
+    { label: "Term offerings", value: "All available" },
     { label: "Credit load limits", value: `max ${PLANNING_RULES.maxCreditsPerTerm} per term` },
-    { label: "Double counting rules", value: PLANNING_RULES.doubleCounting },
     { label: "Institution instructions", value: INSTITUTION_INSTRUCTIONS },
   ]
 

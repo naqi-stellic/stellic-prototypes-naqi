@@ -153,8 +153,8 @@ export const DEGREE = {
  *  the school rather than answers the student gives, which is why the summary
  *  lists them separately under "Also accounting for". */
 export const PLANNING_RULES = {
-  requirementPriority: "Core before general",
-  prerequisites: "Applied",
+  requirementPriority: "Take core courses before general courses",
+  prerequisites: "Taken into consideration",
   doubleCounting: "Applied",
   /** How far the published catalogue reaches. A plan can run past it — later
    *  terms are projected from the usual pattern rather than confirmed. */
