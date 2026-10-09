@@ -212,7 +212,9 @@ export function PlaceholderPanel({
 
       <Fold
         title="Counting for"
-        summary={<Badge variant="outline">{seat.name}</Badge>}
+        /* Said beside the title only while folded; open, the line under it
+           says the same. */
+        summary={open.counting ? undefined : <Badge variant="outline">{seat.name}</Badge>}
         open={open.counting}
         onToggle={() => toggle("counting")}
       >
