@@ -281,8 +281,9 @@ export function RequirementsPanel({
           then how much of it is. Three blocks read the same way — a label
           over its content — and stand evenly apart. The programme and the
           minor beside it: two of them, because a plan that answers to both
-          is the case no pathway is ever built for. */}
-      <div className="flex w-full flex-col gap-6">
+          is the case no pathway is ever built for. Set on a gray box so the
+          three read as one summary of the degree, apart from the list. */}
+      <div className="flex w-full flex-col gap-6 rounded-md bg-gray-0 p-4">
         <PlanFacet
           label="Programs"
           values={[
