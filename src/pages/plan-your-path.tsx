@@ -1005,7 +1005,10 @@ export function PlanYourPath({
             onRegister={() => setRegistering(openTerm)}
             onPickSection={pickSection}
             preview={preview ?? undefined}
-            onGenerateTerm={() => setGeneratingTerm(openTerm.id)}
+            onGenerateTerm={() => {
+              setReqsOpen(false)
+              setGeneratingTerm(openTerm.id)
+            }}
             onRequestReview={() => setRequesting({ term: openTerm })}
             generators={generators}
             sidebar={{ open: reqsOpen, onToggle: openRequirements }}
@@ -1031,7 +1034,11 @@ export function PlanYourPath({
             tabs={yearTabs(shown, undefined, () => setOpenTermId(null), openTermView)}
             pressed={generateOpen}
             onAction={(action) => {
-              if (action.toggles) setGenerateOpen((open) => !open)
+              if (action.toggles) {
+                /* One panel at a time, and its button says which. */
+                if (!generateOpen) setReqsOpen(false)
+                setGenerateOpen(!generateOpen)
+              }
               else if (action.label === "Request review") setRequesting({ term: null })
             }}
             onToggleField={toggleMetadata}
