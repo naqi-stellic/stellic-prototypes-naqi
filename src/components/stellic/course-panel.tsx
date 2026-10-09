@@ -968,7 +968,11 @@ function InstanceBody({
       )}
 
       {(stage === "progress" || stage === "taken") && (
-        <Fold title="Canvas Activity" open={open.canvas} onToggle={() => toggle("canvas")}>
+        <Fold
+          title={stage === "progress" ? "Assignment Activity" : "Canvas Activity"}
+          open={open.canvas}
+          onToggle={() => toggle("canvas")}
+        >
           <ul className="flex w-full flex-col gap-4">
             {canvasActivity(course, stage === "taken").map((item) => (
               <li key={item.name} className="flex w-full items-start gap-4 text-body-md">
