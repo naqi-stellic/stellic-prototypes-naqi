@@ -25,7 +25,7 @@ import {
 } from "@/data/course-detail"
 import {
   CREDIT_GROUP_LABEL,
-  creditGroup,
+  courseGroup,
   type Meeting,
   type PlannedCourse,
   type Term,
@@ -565,7 +565,7 @@ export function CoursePanel({
                 {/* Green where the credits are already the student's, amber
                     while they are only promised. */}
                 <Badge variant={earned ? "success" : "warning"}>
-                  {CREDIT_GROUP_LABEL[creditGroup(planned.term)]}
+                  {CREDIT_GROUP_LABEL[courseGroup(planned.term, planned.course)]}
                 </Badge>
               </p>
               <p className="flex flex-wrap items-center gap-4 text-body-md text-gray-80">

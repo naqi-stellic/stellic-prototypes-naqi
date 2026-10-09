@@ -9,7 +9,7 @@ import { ELECTIVE_COURSES, ALL_ELECTIVES, type CatalogEntry } from "@/data/catal
 import {
   CREDIT_GROUP_LABEL,
   DEGREE,
-  creditGroup,
+  courseGroup,
   type PlannedCourse,
   type Term,
 } from "@/data/plan"
@@ -119,7 +119,7 @@ export function PlaceholderPanel({
         {/* Which term is holding it, and what can be done to it there. */}
         <div className="flex w-full items-center gap-2 rounded-t-md bg-primary-0 px-6 py-3">
           <span className="text-body-md font-semibold text-foreground">{term.name}</span>
-          <Badge variant="warning">{CREDIT_GROUP_LABEL[creditGroup(term)]}</Badge>
+          <Badge variant="warning">{CREDIT_GROUP_LABEL[courseGroup(term, course)]}</Badge>
           <span className="ml-auto flex items-center gap-1">
             <Button size="sm">Actions</Button>
             <Icon name="unfold-more" size={16} className="text-gray-80" />

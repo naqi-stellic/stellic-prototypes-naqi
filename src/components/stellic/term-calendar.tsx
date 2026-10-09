@@ -169,9 +169,14 @@ function HeldCard({ course, onOpen }: { course: PlannedCourse; onOpen?: () => vo
     >
       <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-80" />
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-2">
-        <span className="flex items-center gap-2 text-body-md font-semibold text-gray-100">
-          <Icon name="hourglass-bottom" size={14} className="shrink-0" />
-          <span className={cn("min-w-0 truncate", isStruck(course) && "line-through")}>
+        <span className="flex flex-col">
+          <span className="text-body-md text-gray-80">Choose course for</span>
+          <span
+            className={cn(
+              "truncate text-body-md font-semibold text-gray-100",
+              isStruck(course) && "line-through"
+            )}
+          >
             {course.name}
           </span>
         </span>
@@ -180,9 +185,6 @@ function HeldCard({ course, onOpen }: { course: PlannedCourse; onOpen?: () => vo
           <Badge variant="secondary">{course.credits} credits</Badge>
         </span>
       </span>
-      <Button size="icon" aria-label={`Search classes for ${course.name}`}>
-        <Icon name="s-search" size={16} />
-      </Button>
     </div>
   )
 }

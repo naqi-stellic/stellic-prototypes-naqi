@@ -5,23 +5,22 @@ import { cn } from "cn"
 import type { ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
-import { AddToTerm } from "@/components/stellic/add-to-term"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
-import { CourseActivity, CourseTags } from "@/components/stellic/course-metadata"
+import { CourseActivity, CourseTags, useMetadata } from "@/components/stellic/course-metadata"
 import { TermActions } from "@/components/stellic/term-actions"
-import { AuditIcon, StatusPill } from "@/components/stellic/primitives"
+import { AddSlot, AuditIcon, StatusPill } from "@/components/stellic/primitives"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
 import { usePendingReview } from "@/components/stellic/review-state"
 import { Alert } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import type { CatalogEntry } from "@/data/catalog"
 import {
   CREDIT_GROUP_LABEL,
   canAddTerm,
   creditGroup,
   termCredits,
+  termGroups,
   termMeta,
   type PlannedCourse,
   type Term,
@@ -109,6 +108,8 @@ export function AuditRow({
   const draft = course.draft
   const style = draft ? DRAFT_STYLE[draft.mark] : null
   const struck = isStruck(course)
+  /* Plan details decides whether the card carries the name and section. */
+  const shown = useMetadata()
   /* What the plan has against this course sitting where it does. A seat is
      never one of them: it says what it is itself. */
   const issue = useCourseIssues(term ?? NO_TERM, course.id)[0] ?? null
@@ -177,16 +178,31 @@ export function AuditRow({
         }
       >
         {held ? (
-          <p className="flex items-center gap-2 text-body-md font-semibold text-foreground">
-            <Icon name="hourglass-bottom" size={14} className="shrink-0" />
-            <span className={cn("min-w-0 truncate", struck && "line-through")}>{course.name}</span>
-          </p>
+          /* Read the way a course card reads — a gray line over a bold one —
+             with the gray line saying what the seat is waiting for. */
+          <div>
+            <p className="text-body-md text-gray-80">Choose course for</p>
+            <p
+              className={cn(
+                "truncate text-body-md font-semibold text-foreground",
+                struck && "line-through"
+              )}
+            >
+              {course.name}
+            </p>
+          </div>
         ) : (
           <>
             <div>
               {/* The code carries the mark, so a card says something is wrong
                   with it before anybody opens the term's line about it. */}
-              <p className="flex items-center gap-1.5 text-body-md text-gray-80">
+              <p
+                className={cn(
+                  "flex items-center gap-1.5 text-body-md text-gray-80",
+                  /* With the name off, the code is what gets struck. */
+                  struck && !shown.includes("name") && "line-through"
+                )}
+              >
                 {issue && (
                   <Icon
                     name={issue.severity === "error" ? "error-outline" : "warning"}
@@ -199,16 +215,18 @@ export function AuditRow({
                 )}
                 {course.code}
               </p>
-              <p
-                className={cn(
-                  "text-body-md font-semibold text-foreground",
-                  struck && "line-through"
-                )}
-              >
-                {course.name}
-              </p>
+              {shown.includes("name") && (
+                <p
+                  className={cn(
+                    "text-body-md font-semibold text-foreground",
+                    struck && "line-through"
+                  )}
+                >
+                  {course.name}
+                </p>
+              )}
             </div>
-            {course.section && (
+            {shown.includes("section") && course.section && (
               <p className="flex items-center gap-1 text-body-md text-foreground">
                 <Icon name="calendar-today" size={14} />
                 {course.section}
@@ -232,46 +250,30 @@ export function AuditRow({
         )}
       </div>
 
-      {/* What can be done to this row, at the end of it: anything can be taken
-          out or written about, and a seat is filled by finding a class for it.
-          Remove and the note take no room until the cursor is on the row, and
-          they come before the search — so a seat's search button ends the row
-          whether it is hovered or not, and never moves out from under the
-          pointer reaching for it. */}
-      {!overlay && (held || onRemove) && (
+      {/* What can be done to this row, at the end of it: anything can be written
+          about or taken out, with remove last so it always ends the row. Both
+          take no room until the cursor is on the row. A seat has no search button of its own — clicking the seat is
+          how you look for a class to fill it. */}
+      {!overlay && onRemove && (
         <span className="flex shrink-0 items-center gap-1">
-          {onRemove && (
-            <Button
-              size="icon"
-              aria-label={`Remove ${course.name}`}
-              /* Keep the drag sensor out of it, or the press starts a drag. */
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={onRemove}
-              className="hidden group-hover:inline-flex"
-            >
-              <Icon name="close" size={16} />
-            </Button>
-          )}
-          {onRemove && (
-            <Button
-              size="icon"
-              aria-label={`Write a note on ${course.name}`}
-              onPointerDown={(e) => e.stopPropagation()}
-              className="hidden group-hover:inline-flex"
-            >
-              <Icon name="sticky-note-2" size={16} />
-            </Button>
-          )}
-          {held && (
-            <Button
-              size="icon"
-              aria-label={`Search classes for ${course.name}`}
-              onPointerDown={(e) => e.stopPropagation()}
-              onClick={() => onOpenSeat?.("search")}
-            >
-              <Icon name="s-search" size={16} />
-            </Button>
-          )}
+          <Button
+            size="icon"
+            aria-label={`Write a note on ${course.name}`}
+            onPointerDown={(e) => e.stopPropagation()}
+            className="hidden group-hover:inline-flex"
+          >
+            <Icon name="sticky-note-2" size={16} />
+          </Button>
+          <Button
+            size="icon"
+            aria-label={`Remove ${course.name}`}
+            /* Keep the drag sensor out of it, or the press starts a drag. */
+            onPointerDown={(e) => e.stopPropagation()}
+            onClick={onRemove}
+            className="hidden group-hover:inline-flex"
+          >
+            <Icon name="close" size={16} />
+          </Button>
         </span>
       )}
 
@@ -366,32 +368,39 @@ function SortableAuditRow({
    badges tally what a draft proposes for this term. */
 
 function CreditGroup({
-  term,
+  state,
+  courses,
   settling,
   revealed,
+  first = true,
 }: {
-  term: Term
+  state: ReturnType<typeof creditGroup>
+  /** The courses under this heading, which are what it sums. */
+  courses: PlannedCourse[]
   settling?: boolean
   revealed: number
+  /** The term's first heading sits off the header; a later one sits in the
+   *  list, under the group before it. */
+  first?: boolean
 }) {
-  const credits = termCredits(term)
+  const credits = termCredits({ courses } as Term)
   /* A card that has not arrived yet is not in the tally yet. */
-  const landed = term.courses.filter((c) => c.draft && c.draft.order < revealed)
+  const landed = courses.filter((c) => c.draft && c.draft.order < revealed)
   const added = landed.filter((c) => c.draft!.mark === "added").length
   const dropped = landed.filter((c) => c.draft!.mark !== "added").length
-  const eventual = term.courses.filter((c) => c.draft).length
+  const eventual = courses.filter((c) => c.draft).length
 
   return (
-    <div className="flex w-full items-center justify-between gap-2 pt-4">
+    <div className={cn("flex w-full items-center justify-between gap-2", first ? "pt-4" : "pt-2")}>
       <p
         className={cn(
           "flex items-center gap-2 text-body-md font-semibold text-gray-80",
           /* The design gives planned groups a 24px band; registered hug at 20. */
-          term.state === "planned" && "h-6"
+          state === "planned" && "h-6"
         )}
       >
-        <AuditIcon state={creditGroup(term)} />
-        {CREDIT_GROUP_LABEL[creditGroup(term)]} ({credits} Credit{credits === 1 ? "" : "s"})
+        <AuditIcon state={state} />
+        {CREDIT_GROUP_LABEL[state]} ({credits} Credit{credits === 1 ? "" : "s"})
       </p>
       {eventual > 0 && (
         <div
@@ -401,7 +410,7 @@ function CreditGroup({
           )}
         >
           <Badge variant="success">+{added}</Badge>
-          {term.courses.some((c) => c.draft && c.draft.mark !== "added") && (
+          {courses.some((c) => c.draft && c.draft.mark !== "added") && (
             <Badge variant="danger">-{dropped}</Badge>
           )}
         </div>
@@ -435,9 +444,7 @@ export function SemesterCard({
   revealed,
   dropAt,
   dropHeight,
-  addable,
   onRemoveCourse,
-  onAddCourse,
   onSearchCourses,
   onOpen,
   onOpenSeat,
@@ -454,10 +461,7 @@ export function SemesterCard({
   /** Where a course crossing into this term would land, and how tall it is. */
   dropAt?: number
   dropHeight: number
-  /** What "+ Add to Term" can offer. */
-  addable: CatalogEntry[]
   onRemoveCourse: (courseId: string) => void
-  onAddCourse: (entry: CatalogEntry) => void
   /** Opens the course search beside the plan, for this term. */
   onSearchCourses?: () => void
   /** Opens the term on its own, with its classes and — when the schedule is
@@ -488,7 +492,11 @@ export function SemesterCard({
   const streaming = revealed !== Infinity
   const activities = term.activities ?? []
 
-  const rows: ReactNode[] = term.courses.map((course) => {
+  /* Registered, then planned, each under its own heading. */
+  const groups = termGroups(term)
+  const ordered = groups.flatMap((group) => group.courses)
+
+  const rows: ReactNode[] = ordered.map((course) => {
     const struck = course.draft?.mark === "moved" || course.draft?.mark === "removed"
     return term.locked || struck ? (
       /* A term that is done or under way is not editable, but the courses in
@@ -572,22 +580,50 @@ export function SemesterCard({
           onOpenCourse={onOpenCourse}
         />
 
-        {term.courses.length > 0 && (
-          <CreditGroup term={term} settling={settling} revealed={revealed} />
+        {groups[0] && (
+          <CreditGroup
+            state={groups[0].state}
+            courses={groups[0].courses}
+            settling={settling}
+            revealed={revealed}
+          />
         )}
 
         <SortableContext
-          items={term.courses.map((c) => c.id)}
+          items={ordered.map((c) => c.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="flex flex-col gap-2">
-            {dropAt == null
-              ? rows
-              : [
-                  ...rows.slice(0, dropAt),
-                  <DropSlot key="drop" height={dropHeight} />,
-                  ...rows.slice(dropAt),
-                ]}
+            {(() => {
+              const list =
+                dropAt == null
+                  ? rows
+                  : [
+                      ...rows.slice(0, dropAt),
+                      <DropSlot key="drop" height={dropHeight} />,
+                      ...rows.slice(dropAt),
+                    ]
+              /* The second group's heading goes in above its first course,
+                 one further down when a drop slot opened above it. A slot
+                 landing right at the boundary is the planned group's first
+                 place, so it goes under the heading. */
+              const second = groups[1]
+              if (!second) return list
+              const boundary = groups[0].courses.length
+              const at = boundary + (dropAt != null && dropAt < boundary ? 1 : 0)
+              return [
+                ...list.slice(0, at),
+                <CreditGroup
+                  key={`group-${second.state}`}
+                  state={second.state}
+                  courses={second.courses}
+                  settling={settling}
+                  revealed={revealed}
+                  first={false}
+                />,
+                ...list.slice(at),
+              ]
+            })()}
             {activities.length > 0 && (
               /* What the term holds that is not a course. It takes no credits
                  and answers no requirement, so it is grouped under its own
@@ -612,7 +648,14 @@ export function SemesterCard({
             )}
 
             {!term.locked && (
-              <AddToTerm options={addable} onPick={onAddCourse} onSearch={onSearchCourses} />
+              /* Two things go into a term, so two ways in, each saying what it
+                 adds. A course is found in the panel beside the plan — by
+                 search, by number or by section — and an activity is a flow of
+                 its own, drawn here and going nowhere in this prototype. */
+              <div className="flex w-full gap-2">
+                <AddSlot onClick={() => onSearchCourses?.()}>+ Add Course</AddSlot>
+                <AddSlot>+ Add Activity</AddSlot>
+              </div>
             )}
           </div>
         </SortableContext>
@@ -683,12 +726,10 @@ export function YearSection({
   settling,
   revealed,
   drop,
-  addable,
   collapsed,
   onToggleCollapse,
   onAddTerm,
   onRemoveCourse,
-  onAddCourse,
   onSearchCourses,
   onOpenTerm,
   onOpenSeat,
@@ -703,7 +744,6 @@ export function YearSection({
   /** The term a dragged course is crossing into, where it would sit, and how
    *  much room it needs. */
   drop: { termId: string; index: number; height: number } | null
-  addable: CatalogEntry[]
   /** Gives the year its summer, which is the only term it can be given. */
   onAddTerm?: () => void
   /** Opens a held seat on its own. */
@@ -716,7 +756,6 @@ export function YearSection({
   collapsed?: boolean
   onToggleCollapse?: () => void
   onRemoveCourse: (courseId: string) => void
-  onAddCourse: (termId: string, entry: CatalogEntry) => void
   /** Opens the course search for one of the year's terms. */
   onSearchCourses?: (termId: string) => void
   onOpenTerm?: (termId: string) => void
@@ -738,7 +777,7 @@ export function YearSection({
     return (
       <section className="flex items-start gap-4">
         <TimelineRail phase={year.phase} nodes={1} />
-        {/* The band is 36px tall, as the unfolded header's Add Term button
+        {/* The band is 36px tall, as the unfolded header's Add Summer button
             makes it, with the same 16px beneath — so the heading and the node
             beside it stay put when the year opens. */}
         <div className="flex min-w-0 flex-1 flex-col pb-4">
@@ -765,7 +804,7 @@ export function YearSection({
             {canAddTerm(year) && (
               <Button onClick={onAddTerm}>
                 <Icon name="add" size={16} />
-                Add Term
+                Add Summer
               </Button>
             )}
           </div>
@@ -787,9 +826,7 @@ export function YearSection({
               revealed={revealed}
               dropAt={drop?.termId === term.id ? drop.index : undefined}
               dropHeight={drop?.height ?? 64}
-              addable={addable}
               onRemoveCourse={onRemoveCourse}
-              onAddCourse={(entry) => onAddCourse(term.id, entry)}
               onSearchCourses={onSearchCourses && (() => onSearchCourses(term.id))}
               onOpen={onOpenTerm && (() => onOpenTerm(term.id))}
               onOpenSeat={onOpenSeat}

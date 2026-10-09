@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react"
+import { isValidElement, useState, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
 import { useMediaQuery } from "@/lib/use-media-query"
@@ -70,7 +70,19 @@ export function AppShell({
   const wide = useMediaQuery("(min-width: 768px)")
   /* Whether the nav is showing. Held here rather than in the sidebar because
      the shell is what has to give the width back. */
-  const [nav, setNav] = useState(true)
+  const [nav, setNav] = useState(!panel)
+  /* Opening a side panel folds the nav away: the planner is squeezed from
+     both sides otherwise, and the panel is what you are reading now. Only on
+     the opening of a panel — one panel giving way to another counts, so does
+     the first — and the nav stays where the student puts it after that.
+     Closing the panel does not bring it back. */
+  const kind: unknown = isValidElement(panel) ? panel.type : panel ? "panel" : null
+  /* Boxed, because a panel's type is a function and useState would call it. */
+  const [shown, setShown] = useState({ kind })
+  if (kind !== shown.kind) {
+    setShown({ kind })
+    if (kind) setNav(false)
+  }
 
   return (
     /* Everything below knows which nav it is standing in, so a card deep in

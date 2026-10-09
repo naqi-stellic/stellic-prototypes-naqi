@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { CatalogEntry } from "@/data/catalog"
 import {
   METADATA_FIELDS,
+  registrationBanner,
   type MetadataField,
   type Term,
 } from "@/data/plan"
@@ -36,10 +37,8 @@ function RegistrationAlert({
    *  cards, the same as the line about what is wrong with the term below it. */
   stuck?: boolean
 }) {
-  /* A draft is a proposal. Nothing in it can be put through registration until
-     it has been applied, so the invitation is there but not open. */
-  const drafting = term.courses.some((c) => c.draft)
-  const ready = useRegistrable(term).length
+  const banner = registrationBanner(term, useRegistrable(term).length)
+  const done = banner.state === "registered"
 
   return (
     /* Pinned, it is a strip across the top of the pane: square, edge to edge,
@@ -57,30 +56,31 @@ function RegistrationAlert({
           /* The rule the toolbar carries when it holds moves down to whatever
              is last in the stack, so the block ends on one line rather than
              two — and the plan scrolling under it has an edge to pass. */
-          ? "border-y border-gray-40 bg-primary-0 px-6 py-3"
-          : "rounded-md border border-gray-40 bg-primary-0 px-[23px] py-[15px]"
+          ? "border-y px-6 py-3"
+          : "rounded-md border px-[23px] py-[15px]",
+        done ? "border-success-100 bg-success-5" : "border-gray-40 bg-primary-0"
       )}
     >
-      <Icon name="shopping-cart" size={16} className="shrink-0 text-primary-100" />
+      <Icon
+        name={done ? "check-circle" : "event-available"}
+        size={16}
+        className={cn("shrink-0", done ? "text-success-100" : "text-primary-100")}
+      />
       <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
-        <span className="font-semibold">Registration is now open!</span>
-        <span className="whitespace-nowrap">Closes: {term.alert?.closes}</span>
+        <span className="font-semibold">{banner.title}</span>
+        <span className="whitespace-nowrap">
+          {banner.closesLabel}: {term.alert?.closes}
+        </span>
+        {banner.note && <span className="basis-full text-gray-80">{banner.note}</span>}
       </span>
-      {/* It counts what would go through, and there is nothing to press when
-          that is none of them — whether because no class has been chosen yet
-          or because everything with one has already been registered. */}
-      <Button
-        variant="primary"
-        size="sm"
-        className="shrink-0"
-        disabled={drafting || ready === 0}
-        onClick={onRegister}
-      >
-        {/* The window stays open and the banner stays where it is; what
-            changes is that there is nothing left to press it for. A button
-            offering to register none of them is not an offer. */}
-        {ready === 0 ? "Register" : `Register ${ready} course${ready === 1 ? "" : "s"}`}
-      </Button>
+      {/* There or not there: the window stays open and the banner stays where
+          it is, but a button offering to register none of them is not an
+          offer, so it goes rather than greying out. */}
+      {banner.register != null && (
+        <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
+          Register {banner.register} course{banner.register === 1 ? "" : "s"}
+        </Button>
+      )}
     </div>
     </div>
   )

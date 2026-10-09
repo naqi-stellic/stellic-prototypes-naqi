@@ -181,7 +181,7 @@ export const SCHEDULE_INSTITUTION_INSTRUCTIONS =
 /** Years the student has not planned into yet: two empty terms, nothing locked. */
 /** The summer a year can take, between its spring and the next fall. A year
  *  runs fall, spring, summer, and only the summer is optional — which is what
- *  "Add Term" adds, and why a year that already has one offers nothing. */
+ *  "Add Summer" adds, and why a year that already has one offers nothing. */
 export function summerTerm(yearLabel: string): Term {
   const end = Number(yearLabel.split("-")[1])
   return {
@@ -729,6 +729,8 @@ export function eligibleCourses(course: PlannedCourse): number {
  * off whatever the setting says — a card never carries an empty label. */
 
 export type MetadataField =
+  | "name"
+  | "section"
   | "credits"
   | "modality"
   | "campus"
@@ -741,6 +743,8 @@ export type MetadataField =
   | "lastActivity"
 
 export const METADATA_FIELDS: { id: MetadataField; label: string }[] = [
+  { id: "name", label: "Course Name" },
+  { id: "section", label: "Section" },
   { id: "credits", label: "Credits" },
   { id: "modality", label: "Modality" },
   { id: "campus", label: "Campus" },
@@ -753,12 +757,14 @@ export const METADATA_FIELDS: { id: MetadataField; label: string }[] = [
   { id: "lastActivity", label: "Last activity" },
 ]
 
-/** Nothing to begin with. A card opens as the course and its section alone,
- *  and every detail on it is one somebody chose to show. */
-export const METADATA_DEFAULT: MetadataField[] = []
+/** The course's name and nothing else. Without it a card is its code alone,
+ *  for a plan that wants to be read compact; the section only matters once
+ *  somebody is down at meeting times, so it waits to be asked for. */
+export const METADATA_DEFAULT: MetadataField[] = ["name"]
 
-/** What a course can say about itself, in the order the menu lists it. Last
- *  activity is left out: it is not a tag, and the card gives it its own line. */
+/** What a course can say about itself, in the order the menu lists it. Name,
+ *  section and last activity are left out: they are not tags, and the card
+ *  gives each its own line. */
 export function courseTags(course: PlannedCourse, shown: MetadataField[]): string[] {
   const value: Partial<Record<MetadataField, string | undefined>> = {
     credits: `${course.credits} credits`,
@@ -773,7 +779,8 @@ export function courseTags(course: PlannedCourse, shown: MetadataField[]): strin
   }
 
   return METADATA_FIELDS.flatMap(({ id }) => {
-    if (id === "lastActivity" || !shown.includes(id)) return []
+    if (id === "name" || id === "section" || id === "lastActivity") return []
+    if (!shown.includes(id)) return []
     const text = value[id]
     return text ? [text] : []
   })
@@ -792,6 +799,50 @@ export function registrableCourses(term: Term): PlannedCourse[] {
   )
 }
 
+/** What a term's registration banner says. The button is there only when
+ *  something would go through it — never greyed out:
+ *  - drafting: a generated plan is up, so nothing is settled to register;
+ *  - ready: something can be registered now;
+ *  - registered: everything the term holds has gone through;
+ *  - left: nothing can go now, but something is still unregistered.
+ *  A term with nothing in it yet is simply open, with nothing to press. */
+export type RegistrationBanner = {
+  state: "drafting" | "ready" | "registered" | "left"
+  title: string
+  /** The label in front of the closing date. */
+  closesLabel: string
+  /** A line under the date, where the state needs one. */
+  note?: string
+  /** What the button registers; absent where there is no button. */
+  register?: number
+}
+
+export function registrationBanner(term: Term, ready: number): RegistrationBanner {
+  const open = { title: "Registration is now open!", closesLabel: "Closes" }
+  if (term.courses.some((c) => c.draft)) {
+    return {
+      state: "drafting",
+      ...open,
+      note: "Apply or discard your generated plan to register.",
+    }
+  }
+  if (ready > 0) return { state: "ready", ...open, register: ready }
+  const left = term.courses.filter((c) => !c.registered).length
+  if (term.courses.length > 0 && left === 0) {
+    return {
+      state: "registered",
+      title: `You're registered for ${term.name}`,
+      closesLabel: "Add/drop closes",
+    }
+  }
+  if (left === 0) return { state: "ready", ...open }
+  return {
+    state: "left",
+    title: `${left} course${left === 1 ? "" : "s"} left to register`,
+    closesLabel: "Closes",
+  }
+}
+
 /** What a term's credit group is called and marked by. A planned term whose
  *  classes have all gone through registration is not "planned" any more —
  *  everything in it has a seat — so it says so, without becoming a term that
@@ -800,6 +851,29 @@ export function creditGroup(term: Term): Term["state"] | "pre-registered" {
   if (term.state !== "planned") return term.state
   const real = term.courses.filter((c) => !c.placeholder && c.draft == null)
   return real.length > 0 && real.every((c) => c.registered) ? "pre-registered" : term.state
+}
+
+/** Which group one course sits in. In a term still being planned that is a
+ *  fact about the course, not the term: registering some of it leaves the
+ *  rest — a seat with nothing in it, say — planned. */
+export function courseGroup(term: Term, course: PlannedCourse): Term["state"] | "pre-registered" {
+  if (term.state !== "planned") return term.state
+  return course.registered ? "pre-registered" : "planned"
+}
+
+/** A term's courses under the headings it shows: one group for a term that is
+ *  under way or done, and up to two — registered, then planned — for one being
+ *  planned, so nothing still to be chosen is listed as registered. */
+export function termGroups(
+  term: Term
+): { state: Term["state"] | "pre-registered"; courses: PlannedCourse[] }[] {
+  if (term.state !== "planned") return [{ state: term.state, courses: term.courses }]
+  const registered = term.courses.filter((c) => c.registered)
+  const planned = term.courses.filter((c) => !c.registered)
+  return [
+    ...(registered.length > 0 ? [{ state: "pre-registered" as const, courses: registered }] : []),
+    ...(planned.length > 0 ? [{ state: "planned" as const, courses: planned }] : []),
+  ]
 }
 
 /** Puts the named classes through, which is all registering changes. */
@@ -812,12 +886,16 @@ export function registerCourses(years: Year[], termId: string, courseIds: string
         ? term
         : {
             ...term,
-            courses: term.courses.map((c) =>
-              /* Registering settles it: the seat it was put into has done its
-                 job and stops being a thing of its own, so the course is a
-                 course from here on. */
-              ids.has(c.id) ? { ...c, registered: true, seat: undefined } : c
-            ),
+            courses: term.courses
+              .map((c) =>
+                /* Registering settles it: the seat it was put into has done its
+                   job and stops being a thing of its own, so the course is a
+                   course from here on. */
+                ids.has(c.id) ? { ...c, registered: true, seat: undefined } : c
+              )
+              /* Registered first, the way the term lists them. Stable, so each
+                 group keeps the order it had. */
+              .sort((a, b) => Number(!!b.registered) - Number(!!a.registered)),
           }
     ),
   }))

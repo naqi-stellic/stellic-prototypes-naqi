@@ -42,11 +42,15 @@ function CourseCard({
   term,
   picked,
   onPick,
+  onOpen,
 }: {
   course: PlannedCourse
   term: Term
-  /** Null where there is nothing to pick — the request is already in the air
-   *  and the card is only reporting what went. */
+  /** Opens what would clear the way, where something is in the way: the seat,
+   *  to choose a course for it, or the course itself. */
+  onOpen?: () => void
+  /** Absent where there is nothing to pick — the course cannot go, or the
+   *  request is already in the air and the card is only reporting it. */
   picked?: boolean
   onPick?: (next: boolean) => void
 }) {
@@ -57,13 +61,12 @@ function CourseCard({
     <label
       className={cn(
         "flex w-full items-start gap-3 rounded-md border border-gray-40 bg-card p-3",
-        picked != null && why == null && "cursor-pointer"
+        picked != null && "cursor-pointer"
       )}
     >
       {picked != null && (
         <Checkbox
-          checked={why == null && picked}
-          disabled={why != null}
+          checked={picked}
           onCheckedChange={(next) => onPick?.(next === true)}
           className="mt-0.5 shrink-0"
           aria-label={`Register ${course.name}`}
@@ -92,7 +95,21 @@ function CourseCard({
                 issue?.severity === "error" ? "text-alert-100" : "text-warning-100"
               )}
             />
-            {why}
+            <span>
+              {why.replace(/\.$/, "")}
+              {onOpen && (
+                <>
+                  ,{" "}
+                  <button
+                    type="button"
+                    onClick={onOpen}
+                    className="cursor-pointer underline [text-underline-position:from-font]"
+                  >
+                    {course.placeholder ? "select course" : "view details"}
+                  </button>
+                </>
+              )}
+            </span>
           </span>
         )}
       </span>
@@ -100,15 +117,28 @@ function CourseCard({
   )
 }
 
+/** One of the dialog's two lists, under its heading. */
+function CourseGroup({ heading, children }: { heading: string; children: React.ReactNode }) {
+  return (
+    <section className="flex w-full flex-col gap-2">
+      <h3 className="text-caption-md font-medium text-gray-100">{heading}</h3>
+      {children}
+    </section>
+  )
+}
+
 export function RegisterDialog({
   term,
   onClose,
   onRegister,
+  onOpenCourse,
 }: {
   /** The term being registered, or null when the dialog is closed. */
   term: Term | null
   onClose: () => void
   onRegister: (termId: string, courseIds: string[]) => void
+  /** Opens a course or seat that cannot go through, beside the plan. */
+  onOpenCourse?: (course: PlannedCourse) => void
 }) {
   const [stage, setStage] = useState<"confirm" | "sending" | "done">("confirm")
   /* What is ticked. Held by id rather than by course, so it survives the term
@@ -154,7 +184,8 @@ export function RegisterDialog({
   const offered = term.courses.filter((course) => !course.registered && course.draft == null)
   /* What would go: everything registrable that has not been unticked. */
   const picked = ready.filter((course) => !dropped.includes(course.id))
-  const going = stage === "confirm" ? offered : sent
+  /* Everything offered that cannot go, each with its reason. */
+  const blocked = offered.filter((course) => !ready.some((r) => r.id === course.id))
   const count = stage === "confirm" ? picked.length : sent.length
 
   return (
@@ -215,24 +246,51 @@ export function RegisterDialog({
               </DialogHeader>
             )}
 
-            <div className="flex w-full flex-col gap-2">
-              {going.map((course) => (
-                <CourseCard
-                  key={course.id}
-                  course={course}
-                  term={term}
-                  /* Nothing to tick once the request is in the air. */
-                  picked={stage === "confirm" ? !dropped.includes(course.id) : undefined}
-                  onPick={(next) =>
-                    setDropped((current) =>
-                      next
-                        ? current.filter((id) => id !== course.id)
-                        : [...current, course.id]
-                    )
-                  }
-                />
-              ))}
-            </div>
+            {stage === "confirm" ? (
+              /* Two lists rather than one with some ticks greyed out: what
+                 can go has a tick, and what cannot has its reason and nothing
+                 to press. */
+              <>
+                {ready.length > 0 && (
+                  <CourseGroup heading="Ready to register">
+                    {ready.map((course) => (
+                      <CourseCard
+                        key={course.id}
+                        course={course}
+                        term={term}
+                        picked={!dropped.includes(course.id)}
+                        onPick={(next) =>
+                          setDropped((current) =>
+                            next
+                              ? current.filter((id) => id !== course.id)
+                              : [...current, course.id]
+                          )
+                        }
+                      />
+                    ))}
+                  </CourseGroup>
+                )}
+                {blocked.length > 0 && (
+                  <CourseGroup heading="Can't register yet">
+                    {blocked.map((course) => (
+                      <CourseCard
+                        key={course.id}
+                        course={course}
+                        term={term}
+                        onOpen={onOpenCourse && (() => onOpenCourse(course))}
+                      />
+                    ))}
+                  </CourseGroup>
+                )}
+              </>
+            ) : (
+              /* Nothing to tick once the request is in the air. */
+              <div className="flex w-full flex-col gap-2">
+                {sent.map((course) => (
+                  <CourseCard key={course.id} course={course} term={term} />
+                ))}
+              </div>
+            )}
 
             {stage === "confirm" && ready.length > 0 && (
               <DialogFooter className="w-full">

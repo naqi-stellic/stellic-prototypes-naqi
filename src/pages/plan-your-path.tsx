@@ -13,6 +13,7 @@ import {
 } from "@dnd-kit/core"
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
 import { useEffect, useState } from "react"
+import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
 import { AppShell } from "@/components/layout/app-shell"
@@ -34,7 +35,7 @@ import {
 } from "@/components/stellic/requirements-panel"
 import { ReviewDialog } from "@/components/stellic/review-dialog"
 import { ReviewPanel } from "@/components/stellic/review-panel"
-import { PlanIssuesProvider } from "@/components/stellic/plan-issues"
+import { PlanIssuesProvider, useRegistrable } from "@/components/stellic/plan-issues"
 import { PendingReviewProvider } from "@/components/stellic/review-state"
 import {
   cameFrom,
@@ -105,7 +106,7 @@ import {
   chooseSection,
   setSection,
   registerCourses,
-  registrableCourses,
+  registrationBanner,
   removeCourse,
   selectableTerms,
   type MetadataField,
@@ -186,45 +187,40 @@ function planActions(metadata: MetadataField[], generators: boolean): PlanAction
   ]
 }
 
-function RegistrationAlert({
-  closes,
-  drafting,
-  ready,
-  onRegister,
-}: {
-  closes: string
-  /** A draft is up, so there is nothing settled to register. */
-  drafting?: boolean
-  /** How many of the term's courses would go through registration. */
-  ready: number
-  onRegister?: () => void
-}) {
-  /* 92px is the design's height; a minimum rather than a fixed value so the
-     banner can grow when the closing date wraps to a second line. */
+function RegistrationAlert({ term, onRegister }: { term: Term; onRegister?: () => void }) {
+  const banner = registrationBanner(term, useRegistrable(term).length)
+  const done = banner.state === "registered"
+
+  /* 92px is the design's height for a banner with a button under its line; a
+     minimum rather than a fixed value so it can grow when the closing date
+     wraps. With nothing under the line, it is one line and sized like one. */
+  const tall = banner.register != null || banner.note != null
   return (
-    <Alert className="min-h-[92px]">
+    <Alert variant={done ? "success" : "info"} className={cn(tall && "min-h-[92px]")}>
       <AlertBody>
         <AlertHeader>
           <AlertTitle>
-            <Icon name="shopping-cart" size={16} className="mt-0.5 shrink-0 text-primary-100" />
-            Registration is now open!
+            <Icon
+              name={done ? "check-circle" : "event-available"}
+              size={16}
+              className={cn("mt-0.5 shrink-0", done ? "text-success-100" : "text-primary-100")}
+            />
+            {banner.title}
           </AlertTitle>
           {/* The date stays on one line while there is room for it; in a term
               sharing its row with two others there is not. */}
           <AlertDescription className="@max-[400px]/term:whitespace-normal">
-            Closes: {closes}
+            {banner.closesLabel}: {term.alert?.closes}
           </AlertDescription>
         </AlertHeader>
-        {/* Nothing to press when nothing would go through: no class chosen
-            yet, or everything with one already registered. */}
-        <Button
-          variant="primary"
-          size="sm"
-          disabled={drafting || ready === 0}
-          onClick={onRegister}
-        >
-          Register Now
-        </Button>
+        {banner.note && <p className="text-body-md text-gray-80">{banner.note}</p>}
+        {/* There or not there: a button offering to register nothing is not
+            an offer, so it goes rather than greying out. */}
+        {banner.register != null && (
+          <Button variant="primary" size="sm" onClick={onRegister}>
+            Register {banner.register} course{banner.register === 1 ? "" : "s"}
+          </Button>
+        )}
       </AlertBody>
     </Alert>
   )
@@ -233,16 +229,7 @@ function RegistrationAlert({
 /** A term's banner: the registration deadline when it has one, and — while a
  *  draft is on the canvas — the reassurance that it needs nothing otherwise. */
 function termBanner(term: Term, drafting: boolean, onRegister: (term: Term) => void) {
-  if (term.alert) {
-    return (
-      <RegistrationAlert
-        closes={term.alert.closes}
-        drafting={drafting}
-        ready={registrableCourses(term).length}
-        onRegister={() => onRegister(term)}
-      />
-    )
-  }
+  if (term.alert) return <RegistrationAlert term={term} onRegister={() => onRegister(term)} />
   return drafting && !term.locked ? <NoActionsAlert /> : null
 }
 
@@ -622,7 +609,7 @@ export function PlanYourPath({
   }
 
   /* The summer a year can take. Nothing else can be added to one, so this is
-     all "Add Term" does. */
+     all "Add Summer" does. */
   function addYearTerm(yearLabel: string) {
     setYears((current) => addTerm(current, yearLabel))
   }
@@ -1092,10 +1079,8 @@ export function PlanYourPath({
                 settling={accepting}
                 revealed={revealed}
                 drop={drop}
-                addable={addable}
                 renderAlert={(term) => termBanner(term, draft != null, setRegistering)}
                 onRemoveCourse={handleRemoveCourse}
-                onAddCourse={handleAddCourse}
                 onSearchCourses={(termId) => {
                   setSearching(termId)
                   setOpenCourse(null)
@@ -1136,6 +1121,14 @@ export function PlanYourPath({
           term={registering && (findTerm(years, registering.id) ?? registering)}
           onClose={() => setRegistering(null)}
           onRegister={register}
+          /* What cannot go is fixed in the panel beside the plan, so the
+             dialog steps aside for it: a seat opens to have a course chosen,
+             a course opens on its details. */
+          onOpenCourse={(course) => {
+            setRegistering(null)
+            if (course.placeholder) openSeatPanel(course.id, "detail")
+            else openPlannedPanel(course.id)
+          }}
         />
 
         {/* Keyed so the dialog starts afresh each time it is opened — from a
