@@ -218,8 +218,11 @@ export function PlanHeader({
   const crowded = actions.length > 2
 
   /* Step one: the actions keep their glyphs and lose their words. */
-  const labelsGo = crowded ? "@max-[1130px]/toolbar:hidden" : "@max-[960px]/toolbar:hidden"
-  const iconOnly = crowded ? "@max-[1130px]/toolbar:size-9" : "@max-[960px]/toolbar:size-9"
+  /* Add remaining courses carries its words too, which is 148px more row
+     (its label measures 130 at button-md, plus the gap and the padding an
+     icon button does not have), so each step comes that much sooner. */
+  const labelsGo = crowded ? "@max-[1280px]/toolbar:hidden" : "@max-[1110px]/toolbar:hidden"
+  const iconOnly = crowded ? "@max-[1280px]/toolbar:size-9" : "@max-[1110px]/toolbar:size-9"
   /* Which year tabs survive the narrowest toolbar: the overview, always, and
      the year that is open — or, where the overview is what is open, the first
      year, so the row is never just one button. */
@@ -278,14 +281,16 @@ export function PlanHeader({
               </DropdownMenu>
             )
           })}
-          {/* Opens what the degree still wants, to be dragged into the plan. */}
+          {/* Opens what the degree still wants, to be dragged into the plan.
+              Its words say so: the glyph alone reads as a sidebar toggle. */}
           <Button
-            size="icon"
             aria-label="Add remaining courses"
             aria-pressed={sidebar ? sidebar.open : undefined}
             onClick={sidebar?.onToggle}
+            className={iconOnly}
           >
             <Icon name="view-sidebar" size={16} />
+            <span className={labelsGo}>Add remaining courses</span>
           </Button>
           <Button size="icon" aria-label="More options">
             <Icon name="more-horiz" size={16} />
