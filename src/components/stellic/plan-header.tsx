@@ -2,7 +2,6 @@ import { cn } from "cn"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { Icon, type IconName } from "@/components/icon"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -10,7 +9,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { DEGREE, STUDENT } from "@/data/plan"
+import { STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
  * are in view. The planner and a term share it — only the actions and the
@@ -101,26 +100,6 @@ function HoverMenu({ trigger, children }: { trigger: ReactNode; children: ReactN
   )
 }
 
-function PlanFacet({ label, values }: { label: string; values: string[] }) {
-  return (
-    <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
-      <span className="text-body-md font-semibold text-foreground">{label}</span>
-      {values.map((value) => (
-        <Badge key={value} variant="outline" className="max-w-full">
-          <span className="min-w-0 truncate">{value}</span>
-          <Icon name="close" size={12} className="shrink-0" />
-        </Badge>
-      ))}
-      <a
-        href="#"
-        className="text-body-md text-gray-80 underline [text-underline-position:from-font]"
-      >
-        + add another
-      </a>
-    </div>
-  )
-}
-
 /** Where the planner was opened from, if it was opened from anywhere:
  *  `?from=compliance` on the URL, put there by the record that sent you. */
 export function cameFrom(): string | null {
@@ -141,7 +120,7 @@ function CameFrom() {
     </>
   )
 
-  if (!back) return <span className="flex items-center gap-1 text-gray-80">{inside}</span>
+  if (!back) return null
 
   return (
     <a
@@ -319,12 +298,10 @@ export function PlanHeader({
     <section className="relative flex flex-col gap-4">
       <span ref={sentinel} aria-hidden="true" className="absolute inset-x-0 bottom-0 h-6" />
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        {/* Whose plan, then which of their plans. The student's name reads as
-            the trail you came in on, so it is set back in gray. */}
+        {/* Which of their plans. A student knows whose plan it is; the name
+            only appears for staff, as the way back to the record they came
+            from, set back in gray. */}
         <h2 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
-          {/* The trail you came in on. Arrived from a student's record and it
-              is a way back to it; opened on its own and it is just the trail,
-              so it stays a span rather than pretending to lead somewhere. */}
           <CameFrom />
           <span className="flex items-center gap-1 text-gray-100">
             Primary Plan
@@ -335,17 +312,6 @@ export function PlanHeader({
             places at once. */}
         {!stuck && actionButtons}
       </div>
-
-      {/* The programme and the minor beside it: two of them, because a plan
-          that answers to both is the case no pathway is ever built for. */}
-      <PlanFacet
-        label="Programs:"
-        values={[
-          `${DEGREE.credential} (${DEGREE.concentration})`,
-          `Minor in ${DEGREE.minor}`,
-        ]}
-      />
-      <PlanFacet label="Pathway:" values={[`${DEGREE.major}: Fall Start 2026`]} />
 
     </section>
 

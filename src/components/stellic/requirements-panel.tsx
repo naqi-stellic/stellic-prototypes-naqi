@@ -8,6 +8,7 @@ import {
   type FilterGroup,
   type FilterState,
 } from "@/components/stellic/filter-bar"
+import { Badge } from "@/components/ui/badge"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,7 @@ import {
 import { offeredIn, type CatalogEntry, type TermName } from "@/data/catalog"
 import { PREREQ_LABEL, prereqsMet } from "@/data/course-detail"
 import { incomingTotals } from "@/data/incoming"
-import { planStanding, type Year } from "@/data/plan"
+import { DEGREE, planStanding, type Year } from "@/data/plan"
 
 /* Everything the degree still wants, with nowhere to be yet. The plan is not
  * finished until this list is empty, so each row is picked up from here and
@@ -276,6 +277,20 @@ export function RequirementsPanel({
         </p>
       </header>
 
+      {/* What the plan answers to, which is what decides what is left. The
+          programme and the minor beside it: two of them, because a plan that
+          answers to both is the case no pathway is ever built for. */}
+      <div className="flex w-full flex-col gap-4">
+        <PlanFacet
+          label="Programs:"
+          values={[
+            `${DEGREE.credential} (${DEGREE.concentration})`,
+            `Minor in ${DEGREE.minor}`,
+          ]}
+        />
+        <PlanFacet label="Pathway:" values={[`${DEGREE.major}: Fall Start 2026`]} />
+      </div>
+
       {/* The two meters are one reading of the degree, so they stand closer to
           each other than to what is above and below them. */}
       <div className="flex w-full flex-col gap-4">
@@ -402,5 +417,25 @@ export function RequirementsPanel({
       ))}
       </div>
     </aside>
+  )
+}
+
+function PlanFacet({ label, values }: { label: string; values: string[] }) {
+  return (
+    <div className="flex flex-wrap items-center gap-x-1 gap-y-2">
+      <span className="text-body-md font-semibold text-foreground">{label}</span>
+      {values.map((value) => (
+        <Badge key={value} variant="outline" className="max-w-full">
+          <span className="min-w-0 truncate">{value}</span>
+          <Icon name="close" size={12} className="shrink-0" />
+        </Badge>
+      ))}
+      <a
+        href="#"
+        className="text-body-md text-gray-80 underline [text-underline-position:from-font]"
+      >
+        + add another
+      </a>
+    </div>
   )
 }
