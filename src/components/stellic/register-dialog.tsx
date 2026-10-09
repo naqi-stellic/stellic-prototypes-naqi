@@ -14,8 +14,7 @@ import {
 import { cn } from "cn"
 
 import { Checkbox } from "@/components/ui/checkbox"
-import { useCourseIssues, useRegistrable } from "@/components/stellic/plan-issues"
-import type { TermIssue } from "@/data/issues"
+import { useRegistrable } from "@/components/stellic/plan-issues"
 import { type PlannedCourse, type Term } from "@/data/plan"
 
 /* Putting a term's classes through registration: what is about to go, the wait
@@ -30,36 +29,17 @@ const NO_TERM: Term = { id: "", name: "", window: "", reviewed: false, state: "p
  *  that nobody on stage is waiting on it. */
 const SENDING_MS = 1600
 
-/** Why a course in this term is not going through, or null where it is. A seat
- *  has no course in it to register; a course with no class has nothing to
- *  attend; a course whose prerequisites are not met is not allowed. */
-function blocking(course: PlannedCourse, issue: TermIssue | null): string | null {
-  if (course.placeholder) return "No course chosen yet"
-  if (issue?.severity === "error") return issue.says
-  if (!course.section) return "No section selected"
-  return null
-}
-
 function CourseCard({
   course,
-  term,
   picked,
   onPick,
-  onOpen,
 }: {
   course: PlannedCourse
-  term: Term
-  /** Opens what would clear the way, where something is in the way: the seat,
-   *  to choose a course for it, or the course itself. */
-  onOpen?: () => void
-  /** Absent where there is nothing to pick — the course cannot go, or the
-   *  request is already in the air and the card is only reporting it. */
+  /** Absent once the request is in the air and the card is only reporting
+   *  what went. */
   picked?: boolean
   onPick?: (next: boolean) => void
 }) {
-  const issue = useCourseIssues(term, course.id)[0] ?? null
-  const why = blocking(course, issue)
-
   return (
     <label
       className={cn(
@@ -86,47 +66,8 @@ function CourseCard({
             {course.section}
           </span>
         )}
-        {/* What stands in its way, where something does. The term's own action
-            line says the same thing; here it is beside the tick it explains. */}
-        {why && (
-          <span className="flex items-center gap-1 text-body-md text-gray-80">
-            <Icon
-              name={issue?.severity === "error" ? "error-outline" : "warning"}
-              size={14}
-              className={cn(
-                "shrink-0",
-                issue?.severity === "error" ? "text-alert-100" : "text-warning-100"
-              )}
-            />
-            <span>
-              {why.replace(/\.$/, "")}
-              {onOpen && (
-                <>
-                  ,{" "}
-                  <button
-                    type="button"
-                    onClick={onOpen}
-                    className="cursor-pointer underline [text-underline-position:from-font]"
-                  >
-                    {course.placeholder ? "select course" : "view details"}
-                  </button>
-                </>
-              )}
-            </span>
-          </span>
-        )}
       </span>
     </label>
-  )
-}
-
-/** One of the dialog's two lists, under its heading. */
-function CourseGroup({ heading, children }: { heading: string; children: React.ReactNode }) {
-  return (
-    <section className="flex w-full flex-col gap-2">
-      <h3 className="text-caption-md font-medium text-gray-100">{heading}</h3>
-      {children}
-    </section>
   )
 }
 
@@ -190,14 +131,11 @@ export function RegisterDialog({
 
   if (!term) return null
 
-  /* Everything the term is holding that has not already gone through — the
-     seats and the blocked courses included, because a dialog that lists three
-     courses when the term shows five leaves the other two unaccounted for. */
-  const offered = term.courses.filter((course) => !course.registered && course.draft == null)
   /* What would go: everything registrable that has not been unticked. */
   const picked = ready.filter((course) => !dropped.includes(course.id))
-  /* Everything offered that cannot go, each with its reason. */
-  const blocked = offered.filter((course) => !ready.some((r) => r.id === course.id))
+  /* What still has no course once this has gone through: the elective the
+     confirmation offers to choose next. */
+  const unchosen = term.courses.filter((course) => course.placeholder && course.draft == null)
   const count = stage === "confirm" ? picked.length : sent.length
 
   return (
@@ -222,11 +160,28 @@ export function RegisterDialog({
               <DialogTitle className="text-h400">
                 {count} Course{count === 1 ? "" : "s"} Registered
               </DialogTitle>
-              <DialogDescription>
-                Your selected courses were successfully registered. You may return to Registration
-                to continue to register new courses while the registration window is still open.
-              </DialogDescription>
+              {term.alert && (
+                <DialogDescription>Registration stays open until {term.alert.closes}.</DialogDescription>
+              )}
             </DialogHeader>
+            {/* What is left to choose, now that registering is done: the
+                elective that had no course, and the way to choose one. */}
+            {unchosen.map((course) => (
+              <div
+                key={course.id}
+                className="flex w-full items-center gap-3 rounded-md border border-gray-40 bg-card p-3 text-left"
+              >
+                <span className="flex min-w-0 flex-1 flex-col text-body-md">
+                  <span className="font-semibold text-gray-100">{course.name}</span>
+                  <span className="text-gray-80">No course chosen yet</span>
+                </span>
+                {onOpenCourse && (
+                  <Button size="sm" className="shrink-0" onClick={() => onOpenCourse(course)}>
+                    Choose course
+                  </Button>
+                )}
+              </div>
+            ))}
             <DialogFooter className="w-full">
               <Button className="w-full" onClick={onClose}>
                 Back to {term.name}
@@ -259,47 +214,30 @@ export function RegisterDialog({
             )}
 
             {stage === "confirm" ? (
-              /* Two lists rather than one with some ticks greyed out: what
-                 can go has a tick, and what cannot has its reason and nothing
-                 to press. */
-              <>
-                {ready.length > 0 && (
-                  <CourseGroup heading="Ready to register">
-                    {ready.map((course) => (
-                      <CourseCard
-                        key={course.id}
-                        course={course}
-                        term={term}
-                        picked={!dropped.includes(course.id)}
-                        onPick={(next) =>
-                          setDropped((current) =>
-                            next
-                              ? current.filter((id) => id !== course.id)
-                              : [...current, course.id]
-                          )
-                        }
-                      />
-                    ))}
-                  </CourseGroup>
-                )}
-                {blocked.length > 0 && (
-                  <CourseGroup heading="Can't register yet">
-                    {blocked.map((course) => (
-                      <CourseCard
-                        key={course.id}
-                        course={course}
-                        term={term}
-                        onOpen={onOpenCourse && (() => onOpenCourse(course))}
-                      />
-                    ))}
-                  </CourseGroup>
-                )}
-              </>
+              /* Only what can go. What cannot — a placeholder with no course,
+                 a course whose prerequisites are not met — is not offered
+                 here at all: it would only pull the student out of the one
+                 thing they came to do. The elective waits for the
+                 confirmation, once registering is done. */
+              <div className="flex w-full flex-col gap-2">
+                {ready.map((course) => (
+                  <CourseCard
+                    key={course.id}
+                    course={course}
+                    picked={!dropped.includes(course.id)}
+                    onPick={(next) =>
+                      setDropped((current) =>
+                        next ? current.filter((id) => id !== course.id) : [...current, course.id]
+                      )
+                    }
+                  />
+                ))}
+              </div>
             ) : (
               /* Nothing to tick once the request is in the air. */
               <div className="flex w-full flex-col gap-2">
                 {sent.map((course) => (
-                  <CourseCard key={course.id} course={course} term={term} />
+                  <CourseCard key={course.id} course={course} />
                 ))}
               </div>
             )}
