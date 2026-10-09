@@ -458,7 +458,7 @@ export function CoursePanel({
   /** Takes one instance out of the plan, where its term still takes changes. */
   onRemove?: (at: Instance) => void
   /** Opens the term's registration. */
-  onRegister?: (term: Term) => void
+  onRegister?: (term: Term, courseId?: string) => void
   /** Opens the term on its week, where its classes can be seen. */
   onViewCalendar?: (term: Term) => void
   onBack: () => void
@@ -855,7 +855,7 @@ function InstanceBody({
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
   onPreviewSection?: (at: Instance, hovered: { section: string; meetings: Meeting[] } | null) => void
   onRemove?: (at: Instance) => void
-  onRegister?: (term: Term) => void
+  onRegister?: (term: Term, courseId?: string) => void
   onViewCalendar?: (term: Term) => void
 }) {
   const { course, term } = at
@@ -962,7 +962,7 @@ function InstanceBody({
           <Checklist
             steps={planningChecklist(term, course, met)}
             onCalendar={onViewCalendar && (() => onViewCalendar(term))}
-            onRegister={onRegister && (() => onRegister(term))}
+            onRegister={onRegister && (() => onRegister(term, course.id))}
           />
         </Fold>
       )}

@@ -316,6 +316,9 @@ export function PlanYourPath({
   const [applying, setApplying] = useState(false)
   /* The term whose registration dialog is up, if any. */
   const [registering, setRegistering] = useState<Term | null>(null)
+  /* The one course the registration was asked for, where it was asked from a
+     course rather than from the term. */
+  const [registeringOnly, setRegisteringOnly] = useState<string | undefined>(undefined)
   /* The term whose Generate Term panel is open, if any. */
   const [generatingTerm, setGeneratingTerm] = useState<string | null>(null)
   /* Reviews asked for on this plan, newest first. */
@@ -770,7 +773,10 @@ export function PlanYourPath({
       handleRemoveCourse(at.course.id)
       setOpenPlanned(null)
     },
-    onRegister: (term: Term) => setRegistering(term),
+    onRegister: (term: Term, courseId?: string) => {
+      setRegisteringOnly(courseId)
+      setRegistering(term)
+    },
     /* The term on its week, with the sidebar still beside it. */
     onViewCalendar: (term: Term) => {
       setOpenTermOn("calendar")
@@ -1253,13 +1259,18 @@ export function PlanYourPath({
 
         <RegisterDialog
           term={registering && (findTerm(years, registering.id) ?? registering)}
-          onClose={() => setRegistering(null)}
+          only={registeringOnly}
+          onClose={() => {
+            setRegistering(null)
+            setRegisteringOnly(undefined)
+          }}
           onRegister={register}
           /* What cannot go is fixed in the panel beside the plan, so the
              dialog steps aside for it: a seat opens to have a course chosen,
              a course opens on its details. */
           onOpenCourse={(course) => {
             setRegistering(null)
+            setRegisteringOnly(undefined)
             if (course.placeholder) openSeatPanel(course.id, "detail")
             else openPlannedPanel(course.id)
           }}

@@ -132,12 +132,16 @@ function CourseGroup({ heading, children }: { heading: string; children: React.R
 
 export function RegisterDialog({
   term,
+  only,
   onClose,
   onRegister,
   onOpenCourse,
 }: {
   /** The term being registered, or null when the dialog is closed. */
   term: Term | null
+  /** Opened for one course — from that course's own sidebar — it starts with
+   *  only that course ticked, and the rest of the term there to add. */
+  only?: string
   onClose: () => void
   onRegister: (termId: string, courseIds: string[]) => void
   /** Opens a course or seat that cannot go through, beside the plan. */
@@ -152,17 +156,23 @@ export function RegisterDialog({
      registrable, and the dialog has to go on showing what it just sent. */
   const [sent, setSent] = useState<PlannedCourse[]>([])
 
-  /* A fresh term is a fresh question — but only a different term. Registering
-     rewrites the term this is holding, and starting over on that would throw
-     away the answer the moment it arrived. */
+  /* Called whether or not the dialog is up: a hook skipped on the closed
+     render and called on the open one is a different list of hooks. */
+  const ready = useRegistrable(term ?? NO_TERM)
+
+  /* A fresh term is a fresh question — but only a different term, or the same
+     term asked about another course. Registering rewrites the term this is
+     holding, and starting over on that would throw away the answer the moment
+     it arrived. Asked about one course, everything else starts unticked. */
   const termId = term?.id
   useEffect(() => {
     if (termId) {
       setStage("confirm")
       setSent([])
-      setDropped([])
+      setDropped(only ? ready.filter((c) => c.id !== only).map((c) => c.id) : [])
     }
-  }, [termId])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [termId, only])
 
   useEffect(() => {
     if (stage !== "sending" || !term) return
@@ -177,10 +187,6 @@ export function RegisterDialog({
     /* Deliberately not watching `term`: it changes as a result of this. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, termId])
-
-  /* Called whether or not the dialog is up: a hook skipped on the closed
-     render and called on the open one is a different list of hooks. */
-  const ready = useRegistrable(term ?? NO_TERM)
 
   if (!term) return null
 
