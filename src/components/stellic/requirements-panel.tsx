@@ -9,6 +9,7 @@ import {
   type FilterState,
 } from "@/components/stellic/filter-bar"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -214,6 +215,7 @@ export function RequirementsPanel({
   narrowing,
   onNarrow,
   onOpenCourse,
+  onClose,
 }: {
   /** What is still to place, in the order the degree asks for it, each with
    *  its place in that list. */
@@ -227,6 +229,7 @@ export function RequirementsPanel({
   onNarrow: (next: Narrowing) => void
   /** Opens one of them on its own, by its place in the outstanding list. */
   onOpenCourse?: (index: number) => void
+  onClose?: () => void
 }) {
   const { filters, grouping } = narrowing
   const setFilters = (next: FilterState) => onNarrow({ ...narrowing, filters: next })
@@ -268,14 +271,28 @@ export function RequirementsPanel({
   return (
     /* pb-28 keeps the last few rows clear of the assistant, which floats over
        the foot of whatever is beside the plan. */
-    <aside className="flex h-full w-full flex-col gap-8 overflow-x-clip overflow-y-auto bg-card p-6 pb-28">
-      <header className="flex w-full flex-col gap-2">
-        <h2 className="text-h300 font-semibold text-gray-100">Add remaining courses</h2>
-        <p className="text-body-md text-gray-80">
-          Your plan isn't done until every requirement has a term. Drag each one into the term you
-          plan to take it.
-        </p>
+    <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card">
+      {/* The same bar Generate Plan opens with: the panel's name, a rule under
+          it, and the way out. */}
+      <header className="flex shrink-0 items-center gap-2 border-b border-gray-40 px-6 pt-3 pb-[15px]">
+        <h2 className="min-w-0 flex-1 text-caption-lg font-semibold text-foreground">
+          Add remaining courses
+        </h2>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label="Close Add remaining courses"
+          onClick={onClose}
+        >
+          <Icon name="s-close" size={16} />
+        </Button>
       </header>
+
+      <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
+      <p className="text-body-md text-gray-80">
+        Your plan isn't done until every requirement has a term. Drag each one into the term you
+        plan to take it.
+      </p>
 
       {/* What the plan answers to, which is what decides what is left, and
           then how much of it is. Three blocks read the same way — a label
@@ -419,6 +436,7 @@ export function RequirementsPanel({
           ))}
         </div>
       ))}
+      </div>
       </div>
     </aside>
   )

@@ -941,6 +941,7 @@ export function PlanYourPath({
             years={shown}
             narrowing={narrowing}
             onNarrow={setNarrowing}
+            onClose={() => setReqsOpen(false)}
             onOpenCourse={(index) => {
               const found = requirements.find((r) => r.index === index)
               if (found) {
