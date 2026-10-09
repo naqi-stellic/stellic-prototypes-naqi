@@ -45,22 +45,33 @@ export function CourseRow({
 export function CourseSearch({
   entries,
   onOpenCourse,
+  bare,
 }: {
   entries: CatalogEntry[]
   onOpenCourse?: (entry: CatalogEntry) => void
+  /** Inside a sidebar that heads itself: no search card of its own, and the
+   *  results on the sidebar's white rather than on a card. */
+  bare?: boolean
 }) {
   return (
     <>
       {/* The search that produced this. In a working planner the count is the
           filters it was run with and the chevron folds them open; here it is
           what it says it is. */}
-      <div className="flex w-full shrink-0 items-center gap-2 rounded-md bg-card p-6 shadow-sm">
-        <h2 className="text-caption-lg font-semibold text-foreground">Course Search</h2>
-        <Badge variant="secondary">3</Badge>
-        <Icon name="expand-less" size={16} className="text-gray-100" />
-      </div>
+      {!bare && (
+        <div className="flex w-full shrink-0 items-center gap-2 rounded-md bg-card p-6 shadow-sm">
+          <h2 className="text-caption-lg font-semibold text-foreground">Course Search</h2>
+          <Badge variant="secondary">3</Badge>
+          <Icon name="expand-less" size={16} className="text-gray-100" />
+        </div>
+      )}
 
-      <div className="flex w-full flex-col gap-2 rounded-md bg-card p-6 shadow-sm">
+      <div
+        className={cn(
+          "flex w-full flex-col gap-2",
+          !bare && "rounded-md bg-card p-6 shadow-sm"
+        )}
+      >
         <div className="flex h-9 w-full items-center justify-between gap-2">
           <h3 className="min-w-0 truncate text-h300 font-semibold text-gray-100">
             {entries.length} Course{entries.length === 1 ? "" : "s"}

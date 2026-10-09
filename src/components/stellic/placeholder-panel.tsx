@@ -62,8 +62,10 @@ export function PlaceholderPanel({
   const eligible = ELECTIVE_COURSES[seat.code] ?? ALL_ELECTIVES
   if (searching) {
     return (
-      <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-background pb-28">
-        <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 bg-card px-6 py-4">
+      <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
+        {/* The search heads the sidebar the way a course's name does, with the
+            way back to the placeholder above it. */}
+        <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
           <div className="flex min-w-0 flex-1 flex-col gap-1">
             <button
               type="button"
@@ -73,7 +75,13 @@ export function PlaceholderPanel({
               <Icon name="chevron-left" size={14} className="shrink-0" />
               <span className="min-w-0 truncate text-left">Back to {name}</span>
             </button>
-            <h2 className="text-h400 font-semibold text-gray-100">Eligible courses</h2>
+            {/* The count is the filters it was run with, and the chevron folds
+                them open; here it is what it says it is. */}
+            <h2 className="flex items-center gap-2 text-h400 font-semibold text-gray-100">
+              Course Search
+              <Badge variant="secondary">3</Badge>
+              <Icon name="expand-less" size={16} className="text-gray-100" />
+            </h2>
             <p className="text-body-md text-gray-80">
               For {name} · {term.name}
             </p>
@@ -87,8 +95,8 @@ export function PlaceholderPanel({
             <Icon name="close" size={20} />
           </button>
         </div>
-        <div className="flex w-full flex-col gap-4 p-6">
-          <CourseSearch entries={eligible} onOpenCourse={onOpenCourse} />
+        <div className="flex w-full flex-col px-6 pt-4">
+          <CourseSearch entries={eligible} onOpenCourse={onOpenCourse} bare />
         </div>
       </aside>
     )
