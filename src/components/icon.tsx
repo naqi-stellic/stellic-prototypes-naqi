@@ -488,6 +488,15 @@ const ICONS = {
     viewBox: "0 0 24 24",
     parts: [{ d: "m14 6-1-2H5v17h2v-7h5l1 2h7V6h-6zm4 8h-4l-1-2H7V6h5l1 2h5v6z" }],
   },
+  /* The same clock, filled: a grade still being earned. */
+  "watch-later-filled": {
+    viewBox: "0 0 24 24",
+    parts: [
+      {
+        d: "M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm4.2 14.2L11 13V7h1.5v5.2l4.5 2.7-.8 1.3z",
+      },
+    ],
+  },
   "watch-later": {
     viewBox: "0 0 24 24",
     parts: [

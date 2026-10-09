@@ -917,7 +917,7 @@ function InstanceBody({
             <span className="w-14 shrink-0 font-semibold text-gray-100">Grade</span>
             <span className="flex min-w-0 flex-1 items-center gap-1 text-caption-lg font-semibold text-gray-100">
               {/* Provisional while the course runs; final once it is done. */}
-              {stage === "progress" && <Icon name="timelapse" size={16} />}
+              {stage === "progress" && <Icon name="watch-later-filled" size={16} />}
               {grade}
             </span>
             {stage === "progress" && (
