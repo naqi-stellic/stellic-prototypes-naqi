@@ -113,7 +113,6 @@ import {
   nextYearNumber,
   planCampuses,
   planStanding,
-  chooseSection,
   setSection,
   registerCourses,
   registrationBanner,
@@ -644,8 +643,10 @@ export function PlanYourPath({
     setYears((current) => addTerm(current, yearLabel))
   }
 
-  function pickSection(termId: string, courseId: string) {
-    setYears((current) => chooseSection(current, termId, courseId))
+  /* "Search sections" on a term's line opens the course on its sections,
+     where the student chooses one with its +. Nothing is chosen for them. */
+  function pickSection(_termId: string, courseId: string) {
+    openPlannedPanel(courseId)
   }
 
   function startTermDraft(
