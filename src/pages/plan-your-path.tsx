@@ -965,6 +965,7 @@ export function PlanYourPath({
             terms={plannableTerms}
             plan={allTerms}
             backLabel={course.from}
+            filling={seat?.term.id}
             {...courseHandlers}
             onAdd={(termId) => {
               /* Opened from a seat and put back in that seat's own term, this

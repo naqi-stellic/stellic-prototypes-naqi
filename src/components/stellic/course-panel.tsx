@@ -431,6 +431,7 @@ export function CoursePanel({
   plan,
   opened,
   backLabel,
+  filling,
   onAdd,
   onPickSection,
   onPreviewSection,
@@ -450,6 +451,9 @@ export function CoursePanel({
   opened?: Instance
   /** What the way back is to. */
   backLabel: string
+  /** Opened to fill a placeholder in this term: the catalogue is where that
+   *  is done, set to the placeholder's term, whatever else the plan holds. */
+  filling?: string
   onAdd: (termId: string) => void
   /** Settles one instance on a section. */
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
@@ -469,7 +473,7 @@ export function CoursePanel({
   /* Opened from the plan, on the attempt that was clicked; from anywhere else,
      on the newest attempt where there is one, and on the catalogue where not. */
   const [tab, setTab] = useState(
-    opened ? keyOf(opened) : instances[0] ? keyOf(instances[0]) : CATALOG
+    opened ? keyOf(opened) : !filling && instances[0] ? keyOf(instances[0]) : CATALOG
   )
   /* Just added to a term: the new place it sits is the tab to be on, once
      the plan has it. Until then, and if a term turns it away, the catalogue. */
@@ -581,6 +585,7 @@ export function CoursePanel({
           entry={entry}
           terms={terms}
           plan={plan}
+          startTerm={filling}
           onAdd={(termId) => {
             onAdd(termId)
             setTab(`${ADDED}${termId}`)
@@ -768,15 +773,18 @@ function CatalogBody({
   entry,
   terms,
   plan,
+  startTerm,
   onAdd,
 }: {
   entry: CatalogEntry
   terms: Term[]
   plan: Term[]
+  /** The term to start on, where there is one to start on. */
+  startTerm?: string
   onAdd: (termId: string) => void
 }) {
   const [campus, setCampus] = useState(courseDetail(entry).campus)
-  const [termId, setTermId] = useState(terms[0]?.id ?? "")
+  const [termId, setTermId] = useState(startTerm ?? terms[0]?.id ?? "")
   const term = terms.find((t) => t.id === termId)
   /* Read against the term it would be added to, so changing the term says
      whether it could be taken then. */
