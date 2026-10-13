@@ -38,7 +38,7 @@ const TOUR: { find: string; title: string; body: string; generates?: boolean }[]
     body: "Answer a few questions about your pace and preferences, then compare options and pick the one that fits.",
   },
   {
-    find: '[data-tour="plan-actions"] [aria-label="Add remaining courses"]',
+    find: '[data-tour="plan-actions"] [aria-label^="Add remaining"]',
     title: "See what courses you still need to add",
     body: "Open the requirements that do not have a term yet, and drag each one into the term you will take it.",
   },
