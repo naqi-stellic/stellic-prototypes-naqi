@@ -143,7 +143,13 @@ type Grouping = (typeof GROUPINGS)[number]
 /** What the list is narrowed to and how it is filed. */
 export type Narrowing = { filters: FilterState; grouping: Grouping }
 
-export const NARROWING_DEFAULT: Narrowing = { filters: {}, grouping: "Requirement" }
+/** Opens on what the student can take now: the question they came with is
+ *  what to add next, so being eligible is the starting point rather than
+ *  something to opt into. */
+export const NARROWING_DEFAULT: Narrowing = {
+  filters: { prereqs: [PREREQ_LABEL.met] },
+  grouping: "Requirement",
+}
 
 /** What a requirement is filed under, which is the whole of the grouping. A
  *  course that comes round once a year says so where it is filed: that is the
