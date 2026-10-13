@@ -291,11 +291,11 @@ export function RequirementsPanel({
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
 
       {/* What the plan answers to, which is what decides what is left, and
-          then how much of it is. Three blocks read the same way — a label
+          then how much of it is. Two blocks read the same way — a label
           over its content — and stand evenly apart. The programme and the
           minor beside it: two of them, because a plan that answers to both
-          is the case no pathway is ever built for. Set on a gray box so the
-          three read as one summary of the degree, apart from the list. */}
+          is the case no single track is ever built for. Set on a gray box so
+          the two read as one summary of the degree, apart from the list. */}
       <div className="flex w-full flex-col gap-6 rounded-md bg-gray-0 p-4">
         <PlanFacet
           label="Programs"
@@ -304,11 +304,6 @@ export function RequirementsPanel({
             `${DEGREE.credential} (${DEGREE.concentration})`,
             `Minor in ${DEGREE.minor}`,
           ]}
-        />
-        <PlanFacet
-          label="Pathway"
-          add="add pathway"
-          values={[`${DEGREE.major}: Fall Start 2026`]}
         />
 
       <div className="flex w-full flex-col gap-2">
