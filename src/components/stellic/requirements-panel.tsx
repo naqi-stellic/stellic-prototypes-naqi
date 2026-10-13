@@ -100,7 +100,7 @@ const FILTERS: FilterGroup[] = [
       {
         id: "kind",
         label: "Type",
-        placeholder: "Courses or placeholders",
+        placeholder: "Core courses or electives",
         options: ["Only core courses", "Only electives"],
         mode: "menu",
       },

@@ -158,7 +158,7 @@ function CourseRow({
           <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-80" />
           <div className="flex w-[223px] shrink-0 flex-col gap-1 px-2 py-3">
             <span className="text-label-md text-gray-80">
-              {held ? "Placeholder" : course.code}
+              {held ? "Elective" : course.code}
             </span>
             <span
               className={cn(

@@ -57,7 +57,7 @@ function CourseCard({
       )}
       <span className="flex min-w-0 flex-1 flex-col gap-1">
         <span className="truncate text-body-md text-gray-80">
-          {course.placeholder ? "Placeholder" : course.code}
+          {course.placeholder ? "Elective" : course.code}
         </span>
         <span className="text-body-md font-semibold text-gray-100">{course.name}</span>
         {course.section && (

@@ -190,7 +190,7 @@ export function GenerateTermPanel({
     ...(seats.length > 0
       ? [
           {
-            label: "Placeholder instructions",
+            label: "Elective instructions",
             value: seats
               .map((seat) => {
                 const note = seatNotes[seat.id] ?? defaultSeatNote()

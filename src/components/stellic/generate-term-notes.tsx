@@ -54,7 +54,7 @@ function SeatBlock({
     <div className="flex w-full flex-col gap-2 rounded-md border border-gray-40 bg-gray-0 p-[11px]">
       <div className="flex w-full items-start gap-2">
         <span className="flex min-w-0 flex-1 flex-col">
-          <span className="text-body-md text-gray-80">Placeholder</span>
+          <span className="text-body-md text-gray-80">Elective</span>
           <span className="text-body-md font-semibold text-gray-100">{course.name}</span>
         </span>
         <span className="shrink-0 text-body-md text-gray-80">{course.credits} credits</span>
@@ -141,7 +141,7 @@ export function GenerateTermNotes({
           has nothing to say here, and an empty heading is worse than none. */}
       {seats.length > 0 && (
         <div className="flex w-full flex-col gap-2">
-          <p className="text-body-md font-semibold text-foreground">Placeholder instructions</p>
+          <p className="text-body-md font-semibold text-foreground">Elective instructions</p>
           {seats.map((course) => (
             <SeatBlock
               key={course.id}
