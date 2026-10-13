@@ -225,7 +225,10 @@ export function PlannerIntro({
     )
   }
 
-  if (step === "details" && details && onToggleDetail) {
+  if (step === "details") {
+    /* Only reached from the welcome card when there are details to ask about. */
+    if (!details || !onToggleDetail) return null
+
     const on = (fields: MetadataField[]) => fields.every((field) => details.includes(field))
     const toggle = (fields: MetadataField[]) => {
       const all = on(fields)
