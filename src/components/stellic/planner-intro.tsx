@@ -59,17 +59,16 @@ const CARD = 340
 
 /** What the card names: one line per stop on the tour, in the tour's order
  *  and in its words, so "Show me" walks through exactly what was promised. */
-const CHANGES: { icon: IconName; name: string; does: string; generates?: boolean }[] = [
-  { icon: "remove-red-eye", name: "Plan details", does: "Choose what your course cards show" },
+const CHANGES: { icon: IconName; name: string; generates?: boolean }[] = [
+  { icon: "remove-red-eye", name: "Plan details" },
   {
     icon: "design-services",
     name: "Generate plan",
-    does: "Fill in the rest of your plan",
     generates: true,
   },
-  { icon: "checklist", name: "Add remaining courses", does: "See what courses you still need to add" },
-  { icon: "calendar-month", name: "Term schedules", does: "See your schedule for any term with classes out" },
-  { icon: "event-available", name: "Registration", does: "Register for every ready course from your plan" },
+  { icon: "checklist", name: "Add remaining courses" },
+  { icon: "calendar-month", name: "Term schedules" },
+  { icon: "event-available", name: "Registration" },
 ]
 
 /** The welcome card and the details step stand the same width, so moving from
@@ -194,13 +193,12 @@ export function PlannerIntro({
 
             <ul className="flex flex-col gap-3">
               {changes.map((change) => (
-                <li key={change.name} className="flex items-start gap-3">
+                <li key={change.name} className="flex items-center gap-3">
                   <span className="flex size-8 shrink-0 items-center justify-center rounded-md bg-primary-0 text-primary-50">
                     <Icon name={change.icon} size={16} />
                   </span>
-                  <span className="flex min-w-0 flex-col text-body-md">
-                    <span className="font-semibold text-gray-100">{change.name}</span>
-                    <span className="text-gray-80">{change.does}</span>
+                  <span className="min-w-0 text-body-md font-semibold text-gray-100">
+                    {change.name}
                   </span>
                 </li>
               ))}
