@@ -82,13 +82,13 @@ const DIALOG = "w-full max-w-[480px]"
  *  who last touched a course is for advisors. Everything else is in Plan
  *  details once they want it. Building and room are one switch, because
  *  nobody wants one without the other. */
-const CHOICES: { label: string; does: string; fields: MetadataField[] }[] = [
-  { label: "Credits", does: "How much each course counts for", fields: ["credits"] },
-  { label: "Section", does: "Which section of the course you are in", fields: ["section"] },
-  { label: "Modality", does: "In person, online or hybrid", fields: ["modality"] },
-  { label: "Instructor", does: "Who is teaching it", fields: ["instructor"] },
-  { label: "Campus", does: "Where it is held", fields: ["campus"] },
-  { label: "Building and room", does: "Where to be on the day", fields: ["building", "room"] },
+const CHOICES: { label: string; fields: MetadataField[] }[] = [
+  { label: "Credits", fields: ["credits"] },
+  { label: "Section", fields: ["section"] },
+  { label: "Modality", fields: ["modality"] },
+  { label: "Instructor", fields: ["instructor"] },
+  { label: "Campus", fields: ["campus"] },
+  { label: "Building and room", fields: ["building", "room"] },
 ]
 
 /** A course, drawn with the details the student has switched on, so each
@@ -288,9 +288,8 @@ export function PlannerIntro({
               <ul className="flex w-full flex-col gap-3">
                 {CHOICES.map((choice) => (
                   <li key={choice.label} className="flex items-center gap-3">
-                    <span className="flex min-w-0 flex-1 flex-col text-body-md">
-                      <span className="font-semibold text-gray-100">{choice.label}</span>
-                      <span className="text-gray-80">{choice.does}</span>
+                    <span className="min-w-0 flex-1 text-body-md font-semibold text-gray-100">
+                      {choice.label}
                     </span>
                     <Switch
                       checked={on(choice.fields)}
