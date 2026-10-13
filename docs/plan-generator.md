@@ -505,7 +505,7 @@ planned into with or without the panel.
 Thirty-three requirements in the order the degree asks for them is the
 registrar's order, and it says nothing about which of them could be acted on
 today. Three filters say it — what it is, when it runs, and whether its
-prerequisites are met — and they layer: Only Courses, offered in Fall,
+prerequisites are met — and they layer: Only core courses, offered in Fall,
 prerequisites Met leaves the dozen or so that could go into the next term.
 The row is the one Advanced What-If uses, lifted out of it into
 `filter-bar.tsx`, so both screens ask their own questions through the same

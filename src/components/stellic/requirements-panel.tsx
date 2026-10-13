@@ -101,7 +101,7 @@ const FILTERS: FilterGroup[] = [
         id: "kind",
         label: "Type",
         placeholder: "Courses or placeholders",
-        options: ["Only Courses", "Only Placeholders"],
+        options: ["Only core courses", "Only electives"],
         mode: "menu",
       },
     ],
@@ -130,7 +130,7 @@ const FILTERS: FilterGroup[] = [
  *  it, so it has neither offerings nor prerequisites — it answers only the
  *  question about what it is. */
 function answers(entry: CatalogEntry, field: string): string | string[] {
-  if (field === "kind") return entry.placeholder ? "Only Placeholders" : "Only Courses"
+  if (field === "kind") return entry.placeholder ? "Only electives" : "Only core courses"
   if (entry.placeholder) return []
   if (field === "offered") return offeredIn(entry.code)
   if (field === "prereqs") return prereqsMet(entry) ? PREREQ_LABEL.met : PREREQ_LABEL.not
