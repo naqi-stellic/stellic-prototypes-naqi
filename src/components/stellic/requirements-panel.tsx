@@ -127,13 +127,17 @@ const FILTERS: FilterGroup[] = [
 ]
 
 /** What a requirement answers each filter with. A seat has no course behind
- *  it, so it has neither offerings nor prerequisites — it answers only the
- *  question about what it is. */
+ *  it, so it has no offerings and nothing to be ineligible for — it answers
+ *  the question about what it is, and passes Eligibility. */
 function answers(entry: CatalogEntry, field: string): string | string[] {
   if (field === "kind") return entry.placeholder ? "Only electives" : "Only core courses"
+  /* A seat has nothing to be ineligible for, so it passes Eligibility rather
+     than vanishing the moment the filter is on. */
+  if (field === "prereqs") {
+    return entry.placeholder || prereqsMet(entry) ? PREREQ_LABEL.met : PREREQ_LABEL.not
+  }
   if (entry.placeholder) return []
   if (field === "offered") return offeredIn(entry.code)
-  if (field === "prereqs") return prereqsMet(entry) ? PREREQ_LABEL.met : PREREQ_LABEL.not
   return []
 }
 
