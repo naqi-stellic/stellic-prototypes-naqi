@@ -490,7 +490,10 @@ export function SemesterCard({
 
   /* Infinity means the draft has finished arriving. */
   const streaming = revealed !== Infinity
-  const activities = term.activities ?? []
+  /* Activities are a plan detail like any other, off until asked for: while
+     they are, the term is its courses alone, and so is what it offers to add. */
+  const showActivities = useMetadata().includes("activities")
+  const activities = showActivities ? (term.activities ?? []) : []
 
   /* Registered, then planned, each under its own heading. */
   const groups = termGroups(term)
@@ -659,9 +662,11 @@ export function SemesterCard({
                 >
                   + Add Course
                 </AddSlot>
-                <AddSlot className="cursor-pointer text-gray-100 transition-colors hover:bg-gray-0">
-                  + Add Activity
-                </AddSlot>
+                {showActivities && (
+                  <AddSlot className="cursor-pointer text-gray-100 transition-colors hover:bg-gray-0">
+                    + Add Activity
+                  </AddSlot>
+                )}
               </div>
             )}
           </div>

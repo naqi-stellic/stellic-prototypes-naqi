@@ -743,6 +743,7 @@ export type MetadataField =
   | "attributes"
   | "subTerm"
   | "lastActivity"
+  | "activities"
 
 export const METADATA_FIELDS: { id: MetadataField; label: string }[] = [
   { id: "name", label: "Course Name" },
@@ -757,9 +758,11 @@ export const METADATA_FIELDS: { id: MetadataField; label: string }[] = [
   { id: "attributes", label: "Section Attributes" },
   { id: "subTerm", label: "Sub-term" },
   { id: "lastActivity", label: "Last activity" },
+  { id: "activities", label: "Activities" },
 ]
 
-/** The course's name and nothing else. Without it a card is its code alone,
+/** The course's name and nothing else. Activities wait to be asked for too:
+ *  they are not courses, and a plan reads as courses first. Without it a card is its code alone,
  *  for a plan that wants to be read compact; the section only matters once
  *  somebody is down at meeting times, so it waits to be asked for. */
 export const METADATA_DEFAULT: MetadataField[] = ["name"]
@@ -781,7 +784,7 @@ export function courseTags(course: PlannedCourse, shown: MetadataField[]): strin
   }
 
   return METADATA_FIELDS.flatMap(({ id }) => {
-    if (id === "name" || id === "section" || id === "lastActivity") return []
+    if (id === "name" || id === "section" || id === "lastActivity" || id === "activities") return []
     if (!shown.includes(id)) return []
     const text = value[id]
     return text ? [text] : []
