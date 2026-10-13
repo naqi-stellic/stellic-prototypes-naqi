@@ -20,12 +20,23 @@ function escape(text: string) {
   return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&").replace(/ /g, "\\s+")
 }
 
+const SMALL = new Set(["a", "an", "and", "at", "for", "in", "of", "on", "or", "the", "to"])
+
+/** Whether a string is a label or a title rather than a sentence: every word
+ *  but the small ones starts with a capital. */
+function isTitle(text: string) {
+  const words = text.match(/[A-Za-z]+/g) ?? []
+  return words.every((w) => w[0] === w[0].toUpperCase() || SMALL.has(w))
+}
+
 /** Carries the case of what was written onto what replaces it: ALL CAPS stays
- *  loud, a capital at the front is kept at the front of each word of a name. */
-function carryCase(found: string, to: string) {
+ *  loud, and a capital at the front stays at the front — of each word where
+ *  the replacement is a name in a label ("Credit Points"), of the first
+ *  where it is in a sentence ("Credit points"). */
+function carryCase(found: string, to: string, whole: string) {
   if (found === found.toUpperCase() && /[A-Z]{2}/.test(found)) return to.toUpperCase()
   if (found[0] !== found[0].toLowerCase()) {
-    return /\s/.test(found)
+    return /\s/.test(to) && (/\s/.test(found) || isTitle(whole))
       ? to.replace(/\b\w/g, (c) => c.toUpperCase())
       : to[0].toUpperCase() + to.slice(1)
   }
@@ -51,7 +62,7 @@ export function translator(terms: Term[]) {
 
   return (text: string) =>
     text.replace(pattern, (found) =>
-      carryCase(found, forms.get(found.toLowerCase().replace(/\s+/g, " ")) ?? found)
+      carryCase(found, forms.get(found.toLowerCase().replace(/\s+/g, " ")) ?? found, text)
     )
 }
 

@@ -25,6 +25,7 @@ export const UOW_TERMS: Term[] = [
   { from: "department", to: "school" },
   { from: "GPA", to: "WAM", singleOnly: true },
   { from: "unit", to: "credit point" },
+  { from: "credit", to: "credit point" },
   { from: "schedule", to: "session" },
   { from: "pathway", to: "sequence" },
   { from: "instructor", to: "subject coordinator" },
