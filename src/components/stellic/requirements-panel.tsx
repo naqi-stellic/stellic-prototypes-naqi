@@ -113,11 +113,11 @@ const FILTERS: FilterGroup[] = [
   },
   {
     id: "prereqs",
-    label: "Prerequisites",
+    label: "Eligibility",
     fields: [
       {
         id: "prereqs",
-        label: "Prerequisites",
+        label: "Eligibility",
         placeholder: "Select standing",
         options: [PREREQ_LABEL.met, PREREQ_LABEL.not],
         mode: "menu",
