@@ -20,6 +20,9 @@ export const UOW_TERMS: Term[] = [
   { from: "course", to: "subject" },
   { from: "major", to: "specialisation" },
   { from: "transfer credit", to: "advanced standing", toPlural: "advanced standing" },
+  /* What Stellic calls the credit a student arrives with is what UoW calls
+     advanced standing, whether or not it came by transfer. */
+  { from: "incoming credit", to: "advanced standing", toPlural: "advanced standing" },
   { from: "advisor", to: "adviser" },
   { from: "school", to: "faculty", toPlural: "faculties" },
   { from: "department", to: "school" },
