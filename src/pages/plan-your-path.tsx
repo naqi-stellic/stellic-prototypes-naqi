@@ -12,7 +12,7 @@ import {
   type DragStartEvent,
 } from "@dnd-kit/core"
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable"
-import { useEffect, useState } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
@@ -288,6 +288,7 @@ export function PlanYourPath({
   generators = true,
   initialYears = INITIAL_YEARS,
   incoming,
+  intro,
 }: {
   /* Whether this prototype offers to generate: the plan, a term, a schedule.
      Without them the planner is the same in every other way — the same cards,
@@ -297,6 +298,10 @@ export function PlanYourPath({
   initialYears?: Year[]
   /** The credit the student arrived with, where it is not the default set. */
   incoming?: IncomingGroup[]
+  /** An introduction drawn over the plan. It is handed what Plan details is
+   *  showing and the way to change it, so it can ask the student about the
+   *  cards before they have seen them. */
+  intro?: (details: { shown: MetadataField[]; toggle: (id: string) => void }) => ReactNode
 } = {}) {
   /* Whether somebody arrived here from a student's record. Read once: it
      decides the nav as well as the way back on the breadcrumb. */
@@ -1335,6 +1340,7 @@ export function PlanYourPath({
         />
       </div>
       </PendingReviewProvider>
+      {intro?.({ shown: metadata, toggle: toggleMetadata })}
       </MetadataProvider>
     </AppShell>
     </PlanIssuesProvider>

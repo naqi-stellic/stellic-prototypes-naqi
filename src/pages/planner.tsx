@@ -27,10 +27,12 @@ export function Planner() {
          four years of one rather than on the blank the generator starts from. */
       initialYears={fromRecord ? recordPlan() : PLANNED_YEARS}
       incoming={fromRecord ? recordIncoming() : undefined}
+      /* The introduction is for the student. Staff opening a student's plan
+         from a record are not being introduced to anything. */
+      intro={({ shown, toggle }) =>
+        !fromRecord && <PlannerIntro generators={false} details={shown} onToggleDetail={toggle} />
+      }
     />
-    {/* The introduction is for the student. Staff opening a student's plan
-        from a record are not being introduced to anything. */}
-    {!fromRecord && <PlannerIntro generators={false} />}
     </>
   )
 }

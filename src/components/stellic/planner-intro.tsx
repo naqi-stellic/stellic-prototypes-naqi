@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react"
 
 import { Icon, type IconName } from "@/components/icon"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Switch } from "@/components/ui/switch"
+import { courseTags, type MetadataField, type PlannedCourse } from "@/data/plan"
 
 /* Introducing the new planner to a student who already knows the old one: a
  * card that says what changed, then a short tour that spotlights each thing on
@@ -17,7 +20,7 @@ import { Button } from "@/components/ui/button"
 
 /** Where the introduction is: the card, a stop on the tour by its place in
  *  TOUR, or finished. */
-type Step = "welcome" | number | "done"
+type Step = "welcome" | "details" | number | "done"
 
 /** The tour's stops, in order: what to spotlight on the page, and what to say
  *  about it. Found by what the page already marks — the header's buttons by
@@ -69,12 +72,52 @@ const CHANGES: { icon: IconName; name: string; does: string; generates?: boolean
   { icon: "event-available", name: "Registration", does: "Register for every ready course from your plan" },
 ]
 
+/** The welcome card and the details step stand the same width, so moving from
+ *  one to the other changes what is in the card and nothing about the card. */
+const DIALOG = "w-full max-w-[480px]"
+
+/** What a student can decide about a card before they have seen their own:
+ *  the details that change what they plan around. The name is always there, so
+ *  it is not a choice; activities belong to the term rather than the card; and
+ *  who last touched a course is for advisors. Everything else is in Plan
+ *  details once they want it. Building and room are one switch, because
+ *  nobody wants one without the other. */
+const CHOICES: { label: string; does: string; fields: MetadataField[] }[] = [
+  { label: "Credits", does: "How much each course counts for", fields: ["credits"] },
+  { label: "Section", does: "Which section of the course you are in", fields: ["section"] },
+  { label: "Modality", does: "In person, online or hybrid", fields: ["modality"] },
+  { label: "Instructor", does: "Who is teaching it", fields: ["instructor"] },
+  { label: "Campus", does: "Where it is held", fields: ["campus"] },
+  { label: "Building and room", does: "Where to be on the day", fields: ["building", "room"] },
+]
+
+/** A course, drawn with the details the student has switched on, so each
+ *  switch can be seen to do something. */
+const PREVIEW_COURSE: PlannedCourse = {
+  id: "preview-course",
+  code: "ECON 201",
+  name: "Principles of Microeconomics",
+  credits: 4,
+  section: "Lec-01",
+  modality: "In Person",
+  instructor: "Prof. A. Duval",
+  campus: "Main",
+  building: "Coburn Hall",
+  room: "Room 405",
+}
+
 /** How far the spotlight's ring stands off what it frames. */
 const PAD = 6
 
 export function PlannerIntro({
   generators = true,
+  details,
+  onToggleDetail,
 }: {
+  /** What Plan details is showing, and how to change it. Where they are not
+   *  given there is nothing to ask, and the card goes straight to the tour. */
+  details?: MetadataField[]
+  onToggleDetail?: (id: string) => void
   /** Whether the planner it introduces offers Generate plan. Where it does
    *  not, the card does not name it and the tour does not stop at it. */
   generators?: boolean
@@ -83,6 +126,13 @@ export function PlannerIntro({
   const tour = TOUR.filter((stop) => generators || !stop.generates)
   const [step, setStep] = useState<Step>("welcome")
   const [rect, setRect] = useState<DOMRect | null>(null)
+  const asking = details != null && onToggleDetail != null
+
+  function startTour() {
+    window.scrollTo({ top: 0 })
+    document.querySelector("main")?.scrollTo({ top: 0 })
+    setStep(0)
+  }
 
   /* Where the current stop is, kept current while the tour is up: the page
      can be resized or scrolled under it. Looked for until it is there, since
@@ -132,16 +182,14 @@ export function PlannerIntro({
           role="dialog"
           aria-modal="true"
           aria-labelledby="planner-intro-title"
-          className="animate-fade flex w-full max-w-[480px] flex-col overflow-hidden rounded-lg bg-card shadow-2xl"
+          className={`animate-fade flex ${DIALOG} flex-col overflow-hidden rounded-lg bg-card shadow-2xl`}
         >
           <div className="flex w-full flex-col gap-4 p-6">
-            <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-2 pb-2">
+              {asking && <span className="text-label-md text-gray-80">Step 1 of 2</span>}
               <h2 id="planner-intro-title" className="text-h400 font-semibold text-gray-100">
                 Your planner has a new look
               </h2>
-              <p className="text-body-md text-gray-80">
-                Here is a quick look at what changed.
-              </p>
             </div>
 
             <ul className="flex flex-col gap-3">
@@ -166,12 +214,96 @@ export function PlannerIntro({
                 variant="primary"
                 className="flex-1"
                 autoFocus
-                onClick={() => {
-                  window.scrollTo({ top: 0 })
-                  document.querySelector("main")?.scrollTo({ top: 0 })
-                  setStep(0)
-                }}
+                onClick={() => (asking ? setStep("details") : startTour())}
               >
+                {asking ? "Next" : "Show me"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (step === "details" && details && onToggleDetail) {
+    const on = (fields: MetadataField[]) => fields.every((field) => details.includes(field))
+    const toggle = (fields: MetadataField[]) => {
+      const all = on(fields)
+      fields.forEach((field) => details.includes(field) === all && onToggleDetail(field))
+    }
+    const tags = courseTags(PREVIEW_COURSE, details)
+
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-100/50 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="planner-details-title"
+          className={`animate-fade flex ${DIALOG} flex-col overflow-hidden rounded-lg bg-card shadow-2xl`}
+        >
+          <div className="flex w-full flex-col gap-4 p-6">
+            <div className="flex flex-col gap-2 pb-2">
+              <span className="text-label-md text-gray-80">Step 2 of 2</span>
+              <h2 id="planner-details-title" className="text-h400 font-semibold text-gray-100">
+                Choose what your course cards show
+              </h2>
+            </div>
+
+            <div className="flex w-full flex-col gap-4">
+              <div className="flex min-w-0 flex-col gap-3 rounded-md bg-gray-0 p-4">
+                <span className="text-label-md font-semibold text-gray-80 uppercase">Preview</span>
+                  <div className="flex items-center gap-2 rounded-md border border-gray-40 bg-card p-[7px]">
+                    <Icon name="drag-indicator" size={16} className="text-foreground" />
+                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
+                      <div>
+                        <p className="text-body-md text-gray-80">{PREVIEW_COURSE.code}</p>
+                        {details.includes("name") && (
+                          <p className="text-body-md font-semibold text-foreground">
+                            {PREVIEW_COURSE.name}
+                          </p>
+                        )}
+                      </div>
+                      {details.includes("section") && (
+                        <p className="flex items-center gap-1 text-body-md text-foreground">
+                          <Icon name="calendar-today" size={14} />
+                          {PREVIEW_COURSE.section}
+                        </p>
+                      )}
+                      {tags.length > 0 && (
+                        <span className="flex flex-wrap items-start gap-1">
+                          {tags.map((tag) => (
+                            <Badge key={tag} variant="secondary">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+              </div>
+
+              <ul className="flex w-full flex-col gap-3">
+                {CHOICES.map((choice) => (
+                  <li key={choice.label} className="flex items-center gap-3">
+                    <span className="flex min-w-0 flex-1 flex-col text-body-md">
+                      <span className="font-semibold text-gray-100">{choice.label}</span>
+                      <span className="text-gray-80">{choice.does}</span>
+                    </span>
+                    <Switch
+                      checked={on(choice.fields)}
+                      onCheckedChange={() => toggle(choice.fields)}
+                      aria-label={choice.label}
+                    />
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="flex w-full items-center gap-2 pt-2">
+              <Button className="flex-1" onClick={() => setStep("welcome")}>
+                Back
+              </Button>
+              <Button variant="primary" className="flex-1" autoFocus onClick={startTour}>
                 Show me
               </Button>
             </div>
