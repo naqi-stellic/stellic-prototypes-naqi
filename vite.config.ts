@@ -23,6 +23,7 @@ export default defineConfig({
       input: {
         index: path.resolve(import.meta.dirname, 'index.html'),
         generator: path.resolve(import.meta.dirname, 'generator.html'),
+        'generator-uow': path.resolve(import.meta.dirname, 'generator-uow.html'),
         planner: path.resolve(import.meta.dirname, 'planner.html'),
         'program-instruction': path.resolve(import.meta.dirname, 'program-instruction.html'),
         'advanced-what-if': path.resolve(import.meta.dirname, 'advanced-what-if.html'),
