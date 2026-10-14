@@ -5,7 +5,7 @@ import { Textarea } from "@/components/ui/textarea"
 
 /** The kinds of thing worth saying, rather than one example to copy. */
 const PLACEHOLDER = [
-  "For example:",
+  "Instructions for the planner, for example:",
   "• Term load: how many courses or credits per term",
   "• Course preferences: courses to include or avoid",
   "• Elective preferences: topics or electives you like",
@@ -25,10 +25,10 @@ export function GeneratePlanNotes({
           box is called, so there is no second label over it. */}
       <div className="flex w-full flex-col gap-2">
         <h3 id="plan-instructions-heading" className="text-h400 font-semibold text-black">
-          Add details for your plan
+          Give the planner instructions
         </h3>
         <p className="text-body-md text-gray-80">
-          Optional. Share your preferences to generate a plan closer to what you want.
+          Optional. Say what the plan should include, avoid, or work around. The more specific you are, the closer your options will be.
         </p>
       </div>
 
