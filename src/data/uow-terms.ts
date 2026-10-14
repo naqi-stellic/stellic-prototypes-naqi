@@ -19,6 +19,8 @@ export type Term = {
 export const UOW_TERMS: Term[] = [
   { from: "course", to: "subject" },
   { from: "major", to: "specialisation" },
+  /* Help text calls a course a class where it is talking loosely. */
+  { from: "class", to: "subject", fromPlural: "classes" },
   { from: "transfer credit", to: "advanced standing", toPlural: "advanced standing" },
   /* What Stellic calls the credit a student arrives with is what UoW calls
      advanced standing, whether or not it came by transfer. */
