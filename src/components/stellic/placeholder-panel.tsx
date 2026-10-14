@@ -102,7 +102,7 @@ export function PlaceholderPanel({
             </h2>
           )}
           <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-80">
-            <span>Course Placeholder</span>
+            <span>Course Requirement Placeholder</span>
             <span className="flex items-center gap-1">
               <Icon name="watch-later" size={14} />
               {credits} Credits
