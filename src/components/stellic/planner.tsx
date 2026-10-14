@@ -15,6 +15,7 @@ import { Alert } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { ELECTIVE_COURSES, ALL_ELECTIVES } from "@/data/catalog"
 import {
   CREDIT_GROUP_LABEL,
   canAddTerm,
@@ -117,6 +118,8 @@ export function AuditRow({
    * no code to show and nothing to register, so it is drawn as an outline
    * waiting to be filled rather than as a course. */
   const held = course.placeholder
+  /* How many courses could fill it, the number the seat says it is waiting on. */
+  const options = (ELECTIVE_COURSES[(course.seat ?? course).code] ?? ALL_ELECTIVES).length
   /* What the draft struck out is on its way off the plan; what it added is on
    * its way to being an ordinary course. */
   const leaving = settling && struck
@@ -143,7 +146,10 @@ export function AuditRow({
       }
       className={cn(
         "group relative flex w-full items-center gap-2 border bg-card",
-        filled ? "rounded-b-md border-t-0" : "rounded-md",
+        filled || held ? "rounded-b-md border-t-0" : "rounded-md",
+        /* A seat is as tall at rest as with its buttons showing, so hovering
+           it never moves anything. */
+        held && onRemove && !overlay && "min-h-[51px]",
         locked ? "px-[15px] py-[7px]" : "p-[7px]",
         style && !joining ? style.card : held ? "border-gray-40 bg-gray-0" : "border-gray-40",
         /* A held seat is drawn as an outline waiting to be filled, and stays
@@ -173,24 +179,21 @@ export function AuditRow({
           overlay
             ? undefined
             : held
-              ? onOpenSeat && (() => onOpenSeat("detail"))
+              ? onOpenSeat && (() => onOpenSeat("search"))
               : onOpenCourse
         }
       >
         {held ? (
-          /* Read the way a course card reads — a gray line over a bold one —
-             with the gray line saying what the seat is waiting for. */
-          <div>
-            <p className="text-body-md text-gray-80">Choose course for</p>
-            <p
-              className={cn(
-                "truncate text-body-md font-semibold text-foreground",
-                struck && "line-through"
-              )}
-            >
-              {course.name}
-            </p>
-          </div>
+          /* The seat's name heads the card above; this is the line that goes
+             straight to the courses that could fill it. */
+          <p
+            className={cn(
+              "truncate text-body-md text-foreground",
+              struck && "line-through"
+            )}
+          >
+            Choose course for elective, {options} {options === 1 ? "option" : "options"}
+          </p>
         ) : (
           <>
             <div>
@@ -286,7 +289,7 @@ export function AuditRow({
     </div>
   )
 
-  if (!filled) return row
+  if (!filled && !held) return row
 
   /* The requirement the seat was held for, above the course that answers it.
      The two share the line between them, so the strip carries no bottom edge
@@ -296,7 +299,8 @@ export function AuditRow({
       <div
         onClick={overlay ? undefined : () => onOpenSeat?.("detail")}
         className={cn(
-          "flex w-full items-center rounded-t-md border bg-card p-2",
+          "flex w-full items-center rounded-t-md border p-2",
+          held ? "border-dashed bg-gray-0" : "bg-card",
           style && !joining ? style.card : "border-gray-40",
           /* The seat is a thing of its own, so its name opens it. */
           onOpenSeat && !overlay && "cursor-pointer hover:bg-gray-5",
@@ -306,8 +310,13 @@ export function AuditRow({
           ghosted && "opacity-40"
         )}
       >
-        <p className="min-w-0 flex-1 truncate text-body-md font-semibold text-gray-80">
-          {filled.name}
+        <p
+          className={cn(
+            "min-w-0 flex-1 truncate text-body-md font-semibold text-foreground",
+            struck && "line-through"
+          )}
+        >
+          {(filled ?? course).name}
         </p>
       </div>
       {row}
