@@ -28,8 +28,8 @@ type Step = "welcome" | "details" | number | "done"
 const TOUR: { find: string; title: string; body: string; generates?: boolean }[] = [
   {
     find: '[data-tour="plan-actions"] [aria-label="Plan details"]',
-    title: "Choose what your course cards show",
-    body: "Plan details turns course names, sections, credits and more on or off on every card in your plan.",
+    title: "Choose which details show for each course",
+    body: "Plan details turns course names, sections, credits and more on or off for every course in your plan.",
   },
   {
     find: '[data-tour="plan-actions"] [aria-label="Generate plan"]',
@@ -60,7 +60,7 @@ const CARD = 340
 /** What the card names: one line per stop on the tour, in the tour's order
  *  and in its words, so "Show me" walks through exactly what was promised. */
 const CHANGES: { icon: IconName; name: string; does: string; generates?: boolean }[] = [
-  { icon: "remove-red-eye", name: "Plan details", does: "Choose what your course cards show" },
+  { icon: "remove-red-eye", name: "Plan details", does: "Choose which details show for each course" },
   {
     icon: "design-services",
     name: "Generate plan",
@@ -248,7 +248,7 @@ export function PlannerIntro({
             <div className="flex flex-col gap-2 pb-2">
               <span className="text-label-md text-gray-80">Step 2 of 2</span>
               <h2 id="planner-details-title" className="text-h400 font-semibold text-gray-100">
-                Choose what your course cards show
+                Choose which details show for each course
               </h2>
             </div>
 
