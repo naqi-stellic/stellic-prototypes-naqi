@@ -104,6 +104,7 @@ export function GenerateTermPanel({
   onCompareChange,
   onFraming,
   onGenerate,
+  onApply,
   onClose,
 }: {
   term: Term
@@ -129,6 +130,8 @@ export function GenerateTermPanel({
     released: string[],
     prefer: Record<string, string>
   ) => void
+  /** Asks to apply the option on the canvas; absent until there is one. */
+  onApply?: () => void
   onClose: () => void
 }) {
   const [view, setView] = useState<View>(1)
@@ -418,6 +421,14 @@ export function GenerateTermPanel({
                 })}
               </RadioGroup>
             </Section>
+
+            {/* The end of the panel is the end of the decision, as it is for
+                the plan: read the options, pick one, apply it. */}
+            {onApply && (
+              <Button variant="primary" className="animate-fade w-full" onClick={onApply}>
+                Apply plan
+              </Button>
+            )}
           </>
         )}
 

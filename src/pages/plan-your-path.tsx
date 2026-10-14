@@ -926,6 +926,7 @@ export function PlanYourPath({
             onCompareChange={setCompare}
             onFraming={() => setFraming(true)}
             onGenerate={startTermDraft}
+            onApply={draft && !accepting ? () => setApplying(true) : undefined}
             onClose={() =>
               confirmLeave(() => {
                 dropDraft()
@@ -1124,7 +1125,7 @@ export function PlanYourPath({
               })
             }
             onAccept={keepDraft}
-            applyHere={!generateOpen}
+            applyHere={!generateOpen && !generatingTerm}
           />
         )}
 
