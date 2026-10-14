@@ -248,7 +248,7 @@ export function PlannerIntro({
             <div className="flex flex-col gap-2 pb-2">
               <span className="text-label-md text-gray-80">Step 2 of 2</span>
               <h2 id="planner-details-title" className="text-h400 font-semibold text-gray-100">
-                Choose which details show for each course
+                Customize how your courses look
               </h2>
             </div>
 
