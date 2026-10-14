@@ -16,7 +16,7 @@ import {
   GenerateTermNotes,
   type SeatNote,
 } from "@/components/stellic/generate-term-notes"
-import { SettingsSection, type SettingRow } from "@/components/stellic/plan-settings"
+import { AccountingFor, SettingsSection, type SettingRow } from "@/components/stellic/plan-settings"
 import { KeepPicker } from "@/components/stellic/keep-picker"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -214,7 +214,6 @@ export function GenerateTermPanel({
     { label: "Prerequisites, co-reqs, anti-reqs", value: PLANNING_RULES.prerequisites },
     { label: "Term offerings", value: `through ${PLANNING_RULES.offeringsThrough}` },
     { label: "Credit load limits", value: `max ${PLANNING_RULES.maxCreditsPerTerm} per term` },
-    { label: "Double counting rules", value: PLANNING_RULES.doubleCounting },
     {
       label: "Institution instructions",
       value: scheduling ? SCHEDULE_INSTITUTION_INSTRUCTIONS : INSTITUTION_INSTRUCTIONS,
@@ -509,13 +508,13 @@ export function GenerateTermPanel({
               </p>
             </div>
             <div className="flex w-full flex-col gap-2 rounded-md border border-gray-40 bg-gray-0 p-[15px]">
+              <h4 className="text-caption-md font-medium text-gray-100">Your choices</h4>
               <SettingsSection
-                title="Your choices"
                 rows={choices}
                 onEdit={(edit) => setView(edit === 3 ? 3 : edit === 2 ? 2 : 1)}
               />
-              <SettingsSection title="Also accounting for" rows={rules} />
             </div>
+            <AccountingFor rows={rules} />
           </>
         ) : (
           <GenerateTermBuilding
