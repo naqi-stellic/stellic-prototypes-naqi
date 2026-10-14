@@ -10,7 +10,7 @@ import { useScript } from "@/lib/typing"
  * term, and — only where the term is holding a seat — what should fill it. */
 
 const PLACEHOLDER =
-  "e.g. I work 20 hours a week — keep this term light and finish the finance core early."
+  "Instructions for the scheduler, e.g. I work 20 hours a week — keep this term light and finish the finance core early."
 
 /** What the student has said about one held seat. */
 export type SeatNote = { filters: string[]; prefer: string }
@@ -118,9 +118,9 @@ export function GenerateTermNotes({
   return (
     <>
       <div className="flex w-full flex-col gap-2">
-        <h3 className="text-h400 font-semibold text-black">Anything we should know?</h3>
+        <h3 className="text-h400 font-semibold text-black">Give the scheduler instructions</h3>
         <p className="text-body-md text-gray-80">
-          Optional, but the more you share, the better your course picks.
+          Optional. Say what this term should include, avoid, or work around. The more specific you are, the better your course picks.
         </p>
       </div>
 
