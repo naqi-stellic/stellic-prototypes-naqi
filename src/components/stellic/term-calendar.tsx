@@ -4,7 +4,7 @@ import { useState } from "react"
 
 import { Icon } from "@/components/icon"
 import { AddToTerm } from "@/components/stellic/add-to-term"
-import type { CatalogEntry } from "@/data/catalog"
+import { ALL_ELECTIVES, ELECTIVE_COURSES, type CatalogEntry } from "@/data/catalog"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
 import { AuditIcon } from "@/components/stellic/primitives"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
@@ -88,7 +88,7 @@ function CourseCard({
         <p
           onClick={onOpenSeat}
           className={cn(
-            "w-full truncate border-b px-3 py-2 text-body-md font-semibold text-gray-80",
+            "w-full truncate border-b px-3 py-2 text-body-md font-semibold text-foreground",
             mark ? mark.card : "border-gray-40",
             onOpenSeat && "cursor-pointer hover:bg-gray-5"
           )}
@@ -155,36 +155,50 @@ function CourseCard({
   )
 }
 
-function HeldCard({ course, onOpen }: { course: PlannedCourse; onOpen?: () => void }) {
+function HeldCard({
+  course,
+  onOpen,
+  onSearch,
+}: {
+  course: PlannedCourse
+  /** Opens the seat on its own. */
+  onOpen?: () => void
+  /** Opens the seat straight on the courses that could fill it. */
+  onSearch?: () => void
+}) {
   const mark = course.draft ? DRAFT_STYLE[course.draft.mark] : null
+  const options = (ELECTIVE_COURSES[(course.seat ?? course).code] ?? ALL_ELECTIVES).length
+  const edge = mark ? mark.card : "border-gray-40 bg-gray-0"
 
+  /* The seat's name over the line that goes to its courses, the way the
+     planner draws it: the name opens the seat, the line opens the search. */
   return (
-    <div
-      onClick={onOpen}
-      className={cn(
-        "flex w-full items-center gap-2 rounded-md border border-dashed p-[7px]",
-        mark ? mark.card : "border-gray-40 bg-gray-0",
-        onOpen && "cursor-pointer hover:bg-gray-5"
-      )}
-    >
-      <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-80" />
-      <span className="flex min-w-0 flex-1 flex-col justify-center gap-2">
-        <span className="flex flex-col">
-          <span className="text-body-md text-gray-80">Choose course for</span>
-          <span
-            className={cn(
-              "truncate text-body-md font-semibold text-gray-100",
-              isStruck(course) && "line-through"
-            )}
-          >
-            {course.name}
-          </span>
+    <div className="flex w-full flex-col">
+      <p
+        onClick={onOpen}
+        className={cn(
+          "w-full truncate rounded-t-md border border-dashed px-3 py-2 text-body-md font-semibold text-foreground",
+          edge,
+          onOpen && "cursor-pointer hover:bg-gray-5",
+          isStruck(course) && "line-through"
+        )}
+      >
+        {course.name}
+      </p>
+      <div
+        onClick={onSearch}
+        className={cn(
+          "flex w-full items-center gap-2 rounded-b-md border border-t-0 border-dashed p-[7px]",
+          edge,
+          onSearch && "cursor-pointer hover:bg-gray-5"
+        )}
+      >
+        <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
+        <span className="min-w-0 flex-1 truncate text-body-md text-foreground">
+          Choose course for elective, {options} {options === 1 ? "option" : "options"}
         </span>
-        <DraftNote course={course} />
-        <span>
-          <Badge variant="secondary">{course.credits} credits</Badge>
-        </span>
-      </span>
+      </div>
+      <DraftNote course={course} />
     </div>
   )
 }
@@ -203,7 +217,7 @@ function Sidebar({
   /** Opens the course search beside the term. */
   onSearchCourses?: () => void
   onOpenCourse?: (courseId: string) => void
-  onOpenSeat?: (courseId: string) => void
+  onOpenSeat?: (courseId: string, view?: "detail" | "search") => void
 }) {
   const credits = termCredits(term)
   const activities = term.activities ?? []
@@ -252,7 +266,8 @@ function Sidebar({
             <HeldCard
               key={course.id}
               course={course}
-              onOpen={onOpenSeat && (() => onOpenSeat(course.id))}
+              onOpen={onOpenSeat && (() => onOpenSeat(course.id, "detail"))}
+              onSearch={onOpenSeat && (() => onOpenSeat(course.id, "search"))}
             />
           ) : (
             <CourseCard
@@ -609,7 +624,7 @@ export function TermCalendar({
   /** Opens one of the term's courses on its own. */
   onOpenCourse?: (courseId: string) => void
   /** Opens a seat: one still held, or the one a course was put into. */
-  onOpenSeat?: (courseId: string) => void
+  onOpenSeat?: (courseId: string, view?: "detail" | "search") => void
 }) {
   /* The same droppable the planner's card registers, under the same id. */
   const { setNodeRef, isOver, active } = useDroppable({ id: term.id, disabled: term.locked })

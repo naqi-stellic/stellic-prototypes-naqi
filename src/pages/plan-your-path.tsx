@@ -1167,7 +1167,7 @@ export function PlanYourPath({
               setReqsOpen(false)
             }}
             onOpenCourse={openPlannedPanel}
-            onOpenSeat={(courseId) => openSeatPanel(courseId, "detail")}
+            onOpenSeat={(courseId, view) => openSeatPanel(courseId, view ?? "detail")}
             compare={compare}
           />
         ) : (

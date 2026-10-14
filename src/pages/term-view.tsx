@@ -40,7 +40,7 @@ function RegistrationAlert({
   term: Term
   onRegister?: () => void
   /** Opens a placeholder still waiting for a course. */
-  onOpenSeat?: (courseId: string) => void
+  onOpenSeat?: (courseId: string, view?: "detail" | "search") => void
   /** Whether it is holding at the top of the pane rather than sitting in the
    *  page. Held, it is a strip across the top; at rest it is a card among the
    *  cards, the same as the line about what is wrong with the term below it. */
@@ -126,7 +126,7 @@ function ActionsAlert({
   /** Opens one of the term's courses on its own, beside the term. */
   onOpenCourse?: (courseId: string) => void
   /** Opens a seat in the term, held or filled. */
-  onOpenSeat?: (courseId: string) => void
+  onOpenSeat?: (courseId: string, view?: "detail" | "search") => void
   /** While a draft is up: show what the term already held alongside what is
    *  proposed, rather than the proposal on its own. */
   compare?: boolean
@@ -210,7 +210,7 @@ export function TermView({
   /** Opens one of the term's courses on its own, beside the term. */
   onOpenCourse?: (courseId: string) => void
   /** Opens a seat in the term, held or filled. */
-  onOpenSeat?: (courseId: string) => void
+  onOpenSeat?: (courseId: string, view?: "detail" | "search") => void
   /** While a draft is up: show what the term already held alongside what is
    *  proposed, rather than the proposal on its own. */
   compare?: boolean
