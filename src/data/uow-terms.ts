@@ -32,4 +32,6 @@ export const UOW_TERMS: Term[] = [
   { from: "schedule", to: "session" },
   { from: "pathway", to: "sequence" },
   { from: "instructor", to: "subject coordinator" },
+  /* The first term of the academic year, as UoW says it. */
+  { from: "Fall", to: "Autumn", singleOnly: true },
 ]
