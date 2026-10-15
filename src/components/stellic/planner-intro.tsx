@@ -49,9 +49,9 @@ const TOUR: {
     body: "Open the requirements that do not have a term yet, and drag each one into the term you will take it.",
   },
   {
-    find: '[data-term="spring-2027"] h4 button',
+    find: '[data-term="spring-2027"] [aria-label^="View schedule"]',
     title: "See your schedule",
-    body: "Select a term's name to open it. Once its classes are out, it opens on a calendar of your week.",
+    body: "Select View schedule on a term to open it. Once its classes are out, it opens on a calendar of your week.",
   },
   {
     find: '[data-term="spring-2027"] [role="alert"]',

@@ -560,26 +560,36 @@ export function SemesterCard({
           )}
         >
           <div className="flex min-w-0 flex-col gap-1">
-            <h4 className="flex min-w-0 items-center text-caption-lg font-semibold text-gray-100">
-              <button
-                type="button"
-                onClick={onOpen}
-                className="flex min-w-0 cursor-pointer items-center gap-1 rounded-md text-left hover:underline [text-underline-position:from-font]"
-              >
-                <span className="truncate">{term.name}</span>
-                <Icon name="chevron-right" size={16} className="shrink-0 text-gray-80" />
-              </button>
-            </h4>
+            <div className="flex min-w-0 items-center gap-2">
+              <h4 className="min-w-0 truncate text-caption-lg font-semibold text-gray-100">
+                {term.name}
+              </h4>
+              {/* A term waiting on an advisor says so; otherwise it says
+                  whether anyone has looked at it, and says nothing if not. */}
+              {(pending || term.reviewed) && (
+                <StatusPill
+                  status={pending ? "pending review" : "reviewed"}
+                  className="shrink-0"
+                >
+                  {pending ? "Pending Review" : "reviewed"}
+                </StatusPill>
+              )}
+            </div>
             <p className="text-body-md text-gray-80">{termMeta(term)}</p>
           </div>
-          {/* A term waiting on an advisor says so; otherwise it says whether
-              anyone has looked at it. */}
-          <StatusPill
-            status={pending ? "pending review" : term.reviewed ? "reviewed" : "unreviewed"}
-            className={cn("shrink-0", !pending && !term.reviewed && "opacity-0")}
+          {/* The way into the term, and into its week where the classes are
+              out. A button that says so, because a link on the name was
+              missed. Where there is no week yet it stays, so it is always
+              in the same place, and says why it cannot be used. */}
+          <span
+            className="shrink-0 self-start"
+            title={term.scheduled ? undefined : "Classes are not out yet"}
           >
-            {pending ? "Pending Review" : term.reviewed ? "reviewed" : "Unreviewed"}
-          </StatusPill>
+            <Button disabled={!term.scheduled} onClick={onOpen} aria-label={`View schedule for ${term.name}`}>
+              <Icon name="calendar-month" size={16} />
+              <span className="@max-sm/term:hidden">View schedule</span>
+            </Button>
+          </span>
         </div>
 
         {alert}
