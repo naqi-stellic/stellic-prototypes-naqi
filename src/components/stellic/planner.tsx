@@ -260,12 +260,11 @@ export function AuditRow({
       {!overlay && onRemove && (
         <span className="flex shrink-0 items-center gap-1">
           <Button
-            size="icon"
-            aria-label={`Write a note on ${course.name}`}
+            aria-label={`Add note to ${course.name}`}
             onPointerDown={(e) => e.stopPropagation()}
             className="hidden group-hover:inline-flex"
           >
-            <Icon name="sticky-note-2" size={16} />
+            Add Note
           </Button>
           <Button
             size="icon"
