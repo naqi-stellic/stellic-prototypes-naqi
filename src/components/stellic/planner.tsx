@@ -577,19 +577,19 @@ export function SemesterCard({
             </div>
             <p className="text-body-md text-gray-80">{termMeta(term)}</p>
           </div>
-          {/* The way into the term, and into its week where the classes are
-              out. A button that says so, because a link on the name was
-              missed. Where there is no week yet it stays, so it is always
-              in the same place, and says why it cannot be used. */}
-          <span
-            className="shrink-0 self-start"
-            title={term.scheduled ? undefined : "Classes are not out yet"}
-          >
-            <Button disabled={!term.scheduled} onClick={onOpen} aria-label={`View schedule for ${term.name}`}>
+          {/* The way into the term's week, once its classes are out. Before
+              that there is no week to open, so there is no button. A button
+              that says so, because a link on the name was missed. */}
+          {term.scheduled && (
+            <Button
+              className="shrink-0 self-start"
+              onClick={onOpen}
+              aria-label={`View schedule for ${term.name}`}
+            >
               <Icon name="calendar-month" size={16} />
               <span className="@max-sm/term:hidden">View schedule</span>
             </Button>
-          </span>
+          )}
         </div>
 
         {alert}
