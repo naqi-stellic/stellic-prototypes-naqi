@@ -353,6 +353,13 @@ function SectionRow({
   /* The student's own class opens on its details, since it is the one they are
      reading about; the others open when asked. */
   const [open, setOpen] = useState(chosen)
+  /* Choosing another class moves the open details with it: the class just
+     chosen opens, and the one that was chosen folds. */
+  const [wasChosen, setWasChosen] = useState(chosen)
+  if (chosen !== wasChosen) {
+    setWasChosen(chosen)
+    setOpen(chosen)
+  }
   return (
     <div
       onMouseEnter={() => onPreview?.(true)}
