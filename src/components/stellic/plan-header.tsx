@@ -8,10 +8,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { STUDENT } from "@/data/plan"
+import { DEGREE, STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
  * are in view. The planner and a term share it — only the actions and the
@@ -397,10 +398,41 @@ export function PlanHeader({
             from, set back in gray. */}
         <h2 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
           <CameFrom />
-          <span className="flex items-center gap-1 text-gray-100">
-            Primary Plan
-            <Icon name="expand-more" size={16} />
-          </span>
+          {/* The plans this student has, each with the programs it is for. Only
+              the one exists, and making another goes nowhere yet. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                type="button"
+                className="flex cursor-pointer items-center gap-1 rounded-md text-gray-100 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              >
+                Primary Plan
+                <Icon name="expand-more" size={16} />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="w-[420px]">
+              <DropdownMenuItem className="items-start gap-2 py-2 text-body-md">
+                <Icon name="check" size={16} className="mt-0.5 shrink-0" />
+                <span className="flex min-w-0 flex-col gap-2">
+                  <span className="font-semibold text-foreground">Primary Plan</span>
+                  <span className="flex flex-wrap items-center gap-1">
+                    {[`${DEGREE.credential} (${DEGREE.concentration})`, `Minor in ${DEGREE.minor}`].map(
+                      (program) => (
+                        <Badge key={program} variant="outline" className="max-w-full">
+                          <span className="min-w-0 truncate">{program}</span>
+                        </Badge>
+                      )
+                    )}
+                  </span>
+                </span>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
+                <Icon name="plus" size={16} className="shrink-0" />
+                Create new plan
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </h2>
         {/* They are in the toolbar once it sticks, so they are never in two
             places at once. */}
