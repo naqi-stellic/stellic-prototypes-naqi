@@ -544,7 +544,6 @@ export function CoursePanel({
 
       <div role="tablist" aria-label="Where this course is" className="flex w-full flex-wrap gap-1 px-6 pt-4 pb-2">
         {instances.map((instance) => {
-          const mark = TAB_MARK[stageOf(instance.term, instance.course)]
           const key = keyOf(instance)
           return (
             <button
@@ -558,7 +557,6 @@ export function CoursePanel({
                 selected === key ? "bg-gray-5" : "hover:bg-gray-0"
               )}
             >
-              <Icon name={mark.icon} size={16} className={mark.tone} />
               {instance.term.name}
             </button>
           )
@@ -912,7 +910,10 @@ function InstanceBody({
     <>
       <div className="mx-6 mb-6 flex flex-col gap-3 rounded-md bg-gray-0 p-4">
         <div className="flex w-full items-center gap-2">
-          <h3 className="min-w-0 flex-1 text-caption-lg font-semibold text-gray-100">
+          {/* The state's own mark stands beside its name, rather than on the
+              term's tab: the tab says where, this says how it stands. */}
+          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-caption-lg font-semibold text-gray-100">
+            <Icon name={TAB_MARK[stage].icon} size={16} className={cn("shrink-0", TAB_MARK[stage].tone)} />
             {STAGE_LABEL[stage]}
           </h3>
           {stage !== "taken" && (
