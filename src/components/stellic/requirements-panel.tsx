@@ -33,6 +33,7 @@ import {
   type MetadataField,
   type Year,
 } from "@/data/plan"
+import { useNudge } from "@/lib/nudge"
 
 /* Everything the degree still wants, with nowhere to be yet. The plan is not
  * finished until this list is empty, so each row is picked up from here and
@@ -75,6 +76,7 @@ export function RequirementRow({
     disabled: overlay || id == null,
   })
 
+  const { props: nudge, nudged } = useNudge(!overlay && id != null && !isDragging)
   const tags = courseTags(
     {
       id: "requirement",
@@ -106,7 +108,9 @@ export function RequirementRow({
         {...(overlay ? {} : listeners)}
         {...(overlay ? {} : attributes)}
         onClick={overlay ? undefined : onOpen}
+        {...nudge}
         className={cn(
+          nudged && "animate-nudge",
           "flex w-full cursor-grab flex-col rounded-md border border-dashed border-gray-40 bg-gray-0",
           !overlay && onOpen && "transition-colors hover:bg-gray-5",
           overlay && "cursor-grabbing shadow-secondary",
@@ -135,7 +139,9 @@ export function RequirementRow({
       {...(overlay ? {} : listeners)}
       {...(overlay ? {} : attributes)}
       onClick={overlay ? undefined : onOpen}
+      {...nudge}
       className={cn(
+        nudged && "animate-nudge",
         "flex w-full cursor-grab items-center gap-2 rounded-md border border-gray-40 bg-card p-[11px]",
         !overlay && onOpen && "transition-colors hover:bg-gray-0",
         overlay && "cursor-grabbing shadow-secondary",

@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ELECTIVE_COURSES, ALL_ELECTIVES } from "@/data/catalog"
+import { useNudge } from "@/lib/nudge"
 import {
   CREDIT_GROUP_LABEL,
   canAddTerm,
@@ -125,6 +126,8 @@ export function AuditRow({
     watch.observe(term)
     return () => watch.disconnect()
   }, [])
+  const movable = !locked && !course.draft && !overlay && !ghosted
+  const { props: nudge, nudged } = useNudge(movable)
   const draft = course.draft
   const style = draft ? DRAFT_STYLE[draft.mark] : null
   const struck = isStruck(course)
@@ -155,6 +158,7 @@ export function AuditRow({
   const row = (
     <div
       ref={rowRef}
+      {...(filled || held ? {} : nudge)}
       data-draft-mark={draft?.mark}
       style={
         draft
@@ -188,7 +192,8 @@ export function AuditRow({
         /* Listed after animate-rise so it wins the animation slot. */
         leaving && "animate-vanish overflow-hidden",
         ghosted && "opacity-40",
-        overlay && "cursor-grabbing shadow-secondary"
+        overlay && "cursor-grabbing shadow-secondary",
+        nudged && !filled && !held && "animate-nudge"
       )}
     >
       {!locked && <Icon name="drag-indicator" size={16} className="text-foreground" />}
@@ -329,7 +334,7 @@ export function AuditRow({
      The two share the line between them, so the strip carries no bottom edge
      and the row below it no top one. */
   return (
-    <div className="flex w-full flex-col">
+    <div {...nudge} className={cn("flex w-full flex-col", nudged && "animate-nudge")}>
       <div
         onClick={overlay ? undefined : () => onOpenSeat?.("detail")}
         className={cn(

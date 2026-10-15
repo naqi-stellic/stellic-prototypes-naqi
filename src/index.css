@@ -268,6 +268,29 @@
   }
 }
 
+/* A card that can be moved, saying so: a short shake, once. */
+@keyframes nudge {
+  0%,
+  100% {
+    transform: translateX(0) rotate(0);
+  }
+  15% {
+    transform: translateX(-2px) rotate(-0.4deg);
+  }
+  30% {
+    transform: translateX(2px) rotate(0.4deg);
+  }
+  45% {
+    transform: translateX(-2px) rotate(-0.3deg);
+  }
+  60% {
+    transform: translateX(2px) rotate(0.3deg);
+  }
+  80% {
+    transform: translateX(-1px) rotate(0);
+  }
+}
+
 @keyframes dissolve {
   to {
     opacity: 0;
@@ -281,6 +304,7 @@
   --animate-settle: settle 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
   --animate-fade: fade 0.4s ease-out both;
   --animate-vanish: vanish 0.42s cubic-bezier(0.4, 0, 0.2, 1) both;
+  --animate-nudge: nudge 0.5s ease-in-out;
 }
 
 /* Honour the system setting: the entrance is the decoration, the end state is
@@ -291,6 +315,7 @@
   .animate-settle,
   .animate-fade,
   .animate-vanish,
+  .animate-nudge,
   .animate-dissolve {
     animation: none;
   }
