@@ -2,6 +2,7 @@ import { cn } from "cn"
 import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { Icon, type IconName } from "@/components/icon"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -279,6 +280,14 @@ export function PlanHeader({
               >
                 <Icon name={action.icon} size={16} />
                 <span className={labelsGo}>{action.label}</span>
+                {/* How many of the details are on, so the button says what
+                    the cards are carrying without opening it. */}
+                {action.fields && (
+                  <Badge variant="secondary" className={labelsGo}>
+                    {action.fields.filter((field) => field.shown).length} of{" "}
+                    {action.fields.length}
+                  </Badge>
+                )}
               </Button>
             )
 
