@@ -16,7 +16,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { offeredIn, type CatalogEntry, type TermName } from "@/data/catalog"
+import {
+  ALL_ELECTIVES,
+  ELECTIVE_COURSES,
+  offeredIn,
+  type CatalogEntry,
+  type TermName,
+} from "@/data/catalog"
 import { PREREQ_LABEL, prereqsMet } from "@/data/course-detail"
 import { incomingTotals } from "@/data/incoming"
 import { DEGREE, planStanding, type Year } from "@/data/plan"
@@ -56,6 +62,37 @@ export function RequirementRow({
     disabled: overlay || id == null,
   })
 
+  /* A seat is drawn the way the plan draws one: the requirement it answers
+     over the line that goes to the courses that could fill it. Both open the
+     choice, and the whole of it can be picked up. */
+  if (entry.placeholder) {
+    const options = (ELECTIVE_COURSES[entry.code] ?? ALL_ELECTIVES).length
+    return (
+      <div
+        ref={overlay ? undefined : setNodeRef}
+        {...(overlay ? {} : listeners)}
+        {...(overlay ? {} : attributes)}
+        onClick={overlay ? undefined : onOpen}
+        className={cn(
+          "flex w-full cursor-grab flex-col rounded-md border border-dashed border-gray-40 bg-gray-0",
+          !overlay && onOpen && "transition-colors hover:bg-gray-5",
+          overlay && "cursor-grabbing shadow-secondary",
+          isDragging && "opacity-40"
+        )}
+      >
+        <p className="truncate border-b border-dashed border-gray-40 px-[11px] py-2 text-body-md font-semibold text-foreground">
+          Requirement: {entry.name}
+        </p>
+        <span className="flex items-center gap-2 p-[11px]">
+          <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
+          <span className="min-w-0 flex-1 truncate text-body-md text-foreground">
+            Choose 1 of {options} {options === 1 ? "course" : "courses"}
+          </span>
+        </span>
+      </div>
+    )
+  }
+
   return (
     <div
       ref={overlay ? undefined : setNodeRef}
@@ -72,16 +109,24 @@ export function RequirementRow({
       <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-40" />
 
       <span className="flex min-w-0 flex-1 flex-col">
-        {/* A seat has no course, so it has no code to show. */}
-        {!entry.placeholder && (
-          <span className="truncate text-body-md text-gray-80">{entry.code}</span>
-        )}
+        <span className="truncate text-body-md text-gray-80">{entry.code}</span>
         <span className="truncate text-body-md font-semibold text-foreground">{entry.name}</span>
+        {/* Said the way a section says it, so a course that cannot be taken yet
+            is marked where it is read. */}
+        {!prereqsMet(entry) && (
+          <span className="flex items-center gap-1 pt-1 text-body-md text-alert-100">
+            <Icon name="error-outline" size={14} className="shrink-0" />
+            <span className="min-w-0">Course eligibility criteria not met</span>
+          </span>
+        )}
+        {/* What the course would count for, so a list grouped any other way
+            than by requirement still says it. A seat is the requirement. */}
+        {entry.reason && (
+          <span className="truncate pt-1 text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
+            Counting for {entry.reason}
+          </span>
+        )}
       </span>
-
-      {entry.placeholder && (
-        <Icon name="chevron-right" size={16} className="shrink-0 text-gray-80" />
-      )}
     </div>
   )
 }
@@ -147,11 +192,11 @@ type Grouping = (typeof GROUPINGS)[number]
 /** What the list is narrowed to and how it is filed. */
 export type Narrowing = { filters: FilterState; grouping: Grouping }
 
-/** Opens on what the student can take now: the question they came with is
- *  what to add next, so being eligible is the starting point rather than
- *  something to opt into. */
+/** Opens on everything still to place. A course the student cannot take yet
+ *  stays in the list and says so on its card, rather than going missing until
+ *  a filter is taken off. */
 export const NARROWING_DEFAULT: Narrowing = {
-  filters: { prereqs: [PREREQ_LABEL.met] },
+  filters: {},
   grouping: "Requirement",
 }
 
@@ -317,7 +362,7 @@ export function RequirementsPanel({
         />
 
       <div className="flex w-full flex-col gap-2">
-        <span className="text-body-md font-semibold text-foreground">Courses</span>
+        <span className="text-body-md font-semibold text-foreground">Progress</span>
         <Meter
           total={total}
           shares={[
