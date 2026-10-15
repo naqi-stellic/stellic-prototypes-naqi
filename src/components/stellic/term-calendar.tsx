@@ -93,7 +93,7 @@ function CourseCard({
             onOpenSeat && "cursor-pointer hover:bg-gray-5"
           )}
         >
-          {seat.name}
+          Requirement: {seat.name}
         </p>
       )}
       <div className="flex w-full items-stretch pr-3">
@@ -183,7 +183,7 @@ function HeldCard({
           isStruck(course) && "line-through"
         )}
       >
-        {course.name}
+        Requirement: {course.name}
       </p>
       <div
         onClick={onSearch}
@@ -195,7 +195,7 @@ function HeldCard({
       >
         <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
         <span className="min-w-0 flex-1 truncate text-body-md text-foreground">
-          Choose course for elective, {options} {options === 1 ? "option" : "options"}
+          Choose 1 of {options} {options === 1 ? "course" : "courses"}
         </span>
       </div>
       <DraftNote course={course} />

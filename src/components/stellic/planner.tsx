@@ -192,7 +192,7 @@ export function AuditRow({
               struck && "line-through"
             )}
           >
-            Choose course for elective, {options} {options === 1 ? "option" : "options"}
+            Choose 1 of {options} {options === 1 ? "course" : "courses"}
           </p>
         ) : (
           <>
@@ -316,7 +316,7 @@ export function AuditRow({
             struck && "line-through"
           )}
         >
-          {(filled ?? course).name}
+          Requirement: {(filled ?? course).name}
         </p>
       </div>
       {row}
