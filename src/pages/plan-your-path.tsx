@@ -1129,6 +1129,7 @@ export function PlanYourPath({
             years={shown}
             narrowing={narrowing}
             onNarrow={setNarrowing}
+            details={metadata}
             onClose={() => setReqsOpen(false)}
             onOpenCourse={(index) => {
               const found = requirements.find((r) => r.index === index)
@@ -1409,7 +1410,7 @@ export function PlanYourPath({
 
     <DragOverlay>
       {dragging && <AuditRow course={dragging.course} overlay />}
-      {draggingEntry && <RequirementRow entry={draggingEntry} overlay />}
+      {draggingEntry && <RequirementRow entry={draggingEntry} details={metadata} overlay />}
     </DragOverlay>
     </DndContext>
     </RegistrationProvider>

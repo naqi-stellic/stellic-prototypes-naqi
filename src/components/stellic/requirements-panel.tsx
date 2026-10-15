@@ -25,7 +25,14 @@ import {
 } from "@/data/catalog"
 import { PREREQ_LABEL, prereqsMet } from "@/data/course-detail"
 import { incomingTotals } from "@/data/incoming"
-import { DEGREE, planStanding, type Year } from "@/data/plan"
+import {
+  CREDITS_PER_COURSE,
+  DEGREE,
+  courseTags,
+  planStanding,
+  type MetadataField,
+  type Year,
+} from "@/data/plan"
 
 /* Everything the degree still wants, with nowhere to be yet. The plan is not
  * finished until this list is empty, so each row is picked up from here and
@@ -46,11 +53,17 @@ export function requirementIndex(id: string): number | null {
 export function RequirementRow({
   entry,
   id,
+  details = [],
   overlay,
   onOpen,
 }: {
   entry: CatalogEntry
   id?: string
+  /** What Plan details has switched on. A requirement says what it can of
+   *  them: it has a credit value and the campus it would be taken on, but no
+   *  instructor or room until a class is chosen, and what it cannot say it
+   *  leaves off, as a card on the plan does. */
+  details?: MetadataField[]
   /** Drawn under the cursor rather than in the list. */
   overlay?: boolean
   /** Opens the course on its own. A press that does not travel far enough to
@@ -61,6 +74,26 @@ export function RequirementRow({
     id: id ?? `${REQUIREMENT_ID}overlay`,
     disabled: overlay || id == null,
   })
+
+  const tags = courseTags(
+    {
+      id: "requirement",
+      code: entry.code,
+      name: entry.name,
+      credits: CREDITS_PER_COURSE,
+      ...(entry.placeholder ? {} : { campus: "Main", modality: "In Person" }),
+    },
+    details
+  )
+  const tagBadges = tags.length > 0 && (
+    <span className="flex flex-wrap items-start gap-1 pt-1">
+      {tags.map((tag) => (
+        <Badge key={tag} variant="secondary">
+          {tag}
+        </Badge>
+      ))}
+    </span>
+  )
 
   /* A seat is drawn the way the plan draws one: the requirement it answers
      over the line that goes to the courses that could fill it. Both open the
@@ -85,8 +118,11 @@ export function RequirementRow({
         </p>
         <span className="flex items-center gap-2 p-[11px]">
           <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
-          <span className="min-w-0 flex-1 truncate text-body-md text-foreground">
-            Choose 1 of {options} {options === 1 ? "course" : "courses"}
+          <span className="flex min-w-0 flex-1 flex-col">
+            <span className="truncate text-body-md text-foreground">
+              Choose 1 of {options} {options === 1 ? "course" : "courses"}
+            </span>
+            {tagBadges}
           </span>
         </span>
       </div>
@@ -106,11 +142,12 @@ export function RequirementRow({
         isDragging && "opacity-40"
       )}
     >
-      <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-40" />
+      <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
 
       <span className="flex min-w-0 flex-1 flex-col">
         <span className="truncate text-body-md text-gray-80">{entry.code}</span>
         <span className="truncate text-body-md font-semibold text-foreground">{entry.name}</span>
+        {tagBadges}
         {/* Said the way a section says it, so a course that cannot be taken yet
             is marked where it is read. */}
         {!prereqsMet(entry) && (
@@ -269,6 +306,7 @@ export function RequirementsPanel({
   years,
   narrowing,
   onNarrow,
+  details,
   onOpenCourse,
   onClose,
 }: {
@@ -282,6 +320,8 @@ export function RequirementsPanel({
    *  left rather than as it starts. */
   narrowing: Narrowing
   onNarrow: (next: Narrowing) => void
+  /** What Plan details is showing, which the rows say of themselves too. */
+  details?: MetadataField[]
   /** Opens one of them on its own, by its place in the outstanding list. */
   onOpenCourse?: (index: number) => void
   onClose?: () => void
@@ -477,6 +517,7 @@ export function RequirementsPanel({
               key={`${entry.code}-${index}`}
               id={`${REQUIREMENT_ID}${index}`}
               entry={entry}
+              details={details}
               onOpen={onOpenCourse && (() => onOpenCourse(index))}
             />
           ))}
