@@ -197,7 +197,7 @@ export type Narrowing = { filters: FilterState; grouping: Grouping }
  *  a filter is taken off. */
 export const NARROWING_DEFAULT: Narrowing = {
   filters: {},
-  grouping: "Requirement",
+  grouping: "Term offered",
 }
 
 /** What a requirement is filed under, which is the whole of the grouping. A
