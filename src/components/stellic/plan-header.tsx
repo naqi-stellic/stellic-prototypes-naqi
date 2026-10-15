@@ -392,7 +392,7 @@ export function PlanHeader({
         aria-hidden="true"
         className="pointer-events-none absolute inset-x-0 bottom-0 h-6"
       />
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-4">
         {/* Which of their plans. A student knows whose plan it is; the name
             only appears for staff, as the way back to the record they came
             from, set back in gray. */}
@@ -461,7 +461,11 @@ export function PlanHeader({
         banner below it is its own strip either way. */}
       <div
       className={cn(
-        "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b p-6",
+        "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b px-6 pb-6",
+        /* The same 16px above it as there is between the plan's name and its
+           actions when they wrap, so the three rows sit evenly apart. Holding
+           at the top it has the full 24 it always had. */
+        stuck ? "pt-6" : "pt-4",
         "transition-colors",
         /* The edge belongs to the bottom of the block, not to this row: where
            a banner is held under it, the banner carries it. */
