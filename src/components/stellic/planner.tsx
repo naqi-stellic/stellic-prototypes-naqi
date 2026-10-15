@@ -2,7 +2,7 @@ import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { cn } from "cn"
-import type { ReactNode } from "react"
+import { useEffect, useRef, useState, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
@@ -15,6 +15,7 @@ import { Alert } from "@/components/ui/alert"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ELECTIVE_COURSES, ALL_ELECTIVES } from "@/data/catalog"
 import {
   CREDIT_GROUP_LABEL,
@@ -93,6 +94,9 @@ type AuditRowProps = {
   selected?: boolean
 }
 
+/** How wide a term can be before its courses' note button is only a glyph. */
+const NARROW_TERM = 460
+
 export function AuditRow({
   course,
   term,
@@ -106,6 +110,21 @@ export function AuditRow({
   onOpenCourse,
   selected,
 }: AuditRowProps) {
+  /* A term narrower than this has no room for a button with words in it beside
+     a course's name, so the note button gives them up for its glyph. Read off
+     the term's own width, since the row's actions are not drawn until the
+     cursor is on it. */
+  const rowRef = useRef<HTMLDivElement>(null)
+  const [narrow, setNarrow] = useState(false)
+  useEffect(() => {
+    const term = rowRef.current?.closest("[data-term]")
+    if (!term) return
+    const read = () => setNarrow(term.getBoundingClientRect().width < NARROW_TERM)
+    read()
+    const watch = new ResizeObserver(read)
+    watch.observe(term)
+    return () => watch.disconnect()
+  }, [])
   const draft = course.draft
   const style = draft ? DRAFT_STYLE[draft.mark] : null
   const struck = isStruck(course)
@@ -135,6 +154,7 @@ export function AuditRow({
 
   const row = (
     <div
+      ref={rowRef}
       data-draft-mark={draft?.mark}
       style={
         draft
@@ -259,23 +279,38 @@ export function AuditRow({
           how you look for a class to fill it. */}
       {!overlay && onRemove && (
         <span className="flex shrink-0 items-center gap-1">
-          <Button
-            aria-label={`Add note to ${course.name}`}
-            onPointerDown={(e) => e.stopPropagation()}
-            className="hidden group-hover:inline-flex"
-          >
-            Add Note
-          </Button>
-          <Button
-            size="icon"
-            aria-label={`Remove ${course.name}`}
-            /* Keep the drag sensor out of it, or the press starts a drag. */
-            onPointerDown={(e) => e.stopPropagation()}
-            onClick={onRemove}
-            className="hidden group-hover:inline-flex"
-          >
-            <Icon name="close" size={16} />
-          </Button>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size={narrow ? "icon" : "default"}
+                  aria-label={`Add note to ${course.name}`}
+                  onPointerDown={(e) => e.stopPropagation()}
+                  className="hidden group-hover:inline-flex"
+                >
+                  {narrow ? <Icon name="sticky-note-2" size={16} /> : "Add Note"}
+                </Button>
+              </TooltipTrigger>
+              {narrow && <TooltipContent>Add Note</TooltipContent>}
+            </Tooltip>
+          </TooltipProvider>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  size="icon"
+                  aria-label={`Remove ${course.name}`}
+                  /* Keep the drag sensor out of it, or the press starts a drag. */
+                  onPointerDown={(e) => e.stopPropagation()}
+                  onClick={onRemove}
+                  className="hidden group-hover:inline-flex"
+                >
+                  <Icon name="close" size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>{term ? `Remove from ${term.name}` : "Remove from plan"}</TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </span>
       )}
 
@@ -492,6 +527,22 @@ export function SemesterCard({
   /* Out with an advisor: the term says so until the request comes back. */
   const pending = usePendingReview(term.id)
 
+  /* Whether the term's button has lost its words, which is when it needs
+     another way to say what it is. Read off the label, since the card's own
+     width is what hid it and CSS is the only thing that knows where. */
+  const labelRef = useRef<HTMLSpanElement>(null)
+  const [iconOnly, setIconOnly] = useState(false)
+  useEffect(() => {
+    const label = labelRef.current
+    const card = label?.closest("[data-term]")
+    if (!label || !card) return
+    const read = () => setIconOnly(label.offsetParent === null)
+    read()
+    const watch = new ResizeObserver(read)
+    watch.observe(card)
+    return () => watch.disconnect()
+  }, [])
+
   /* The design only gives the header a bottom gap when something follows it
    * other than the course list. */
   const headerHasGap = term.alert != null || term.courses.length === 0
@@ -579,16 +630,25 @@ export function SemesterCard({
           {/* The way into the term. Once its classes are out it opens on its
               week, and says so; before that it opens on its list of courses,
               and says that. A button, because a link on the name was missed. */}
-          <Button
-            className="shrink-0 self-start"
-            onClick={onOpen}
-            aria-label={`${term.scheduled ? "View schedule" : "View term"} for ${term.name}`}
-          >
-            <Icon name={term.scheduled ? "calendar-month" : "list"} size={16} />
-            <span className="@max-sm/term:hidden">
-              {term.scheduled ? "View Schedule" : "View Term"}
-            </span>
-          </Button>
+          <TooltipProvider delayDuration={200}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  className="shrink-0 self-start"
+                  onClick={onOpen}
+                  aria-label={`${term.scheduled ? "View schedule" : "View term"} for ${term.name}`}
+                >
+                  <Icon name={term.scheduled ? "calendar-month" : "list"} size={16} />
+                  <span ref={labelRef} className="@max-sm/term:hidden">
+                    {term.scheduled ? "View Schedule" : "View Term"}
+                  </span>
+                </Button>
+              </TooltipTrigger>
+              {iconOnly && (
+                <TooltipContent>{term.scheduled ? "View Schedule" : "View Term"}</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
         </div>
 
         {alert}
