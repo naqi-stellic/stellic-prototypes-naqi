@@ -10,6 +10,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
@@ -264,10 +265,31 @@ export function PlanHeader({
      down to the two that are worth keeping. */
   const yearsGo = crowded ? "@max-[780px]/toolbar:hidden" : "@max-[740px]/toolbar:hidden"
 
+  /* Whether the actions have lost their words, which is when a button needs
+     another way to say what it is. Read off the label itself, since the
+     toolbar's own width is what hid it and CSS is the only thing that knows
+     where that happens. */
+  const actionsRef = useRef<HTMLDivElement>(null)
+  const [collapsed, setCollapsed] = useState(false)
+  useEffect(() => {
+    const row = actionsRef.current
+    const bar = row?.parentElement
+    if (!row || !bar) return
+    const read = () => {
+      const label = row.querySelector<HTMLElement>("[data-action-label]")
+      setCollapsed(label != null && label.offsetParent === null)
+    }
+    read()
+    const watch = new ResizeObserver(read)
+    watch.observe(bar)
+    return () => watch.disconnect()
+  }, [stuck])
+
   const actionButtons = (
         /* Named for anything that has to find the plan's actions on the page —
            the onboarding spotlight, which points at them. */
-        <div data-tour="plan-actions" className="flex flex-wrap items-center gap-2">
+        <TooltipProvider delayDuration={200}>
+        <div ref={actionsRef} data-tour="plan-actions" className="flex flex-wrap items-center gap-2">
           {shown.map((action) => {
             const button = (
               <Button
@@ -279,7 +301,7 @@ export function PlanHeader({
                 className={cn("data-[state=open]:bg-gray-5", iconOnly)}
               >
                 <Icon name={action.icon} size={16} />
-                <span className={labelsGo}>{action.label}</span>
+                <span data-action-label className={labelsGo}>{action.label}</span>
                 {/* How many of the details are on, so the button says what
                     the cards are carrying without opening it. */}
                 {action.fields && (
@@ -291,11 +313,35 @@ export function PlanHeader({
               </Button>
             )
 
-            if (!action.fields) return <span key={action.label}>{button}</span>
+            /* Said on hover once the words are gone, with the count where the
+               button carries one. */
+            const tip = (
+              <TooltipContent>
+                {action.label}
+                {action.fields &&
+                  ` (${action.fields.filter((field) => field.shown).length} of ${action.fields.length})`}
+              </TooltipContent>
+            )
+
+            if (!action.fields) {
+              return (
+                <span key={action.label}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>{button}</TooltipTrigger>
+                    {collapsed && tip}
+                  </Tooltip>
+                </span>
+              )
+            }
 
             return (
               <DropdownMenu key={action.label}>
-                <DropdownMenuTrigger asChild>{button}</DropdownMenuTrigger>
+                <Tooltip>
+                  <DropdownMenuTrigger asChild>
+                    <TooltipTrigger asChild>{button}</TooltipTrigger>
+                  </DropdownMenuTrigger>
+                  {collapsed && tip}
+                </Tooltip>
                 <DropdownMenuContent align="end" className="w-[200px]">
                   {action.fields.map((field) => (
                     <DropdownMenuItem
@@ -323,10 +369,16 @@ export function PlanHeader({
               </DropdownMenu>
             )
           })}
-          <Button size="icon" aria-label="More options">
-            <Icon name="more-horiz" size={16} />
-          </Button>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button size="icon" aria-label="More options">
+                <Icon name="more-horiz" size={16} />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>More options</TooltipContent>
+          </Tooltip>
         </div>
+        </TooltipProvider>
   )
 
   return (
