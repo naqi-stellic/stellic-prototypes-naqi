@@ -761,11 +761,13 @@ export const METADATA_FIELDS: { id: MetadataField; label: string }[] = [
   { id: "activities", label: "Activities" },
 ]
 
-/** The course's name and nothing else. Activities wait to be asked for too:
- *  they are not courses, and a plan reads as courses first. Without it a card is its code alone,
- *  for a plan that wants to be read compact; the section only matters once
- *  somebody is down at meeting times, so it waits to be asked for. */
-export const METADATA_DEFAULT: MetadataField[] = ["name"]
+/** The course's name and what it is worth. Activities wait to be asked for
+ *  too: they are not courses, and a plan reads as courses first. Without the
+ *  name a card is its code alone, for a plan that wants to be read compact;
+ *  the section only matters once somebody is down at meeting times, so it
+ *  waits to be asked for. Credits are on because the question a plan is
+ *  asked most is how many there are in a term. */
+export const METADATA_DEFAULT: MetadataField[] = ["name", "credits"]
 
 /** What a course can say about itself, in the order the menu lists it. Name,
  *  section and last activity are left out: they are not tags, and the card
