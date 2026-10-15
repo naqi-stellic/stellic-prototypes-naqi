@@ -307,9 +307,13 @@ export function TermView({
       <div className="flex w-full flex-wrap items-center justify-between gap-2">
         <div className="flex min-w-0 items-center gap-2">
           <h3 className="min-w-0 truncate text-h300 font-semibold text-gray-100">{term.name}</h3>
-          {/* Out for review: said beside the term's name, where the planner
-              says it on the term's card. */}
-          {pending && <StatusPill status="pending review">Pending Review</StatusPill>}
+          {/* Out for review, or looked at: said beside the term's name, where the
+              planner says it on the term's card. */}
+          {(pending || term.reviewed) && (
+            <StatusPill status={pending ? "pending review" : "reviewed"}>
+              {pending ? "Pending Review" : "reviewed"}
+            </StatusPill>
+          )}
         </div>
 
         <Tabs value={mode} onValueChange={setMode}>
