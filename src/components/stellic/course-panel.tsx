@@ -2,6 +2,7 @@ import { cn } from "cn"
 import { useState, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
+import { useRegistration } from "@/components/stellic/registration"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -240,6 +241,7 @@ function heldBack(section: SidebarSection, clash: string | null): string | null 
 }
 
 function SectionDetail({ section }: { section: SidebarSection }) {
+  const registration = useRegistration()
   const [more, setMore] = useState(false)
   return (
     <div className="flex w-full flex-col gap-4 border-t border-gray-40 p-4">
@@ -273,7 +275,7 @@ function SectionDetail({ section }: { section: SidebarSection }) {
           <p className="text-body-md text-gray-80">No requirements beyond the course's own.</p>
         ) : (
           <ul className="flex list-disc flex-col gap-2 pl-5 text-body-md text-gray-100">
-            <li>Registration disallowed for this section</li>
+            {registration && <li>Registration disallowed for this section</li>}
             <li>
               Prerequisites:
               <ul className="mt-2 flex flex-col gap-2">
@@ -859,6 +861,7 @@ function InstanceBody({
   onViewCalendar?: (term: Term) => void
 }) {
   const { course, term } = at
+  const registration = useRegistration()
   const stage = stageOf(term, course)
   const { met } = eligibility(entry, { term, plan })
   const grade = gradeOf(course)
@@ -960,7 +963,7 @@ function InstanceBody({
       {planning && (
         <Fold title="Planning checklist" open={open.checklist} onToggle={() => toggle("checklist")}>
           <Checklist
-            steps={planningChecklist(term, course, met)}
+            steps={planningChecklist(term, course, met, registration)}
             onCalendar={onViewCalendar && (() => onViewCalendar(term))}
             onRegister={onRegister && (() => onRegister(term, course.id))}
           />

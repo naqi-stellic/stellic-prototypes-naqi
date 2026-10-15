@@ -13,6 +13,7 @@ import { TermCalendar, type Preview } from "@/components/stellic/term-calendar"
 import { TermList } from "@/components/stellic/term-list"
 import { ActionLines } from "@/components/stellic/term-actions"
 import { useRegistrable, useTermIssues } from "@/components/stellic/plan-issues"
+import { useRegistration } from "@/components/stellic/registration"
 import { worstOf } from "@/data/issues"
 import { StatusPill } from "@/components/stellic/primitives"
 import { usePendingReview } from "@/components/stellic/review-state"
@@ -227,6 +228,7 @@ export function TermView({
   useEffect(() => {
     if (proposing) setMode("calendar")
   }, [proposing])
+  const registration = useRegistration()
   const actions = useTermIssues(term)
   const pending = usePendingReview(term.id)
 
@@ -271,7 +273,7 @@ export function TermView({
            this one: a warning is about a course you can scroll to, and it
            belongs beside the term it is about. */
         banner={
-          term.scheduled && term.alert
+          term.scheduled && term.alert && registration
             ? (stuck) => (
                 <RegistrationAlert
                   term={term}

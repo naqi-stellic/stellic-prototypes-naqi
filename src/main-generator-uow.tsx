@@ -10,7 +10,7 @@ import { PlanYourPath } from "@/pages/plan-your-path"
 
 /* Plan Generator for UoW: the generator prototype, component for component,
  * saying what UoW says. The two differ in the words on the page and nothing
- * about how it works. */
+ * about how it works, except that UoW has no registration to offer. */
 
 const root = document.getElementById("root")!
 /* Before the first render, so the page is never seen in Stellic's words. The
@@ -21,8 +21,12 @@ createRoot(root).render(
   <StrictMode>
     <PlanYourPath
       initialYears={GENERATOR_YEARS}
+      /* UoW does not register students in Stellic. */
+      registration={false}
       /* A returning student is shown what changed, over the planner itself. */
-      intro={({ shown, toggle }) => <PlannerIntro details={shown} onToggleDetail={toggle} />}
+      intro={({ shown, toggle }) => (
+        <PlannerIntro registration={false} details={shown} onToggleDetail={toggle} />
+      )}
     />
   </StrictMode>
 )

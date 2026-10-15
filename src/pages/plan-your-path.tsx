@@ -29,6 +29,7 @@ import { CourseSearchPanel } from "@/components/stellic/course-search"
 import { PlaceholderPanel } from "@/components/stellic/placeholder-panel"
 import { DiscardDraftDialog } from "@/components/stellic/discard-draft-dialog"
 import { RegisterDialog } from "@/components/stellic/register-dialog"
+import { RegistrationProvider } from "@/components/stellic/registration"
 import {
   NARROWING_DEFAULT,
   RequirementRow,
@@ -271,9 +272,10 @@ function termBanner(
   years: Year[],
   drafting: boolean,
   onRegister: (term: Term) => void,
-  onOpenSeat: (courseId: string) => void
+  onOpenSeat: (courseId: string) => void,
+  registration: boolean
 ) {
-  if (term.alert) {
+  if (term.alert && registration) {
     return (
       <RegistrationAlert term={term} onRegister={() => onRegister(term)} onOpenSeat={onOpenSeat} />
     )
@@ -286,6 +288,7 @@ type OpenBack = { planned: string } | { entry: CatalogEntry; from: string }
 
 export function PlanYourPath({
   generators = true,
+  registration = true,
   initialYears = INITIAL_YEARS,
   incoming,
   intro,
@@ -294,6 +297,9 @@ export function PlanYourPath({
      Without them the planner is the same in every other way — the same cards,
      the same term views, the same registration and review. */
   generators?: boolean
+  /** Whether students register from here. Where they do not, there is no
+   *  banner, button, dialog or checklist step for it anywhere in the planner. */
+  registration?: boolean
   /** What the plan holds when it opens. */
   initialYears?: Year[]
   /** The credit the student arrived with, where it is not the default set. */
@@ -818,10 +824,12 @@ export function PlanYourPath({
       handleRemoveCourse(at.course.id)
       setOpenPlanned(null)
     },
-    onRegister: (term: Term, courseId?: string) => {
-      setRegisteringOnly(courseId)
-      setRegistering(term)
-    },
+    onRegister: registration
+      ? (term: Term, courseId?: string) => {
+          setRegisteringOnly(courseId)
+          setRegistering(term)
+        }
+      : undefined,
     /* The term on its week, with the sidebar still beside it. */
     onViewCalendar: (term: Term) => {
       setOpenTermOn("calendar")
@@ -860,9 +868,10 @@ export function PlanYourPath({
   }
 
   return (
-    /* Around the whole shell, panel included: a requirement is picked up in the
+    <RegistrationProvider offered={registration}>
+    {/* Around the whole shell, panel included: a requirement is picked up in the
        panel and let go over a term, and both ends of that have to be inside the
-       same context. */
+       same context. */}
     <DndContext
       sensors={sensors}
       /* The drop slot changes the height of the term it opens in, so the
@@ -1145,7 +1154,7 @@ export function PlanYourPath({
             )}
             metadata={metadata}
             onToggleField={toggleMetadata}
-            onRegister={() => setRegistering(openTerm)}
+            onRegister={registration ? () => setRegistering(openTerm) : undefined}
             onPickSection={pickSection}
             preview={preview ?? undefined}
             onGenerateTerm={() => {
@@ -1235,8 +1244,13 @@ export function PlanYourPath({
                 revealed={revealed}
                 drop={drop}
                 renderAlert={(term) =>
-                  termBanner(term, shown, draft != null, setRegistering, (id) =>
-                    openSeatPanel(id, "detail")
+                  termBanner(
+                    term,
+                    shown,
+                    draft != null,
+                    setRegistering,
+                    (id) => openSeatPanel(id, "detail"),
+                    registration
                   )
                 }
                 onRemoveCourse={handleRemoveCourse}
@@ -1307,6 +1321,7 @@ export function PlanYourPath({
           }}
         />
 
+        {registration && (
         <RegisterDialog
           term={registering && (findTerm(years, registering.id) ?? registering)}
           only={registeringOnly}
@@ -1325,6 +1340,7 @@ export function PlanYourPath({
             else openPlannedPanel(course.id)
           }}
         />
+        )}
 
         {/* Keyed so the dialog starts afresh each time it is opened — from a
             term it opens on its second step, from the plan on its first. The
@@ -1351,5 +1367,6 @@ export function PlanYourPath({
       {draggingEntry && <RequirementRow entry={draggingEntry} overlay />}
     </DragOverlay>
     </DndContext>
+    </RegistrationProvider>
   )
 }

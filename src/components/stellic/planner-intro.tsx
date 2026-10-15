@@ -25,7 +25,13 @@ type Step = "welcome" | "details" | number | "done"
 /** The tour's stops, in order: what to spotlight on the page, and what to say
  *  about it. Found by what the page already marks — the header's buttons by
  *  name, a term by its id — so the tour needs nothing of its own from it. */
-const TOUR: { find: string; title: string; body: string; generates?: boolean }[] = [
+const TOUR: {
+  find: string
+  title: string
+  body: string
+  generates?: boolean
+  registers?: boolean
+}[] = [
   {
     find: '[data-tour="plan-actions"] [aria-label="Plan details"]',
     title: "Choose which details show for each course",
@@ -49,6 +55,7 @@ const TOUR: { find: string; title: string; body: string; generates?: boolean }[]
   },
   {
     find: '[data-term="spring-2027"] [role="alert"]',
+    registers: true,
     title: "Register from your plan",
     body: "When registration opens, this shows the deadline. Register for every course that is ready in one go.",
   },
@@ -59,7 +66,13 @@ const CARD = 340
 
 /** What the card names: one line per stop on the tour, in the tour's order
  *  and in its words, so "Show me" walks through exactly what was promised. */
-const CHANGES: { icon: IconName; name: string; does: string; generates?: boolean }[] = [
+const CHANGES: {
+  icon: IconName
+  name: string
+  does: string
+  generates?: boolean
+  registers?: boolean
+}[] = [
   { icon: "remove-red-eye", name: "Plan details", does: "Choose which details show for each course" },
   {
     icon: "design-services",
@@ -69,7 +82,12 @@ const CHANGES: { icon: IconName; name: string; does: string; generates?: boolean
   },
   { icon: "checklist", name: "Add remaining courses", does: "See what courses you still need to add" },
   { icon: "calendar-month", name: "Term schedules", does: "See your schedule for any term with classes out" },
-  { icon: "event-available", name: "Registration", does: "Register for every ready course from your plan" },
+  {
+    icon: "event-available",
+    name: "Registration",
+    does: "Register for every ready course from your plan",
+    registers: true,
+  },
 ]
 
 /** The welcome card and the details step stand the same width, so moving from
@@ -111,6 +129,7 @@ const PAD = 6
 
 export function PlannerIntro({
   generators = true,
+  registration = true,
   details,
   onToggleDetail,
 }: {
@@ -121,9 +140,14 @@ export function PlannerIntro({
   /** Whether the planner it introduces offers Generate plan. Where it does
    *  not, the card does not name it and the tour does not stop at it. */
   generators?: boolean
+  /** Whether students register from the planner. Where they do not, neither
+   *  the card nor the tour mentions it. */
+  registration?: boolean
 }) {
-  const changes = CHANGES.filter((change) => generators || !change.generates)
-  const tour = TOUR.filter((stop) => generators || !stop.generates)
+  const changes = CHANGES.filter(
+    (change) => (generators || !change.generates) && (registration || !change.registers)
+  )
+  const tour = TOUR.filter((stop) => (generators || !stop.generates) && (registration || !stop.registers))
   const [step, setStep] = useState<Step>("welcome")
   const [rect, setRect] = useState<DOMRect | null>(null)
   const asking = details != null && onToggleDetail != null

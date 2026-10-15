@@ -152,7 +152,12 @@ export type Step = {
 /** The four things between planning a course and sitting in it, each with the
  *  date it turns on. Done, the one to do now, the ones still to come — and a
  *  countdown on whichever date is next to arrive. */
-export function planningChecklist(term: Term, course: PlannedCourse, met: boolean): Step[] {
+export function planningChecklist(
+  term: Term,
+  course: PlannedCourse,
+  met: boolean,
+  registration = true
+): Step[] {
   const dates = termDates(term)
   const sectionsOut = term.scheduled === true || term.locked === true
   const picked = course.section != null
@@ -199,8 +204,9 @@ export function planningChecklist(term: Term, course: PlannedCourse, met: boolea
       ? { label: "Meet eligibility: prerequisites", state: "done" }
       : { label: "Meet eligibility: prerequisites not met", state: "blocked" },
     select,
-    register,
-    addDrop,
+    /* Registering and the add/drop that follows it are not Stellic's where
+       students register somewhere else. */
+    ...(registration ? [register, addDrop] : []),
   ]
 }
 
