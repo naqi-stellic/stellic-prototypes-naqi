@@ -577,19 +577,19 @@ export function SemesterCard({
             </div>
             <p className="text-body-md text-gray-80">{termMeta(term)}</p>
           </div>
-          {/* The way into the term's week, once its classes are out. Before
-              that there is no week to open, so there is no button. A button
-              that says so, because a link on the name was missed. */}
-          {term.scheduled && (
-            <Button
-              className="shrink-0 self-start"
-              onClick={onOpen}
-              aria-label={`View schedule for ${term.name}`}
-            >
-              <Icon name="calendar-month" size={16} />
-              <span className="@max-sm/term:hidden">View schedule</span>
-            </Button>
-          )}
+          {/* The way into the term. Once its classes are out it opens on its
+              week, and says so; before that it opens on its list of courses,
+              and says that. A button, because a link on the name was missed. */}
+          <Button
+            className="shrink-0 self-start"
+            onClick={onOpen}
+            aria-label={`${term.scheduled ? "View schedule" : "View term"} for ${term.name}`}
+          >
+            <Icon name={term.scheduled ? "calendar-month" : "list"} size={16} />
+            <span className="@max-sm/term:hidden">
+              {term.scheduled ? "View Schedule" : "View Term"}
+            </span>
+          </Button>
         </div>
 
         {alert}

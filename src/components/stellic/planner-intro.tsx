@@ -52,7 +52,7 @@ const TOUR: {
   {
     find: '[data-term="spring-2027"] [aria-label^="View schedule"]',
     title: "See your schedule",
-    body: "Select View schedule on a term to open it. Once its classes are out, it opens on a calendar of your week.",
+    body: "Select View Schedule on a term to open it. Once its classes are out, it opens on a calendar of your week.",
   },
   {
     find: '[data-term="spring-2027"] [role="alert"]',
