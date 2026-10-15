@@ -16,6 +16,7 @@ import {
   findCourse,
   findTerm,
   scheduleTerm,
+  type Meeting,
   type PlannedCourse,
   type Term,
   type Year,
@@ -24,6 +25,10 @@ import {
 /* A generated draft: the student's plan with the generator's proposal laid over
  * it. Nothing is destroyed — a course the draft wants to move or drop stays on
  * the canvas, struck through, until the draft is accepted or dismissed. */
+
+/** A class picked from a course's sections, to be put on the course as it
+ *  joins the plan. */
+export type ChosenSection = { section: string; meetings: Meeting[] }
 
 export type DraftOption = {
   id: string
@@ -896,7 +901,14 @@ export function removeInDraft(years: Year[], courseId: string): Year[] {
 /** Puts a course into a seat already in the plan. The seat becomes the course
  *  where it stands — nothing arrives and nothing leaves — and goes on saying
  *  which requirement it was held for. */
-export function fillSeat(years: Year[], courseId: string, entry: CatalogEntry): Year[] {
+export function fillSeat(
+  years: Year[],
+  courseId: string,
+  entry: CatalogEntry,
+  /** The class chosen along with the course, where it was chosen from its
+   *  sections rather than from the course. */
+  pick?: ChosenSection
+): Year[] {
   const found = findCourse(years, courseId)
   if (!found || found.term.locked || !found.course.placeholder) return years
 
@@ -915,6 +927,7 @@ export function fillSeat(years: Year[], courseId: string, entry: CatalogEntry): 
             campus: "Main",
             modality: "In Person",
             gradeOption: "Graded",
+            ...(pick ? { section: pick.section, settled: true, meetings: pick.meetings } : {}),
             lastActivity: `Added by you, ${GENERATED_ON}`,
           }
     ),
@@ -963,7 +976,10 @@ export function addCourse(
   marked: boolean,
   /** Where the entry sits in `REMAINING_REQUIREMENTS`, when it came from
    *  there. A seat has no name to be recognised by later. */
-  requirement?: number
+  requirement?: number,
+  /** The class chosen along with the course, where it was chosen from its
+   *  sections rather than from the course. */
+  pick?: ChosenSection
 ): Year[] {
   const term = findTerm(years, termId)
   if (!term || term.locked) return years
@@ -987,6 +1003,9 @@ export function addCourse(
           modality: "In Person",
           gradeOption: "Graded",
         }),
+    ...(pick && !entry.placeholder
+      ? { section: pick.section, settled: true, meetings: pick.meetings }
+      : {}),
     lastActivity: `Added by you, ${GENERATED_ON}`,
     ...(marked ? { draft: { mark: "added" as const, note: "You added this", order: 0 } } : {}),
   }

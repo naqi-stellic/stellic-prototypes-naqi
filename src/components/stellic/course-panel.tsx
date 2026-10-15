@@ -32,6 +32,7 @@ import {
   type Stage,
   type Step,
 } from "@/data/course-sidebar"
+import type { ChosenSection } from "@/data/draft"
 import { DEGREE, type Meeting, type Term } from "@/data/plan"
 
 /* The course sidebar. One course, read at whatever point it is at: not yet in
@@ -349,7 +350,9 @@ function SectionRow({
   onPick: () => void
   onPreview?: (on: boolean) => void
 }) {
-  const [open, setOpen] = useState(false)
+  /* The student's own class opens on its details, since it is the one they are
+     reading about; the others open when asked. */
+  const [open, setOpen] = useState(chosen)
   return (
     <div
       onMouseEnter={() => onPreview?.(true)}
@@ -394,7 +397,7 @@ function SectionRow({
                 section.available > 0 ? "text-success-100" : "text-alert-100"
               )}
             >
-              {section.available}/{section.capacity}
+              {section.available}/{section.capacity} seats available
             </span>
           </div>
           {why && (
@@ -452,7 +455,7 @@ export function CoursePanel({
   /** Opened to fill a placeholder in this term: the catalogue is where that
    *  is done, set to the placeholder's term, whatever else the plan holds. */
   filling?: string
-  onAdd: (termId: string) => void
+  onAdd: (termId: string, pick?: ChosenSection) => void
   /** Settles one instance on a section. */
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
   /** The section the cursor is over, for a week beside the panel to draw. */
@@ -590,8 +593,8 @@ export function CoursePanel({
           terms={terms}
           plan={plan}
           startTerm={filling}
-          onAdd={(termId) => {
-            onAdd(termId)
+          onAdd={(termId, pick) => {
+            onAdd(termId, pick)
             setTab(`${ADDED}${termId}`)
           }}
         />
@@ -788,7 +791,7 @@ function CatalogBody({
   plan: Term[]
   /** The term to start on, where there is one to start on. */
   startTerm?: string
-  onAdd: (termId: string) => void
+  onAdd: (termId: string, pick?: ChosenSection) => void
 }) {
   const [campus, setCampus] = useState(courseDetail(entry).campus)
   const [termId, setTermId] = useState(startTerm ?? terms[0]?.id ?? "")
@@ -797,7 +800,7 @@ function CatalogBody({
      whether it could be taken then. */
   const against = term ? { term, plan } : undefined
   const { met } = eligibility(entry, against)
-  const [open, setOpen] = useState({ eligibility: !met, counting: false, about: met })
+  const [open, setOpen] = useState({ eligibility: !met, sections: false, counting: false, about: met })
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
 
   return (
@@ -821,6 +824,19 @@ function CatalogBody({
           </Button>
         )}
       </div>
+      {/* Only where the term's classes are out: before that there is nothing to
+          list. Closed, since nothing here is chosen yet. */}
+      {term && (term.scheduled || term.locked) && (
+        <SectionsFold
+          key={term.id}
+          entry={entry}
+          at={{ term }}
+          stage="planned"
+          open={open.sections}
+          onToggle={() => toggle("sections")}
+          onAddSection={(section, meetings) => onAdd(term.id, { section, meetings })}
+        />
+      )}
       <EligibilityFold
         entry={entry}
         at={against}
@@ -1067,14 +1083,20 @@ function SectionsFold({
   onToggle,
   onPickSection,
   onPreviewSection,
+  onAddSection,
 }: {
   entry: CatalogEntry
-  at: Instance
+  /** Where the course sits in the plan. A catalogue course is not anywhere
+   *  yet, so it has only the term it is being read against. */
+  at: Instance | { course?: undefined; term: Term }
   stage: Stage
   open: boolean
   onToggle: () => void
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
   onPreviewSection?: (at: Instance, hovered: { section: string; meetings: Meeting[] } | null) => void
+  /** Where the course is not in the plan yet, a class's + puts the course
+   *  there on that class. */
+  onAddSection?: (section: string, meetings: Meeting[]) => void
 }) {
   const { course, term } = at
   const [all, setAll] = useState(false)
@@ -1082,7 +1104,7 @@ function SectionsFold({
      not happen to include it: a list that leaves out your own class is the
      wrong list. */
   const catalog = sectionsFor(entry)
-  const own: SidebarSection | null = course.section
+  const own: SidebarSection | null = course?.section
     ? {
         ...(catalog.find((s) => s.code === course.section) ?? catalog[0]),
         code: course.section,
@@ -1100,18 +1122,22 @@ function SectionsFold({
   /* The hours the rest of the term already keeps. */
   const busy = new Map<string, string>()
   for (const other of term.courses) {
-    if (other.id === course.id) continue
+    if (other.id === course?.id) continue
     for (const meeting of other.meetings ?? []) busy.set(`${meeting.day}-${meeting.from}`, other.code)
   }
   const clashOf = (section: SidebarSection) =>
     section.meetings.map((m) => busy.get(`${m.day}-${m.from}`)).find(Boolean) ?? null
   const settled = stage === "registered" || stage === "progress" || stage === "taken"
-  const canPick = onPickSection != null && !term.locked
-  /* Listed from the start: the student's own class, and — while there is
-     still a class to choose — every one they can take and get a seat in. */
+  const canPick = (onPickSection != null || onAddSection != null) && !term.locked
+  /* Listed from the start: the student's own class, and nothing else once
+     they have one — the rest wait behind "see more". Until a class is chosen,
+     every one they can take and get a seat in. */
   const listed = (section: SidebarSection) =>
-    section.code === course.section ||
-    (!settled && section.available > 0 && heldBack(section, clashOf(section)) == null)
+    section.code === course?.section ||
+    (!course?.section &&
+      !settled &&
+      section.available > 0 &&
+      heldBack(section, clashOf(section)) == null)
   const visible = all ? sections : sections.filter(listed)
   const hidden = sections.length - sections.filter(listed).length
 
@@ -1134,7 +1160,7 @@ function SectionsFold({
     >
       <div className="flex w-full flex-col gap-2">
         {visible.map((section) => {
-          const chosen = section.code === course.section
+          const chosen = section.code === course?.section
           return (
             <SectionRow
               key={section.code}
@@ -1142,9 +1168,13 @@ function SectionsFold({
               chosen={chosen}
               why={chosen ? null : heldBack(section, clashOf(section))}
               canPick={canPick}
-              onPick={() => onPickSection?.(at, section.code, section.meetings)}
+              onPick={() =>
+                at.course
+                  ? onPickSection?.(at, section.code, section.meetings)
+                  : onAddSection?.(section.code, section.meetings)
+              }
               onPreview={(on) =>
-                onPreviewSection?.(at, on ? { section: section.code, meetings: section.meetings } : null)
+                at.course && onPreviewSection?.(at, on ? { section: section.code, meetings: section.meetings } : null)
               }
             />
           )
@@ -1160,8 +1190,8 @@ function SectionsFold({
             <span className="min-w-0 flex-1">
               {all
                 ? `Showing all ${sections.length} sections`
-                : settled
-                  ? `Showing registered section, see ${hidden} more available`
+                : course?.section || settled
+                  ? `Showing ${settled ? "registered" : "selected"} section, see ${hidden} more available`
                   : `Showing sections based on eligibility, planning details, seat availability, see ${hidden} more available`}
             </span>
           </button>

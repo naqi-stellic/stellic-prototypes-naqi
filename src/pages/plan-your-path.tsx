@@ -99,6 +99,7 @@ import {
   removeInDraft,
   summariseDraft,
   unplacedRequirements,
+  type ChosenSection,
   type Draft,
   type DraftOption,
 } from "@/data/draft"
@@ -667,14 +668,19 @@ export function PlanYourPath({
 
   /* A seat becoming the course chosen for it, which is a change to the seat
      rather than something new arriving. */
-  function handleFillSeat(courseId: string, entry: CatalogEntry) {
-    if (draft) editDraft((current) => fillSeat(current, courseId, entry))
-    else setYears((current) => fillSeat(current, courseId, entry))
+  function handleFillSeat(courseId: string, entry: CatalogEntry, pick?: ChosenSection) {
+    if (draft) editDraft((current) => fillSeat(current, courseId, entry, pick))
+    else setYears((current) => fillSeat(current, courseId, entry, pick))
   }
 
-  function handleAddCourse(termId: string, entry: CatalogEntry, requirement?: number) {
-    if (draft) editDraft((current) => addCourse(current, termId, entry, true, requirement))
-    else setYears((current) => addCourse(current, termId, entry, false, requirement))
+  function handleAddCourse(
+    termId: string,
+    entry: CatalogEntry,
+    requirement?: number,
+    pick?: ChosenSection
+  ) {
+    if (draft) editDraft((current) => addCourse(current, termId, entry, true, requirement, pick))
+    else setYears((current) => addCourse(current, termId, entry, false, requirement, pick))
   }
 
   const openTerm: Term | null = openTermId
@@ -1014,14 +1020,16 @@ export function PlanYourPath({
             backLabel={plannedBack?.name}
             /* Planned again, and the sidebar stays on the course with a tab
                for the new term. */
-            onAdd={(termId) =>
+            onAdd={(termId, pick) =>
               handleAddCourse(
                 termId,
                 findEntry(plannedOpen.course.code) ?? {
                   code: plannedOpen.course.code,
                   name: plannedOpen.course.name,
                   reason: "Business core",
-                }
+                },
+                undefined,
+                pick
               )
             }
             {...courseHandlers}
@@ -1048,17 +1056,17 @@ export function PlanYourPath({
             backLabel={course.from}
             filling={seat?.term.id}
             {...courseHandlers}
-            onAdd={(termId) => {
+            onAdd={(termId, pick) => {
               /* Opened from a seat still waiting for a course, and put in that
                  seat's own term, this fills the seat rather than landing beside
                  it — which is what the student asked for by searching from it. */
               if (seat?.course.placeholder && seat.term.id === termId) {
-                handleFillSeat(seat.course.id, course.entry)
+                handleFillSeat(seat.course.id, course.entry, pick)
                 return
               }
               /* Either way the sidebar stays on the course, now on a tab for
                  the term it went to. Closing it is the student's call. */
-              handleAddCourse(termId, course.entry, course.requirement)
+              handleAddCourse(termId, course.entry, course.requirement, pick)
             }}
             onBack={() => {
               /* Walked here from another course, the way back is that course
