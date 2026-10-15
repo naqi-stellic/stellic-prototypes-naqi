@@ -29,8 +29,15 @@ export function Planner() {
       incoming={fromRecord ? recordIncoming() : undefined}
       /* The introduction is for the student. Staff opening a student's plan
          from a record are not being introduced to anything. */
-      intro={({ shown, toggle }) =>
-        !fromRecord && <PlannerIntro generators={false} details={shown} onToggleDetail={toggle} />
+      intro={({ shown, toggle, register }) =>
+        !fromRecord && (
+          <PlannerIntro
+            generators={false}
+            details={shown}
+            onToggleDetail={toggle}
+            onRegister={register}
+          />
+        )
       }
     />
     </>

@@ -1,3 +1,4 @@
+import { cn } from "cn"
 import { useEffect, useState } from "react"
 
 import { Icon, type IconName } from "@/components/icon"
@@ -20,7 +21,7 @@ import { courseTags, type MetadataField, type PlannedCourse } from "@/data/plan"
 
 /** Where the introduction is: the card, a stop on the tour by its place in
  *  TOUR, or finished. */
-type Step = "welcome" | "details" | number | "done"
+type Step = "welcome" | "intent" | "details" | number | "done"
 
 /** The tour's stops, in order: what to spotlight on the page, and what to say
  *  about it. Found by what the page already marks — the header's buttons by
@@ -124,6 +125,9 @@ const PREVIEW_COURSE: PlannedCourse = {
   room: "Room 405",
 }
 
+/** The answer that is no destination: the tour is what follows. */
+const EXPLORE = "Just explore"
+
 /** How far the spotlight's ring stands off what it frames. */
 const PAD = 6
 
@@ -132,7 +136,15 @@ export function PlannerIntro({
   registration = true,
   details,
   onToggleDetail,
+  onRegister,
+  onPlan,
 }: {
+  /** Where the second step can take the student instead of the tour: to the
+   *  term that is open for registration, with what is left to add beside it,
+   *  or to the whole plan with Generate plan open. Left out where the planner
+   *  has nowhere to take them, and the step does not offer it. */
+  onRegister?: () => void
+  onPlan?: () => void
   /** What Plan details is showing, and how to change it. Where they are not
    *  given there is nothing to ask, and the card goes straight to the tour. */
   details?: MetadataField[]
@@ -150,7 +162,34 @@ export function PlannerIntro({
   const tour = TOUR.filter((stop) => (generators || !stop.generates) && (registration || !stop.registers))
   const [step, setStep] = useState<Step>("welcome")
   const [rect, setRect] = useState<DOMRect | null>(null)
+  /* What the second step was answered with, until Next is pressed on it; the
+     tour, if it was answered with "Just explore". */
+  const [picked, setPicked] = useState<string | null>(null)
   const asking = details != null && onToggleDetail != null
+  /* The second step is a question about where to start, so it is asked only
+     where there is somewhere other than the tour to start. */
+  const choices = [
+    registration && onRegister && {
+      icon: "event-available" as IconName,
+      title: "Register for Spring 2027",
+      body: "Find the courses you can take this term and add them to your schedule.",
+      go: onRegister,
+    },
+    generators && onPlan && {
+      icon: "design-services" as IconName,
+      title: "Complete my plan to graduation",
+      body: "Build out every term from here to your degree.",
+      go: onPlan,
+    },
+  ].filter((choice) => choice !== false && choice != null) as {
+    icon: IconName
+    title: string
+    body: string
+    go: () => void
+  }[]
+  const intent = asking && choices.length > 0
+  const destination = choices.find((choice) => choice.title === picked)?.go ?? null
+  const steps = intent ? 3 : 2
 
   function startTour() {
     window.scrollTo({ top: 0 })
@@ -210,7 +249,7 @@ export function PlannerIntro({
         >
           <div className="flex w-full flex-col gap-4 p-6">
             <div className="flex flex-col gap-2 pb-2">
-              {asking && <span className="text-label-md text-gray-80">Step 1 of 2</span>}
+              {asking && <span className="text-label-md text-gray-80">Step 1 of {steps}</span>}
               <h2 id="planner-intro-title" className="text-h400 font-semibold text-gray-100">
                 Your planner has a new look
               </h2>
@@ -238,9 +277,77 @@ export function PlannerIntro({
                 variant="primary"
                 className="flex-1"
                 autoFocus
-                onClick={() => (asking ? setStep("details") : startTour())}
+                onClick={() => (asking ? setStep(intent ? "intent" : "details") : startTour())}
               >
                 {asking ? "Next" : "Show me"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (step === "intent") {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-100/50 p-4">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="planner-intent-title"
+          className={`animate-fade flex ${DIALOG} flex-col overflow-hidden rounded-lg bg-card shadow-2xl`}
+        >
+          <div className="flex w-full flex-col gap-4 p-6">
+            <div className="flex flex-col gap-2 pb-2">
+              <span className="text-label-md text-gray-80">Step 2 of {steps}</span>
+              <h2 id="planner-intent-title" className="text-h400 font-semibold text-gray-100">
+                Where do you want to start?
+              </h2>
+            </div>
+
+            <ul role="radiogroup" aria-labelledby="planner-intent-title" className="flex flex-col gap-3">
+              {[
+                ...choices,
+                {
+                  icon: "remove-red-eye" as IconName,
+                  title: EXPLORE,
+                  body: "Look around the planner first.",
+                },
+              ].map((choice) => (
+                <li key={choice.title}>
+                  <button
+                    type="button"
+                    role="radio"
+                    aria-checked={picked === choice.title}
+                    onClick={() => setPicked(choice.title)}
+                    className={cn(
+                      "flex w-full cursor-pointer flex-col gap-2 rounded-md border p-4 text-left transition-colors",
+                      picked === choice.title
+                        ? "border-primary-50 bg-primary-0"
+                        : "border-gray-40 bg-card hover:bg-gray-5"
+                    )}
+                  >
+                    <span className="flex items-center gap-2 text-body-md font-semibold text-gray-100">
+                      <Icon name={choice.icon} size={16} className="shrink-0" />
+                      {choice.title}
+                    </span>
+                    <span className="text-body-md text-gray-80">{choice.body}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            <div className="flex w-full items-center gap-2 pt-2">
+              <Button className="flex-1" onClick={() => setStep("welcome")}>
+                Back
+              </Button>
+              <Button
+                variant="primary"
+                className="flex-1"
+                disabled={picked == null}
+                onClick={() => setStep("details")}
+              >
+                Next
               </Button>
             </div>
           </div>
@@ -270,7 +377,9 @@ export function PlannerIntro({
         >
           <div className="flex w-full flex-col gap-4 p-6">
             <div className="flex flex-col gap-2 pb-2">
-              <span className="text-label-md text-gray-80">Step 2 of 2</span>
+              <span className="text-label-md text-gray-80">
+                Step {steps} of {steps}
+              </span>
               <h2 id="planner-details-title" className="text-h400 font-semibold text-gray-100">
                 Customize how your courses look
               </h2>
@@ -326,11 +435,20 @@ export function PlannerIntro({
             </div>
 
             <div className="flex w-full items-center gap-2 pt-2">
-              <Button className="flex-1" onClick={() => setStep("welcome")}>
+              <Button className="flex-1" onClick={() => setStep(intent ? "intent" : "welcome")}>
                 Back
               </Button>
-              <Button variant="primary" className="flex-1" autoFocus onClick={startTour}>
-                Show me
+              <Button
+                variant="primary"
+                className="flex-1"
+                autoFocus
+                onClick={() => {
+                  if (!destination) return startTour()
+                  setStep("done")
+                  destination()
+                }}
+              >
+                {destination ? "Get started" : "Show me"}
               </Button>
             </div>
           </div>

@@ -11,7 +11,14 @@ createRoot(document.getElementById("root")!).render(
     <PlanYourPath
       initialYears={GENERATOR_YEARS}
       /* A returning student is shown what changed, over the planner itself. */
-      intro={({ shown, toggle }) => <PlannerIntro details={shown} onToggleDetail={toggle} />}
+      intro={({ shown, toggle, register, plan }) => (
+        <PlannerIntro
+          details={shown}
+          onToggleDetail={toggle}
+          onRegister={register}
+          onPlan={plan}
+        />
+      )}
     />
   </StrictMode>
 )

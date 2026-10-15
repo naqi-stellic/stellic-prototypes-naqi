@@ -308,7 +308,15 @@ export function PlanYourPath({
   /** An introduction drawn over the plan. It is handed what Plan details is
    *  showing and the way to change it, so it can ask the student about the
    *  cards before they have seen them. */
-  intro?: (details: { shown: MetadataField[]; toggle: (id: string) => void }) => ReactNode
+  intro?: (details: {
+    shown: MetadataField[]
+    toggle: (id: string) => void
+    /** Takes the student to the term open for registration, with what is left
+     *  to add beside it, narrowed to what that term offers. */
+    register: () => void
+    /** Takes the student to the whole plan with Generate plan open. */
+    plan: () => void
+  }) => ReactNode
 } = {}) {
   /* Whether somebody arrived here from a student's record. Read once: it
      decides the nav as well as the way back on the breadcrumb. */
@@ -778,6 +786,30 @@ export function PlanYourPath({
       setOpenPlanned(null)
       setSearching(null)
     }
+  }
+
+  /* From the introduction: the term that is open for registration, on its
+     week, with what is left to add beside it and only what that term offers. */
+  function startRegistering() {
+    closeGenerators()
+    setReviewPanel(false)
+    setOpenSeat(null)
+    setOpenPlanned(null)
+    setOpenCourse(null)
+    setSearching(null)
+    setNarrowing((current) => ({ ...current, filters: { offered: ["Spring"] } }))
+    setOpenTermOn("calendar")
+    setOpenTermId("spring-2027")
+    setReqsOpen(true)
+  }
+
+  /* From the introduction: the whole plan, with Generate plan open on its
+     first question. */
+  function startPlanning() {
+    setReqsOpen(false)
+    setReviewPanel(false)
+    setOpenTermId(null)
+    setGenerateOpen(true)
   }
 
   /* The request already out, opened beside the plan rather than made again. */
@@ -1365,7 +1397,12 @@ export function PlanYourPath({
         />
       </div>
       </PendingReviewProvider>
-      {intro?.({ shown: metadata, toggle: toggleMetadata })}
+      {intro?.({
+        shown: metadata,
+        toggle: toggleMetadata,
+        register: startRegistering,
+        plan: startPlanning,
+      })}
       </MetadataProvider>
     </AppShell>
     </PlanIssuesProvider>
