@@ -88,7 +88,7 @@ export function GeneratePlanScope({
 
       <div className="flex w-full flex-col gap-6">
         <div className="flex w-full flex-col gap-2">
-          <p className="text-body-md font-semibold text-gray-100">Courses</p>
+          <p className="text-body-md font-semibold text-gray-100">Progress</p>
           {/* Four states, because the student is in four of them at once: the
               credit they arrived with, the term they are sitting in, the terms
               they have planned, and everything still to place. */}
