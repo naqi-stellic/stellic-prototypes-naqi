@@ -210,7 +210,7 @@ function Checklist({
           </span>
           {step.action === "calendar" && onCalendar && (
             <Button size="sm" className="shrink-0" onClick={onCalendar}>
-              View in Calendar
+              View in Schedule
             </Button>
           )}
           {step.action === "register" && onRegister && (

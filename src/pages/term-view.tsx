@@ -193,7 +193,7 @@ export function TermView({
    *  already answered, so the dialog opens on its second. */
   onRequestReview?: () => void
   /** Which view to open on, where something asked for one — the course
-   *  sidebar's View in Calendar. */
+   *  sidebar's View in Schedule. */
   startOn?: "calendar" | "list"
   /** A request is out on this term, and nothing has moved since. */
   requested?: boolean
