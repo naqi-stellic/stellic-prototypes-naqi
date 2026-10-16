@@ -4,6 +4,7 @@ import { useState } from "react"
 import { Icon } from "@/components/icon"
 import { Fold, Heading } from "@/components/stellic/course-panel"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
+import { CreditsLine, PanelHeader } from "@/components/stellic/panel-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -65,6 +66,7 @@ export function PlaceholderPanel({
       <CourseSearchPanel
         entries={eligible}
         backLabel={name}
+        credits={credits}
         onBack={() => setSearching(false)}
         onOpenCourse={onOpenCourse}
         onClose={onClose}
@@ -74,11 +76,13 @@ export function PlaceholderPanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      {/* The placeholder's name in the bar beside the close, as a course's is.
-          No rule of its own: the first section's rule is the line under it. */}
-      <div className="flex w-full shrink-0 items-start gap-2 px-6 py-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          {renaming ? (
+      {/* The placeholder's name under the bar of close, as a course's is. No
+          rule of its own: the first section's rule is the line under it. */}
+      <PanelHeader
+        onClose={onClose}
+        closeLabel="Close placeholder"
+        title={
+          renaming ? (
             <Input
               autoFocus
               aria-label="Placeholder name"
@@ -100,24 +104,15 @@ export function PlaceholderPanel({
                 <Icon name="edit" size={16} />
               </button>
             </h2>
-          )}
-          <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-80">
+          )
+        }
+        subline={
+          <>
             <span>Course Requirement Placeholder</span>
-            <span className="flex items-center gap-1">
-              <Icon name="watch-later" size={14} />
-              {credits} Credits
-            </span>
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close placeholder"
-          className="-my-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-        >
-          <Icon name="close" size={20} />
-        </button>
-      </div>
+            <CreditsLine credits={credits} />
+          </>
+        }
+      />
 
       {/* What the placeholder is for: a course to stand in it, at the credits
           it holds. Empty, the way to find one; filled, the course itself. */}

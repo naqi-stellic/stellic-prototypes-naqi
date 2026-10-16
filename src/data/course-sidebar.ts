@@ -84,6 +84,12 @@ export function longDate(date: Date): string {
   return `${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}, ${shown}:${minutes}${hour >= 12 ? "pm" : "am"}`
 }
 
+/** A date the registrar has published, or "TBD". Dates are published about a
+ *  year ahead, so one further off than that is not known yet. */
+export function knownDate(date: Date, from: Date = NOW): string {
+  return date.getTime() - from.getTime() > 365 * 86_400_000 ? "TBD" : longDate(date)
+}
+
 /** How long until a date, said the way a countdown chip says it. */
 export function countdown(to: Date, from: Date = NOW): string | null {
   const ms = to.getTime() - from.getTime()
@@ -171,7 +177,7 @@ export function planningChecklist(
     ? { label: "Select sections", state: "done", ...calendar }
     : sectionsOut
       ? { label: "Select sections", state: "current", ...calendar }
-      : { label: "Select sections", detail: `Available ${longDate(dates.sections)}`, state: "todo" }
+      : { label: "Select sections", detail: `Available ${knownDate(dates.sections)}`, state: "todo" }
 
   const register: Step = registered
     ? { label: "Register course", state: "done" }
@@ -186,17 +192,17 @@ export function planningChecklist(
         }
       : {
           label: "Registration",
-          detail: `Opens ${longDate(dates.registerOpens)}`,
+          detail: `Opens ${knownDate(dates.registerOpens)}`,
           state: "todo",
           /* Counting down only once there is a class to register for. */
-          chip: picked ? (countdown(dates.registerOpens) ?? undefined) : undefined,
+          chip: picked && knownDate(dates.registerOpens) !== "TBD" ? (countdown(dates.registerOpens) ?? undefined) : undefined,
         }
 
   const addDrop: Step = {
     label: "Add/drop",
-    detail: `Deadline ${longDate(dates.addDrop)}`,
+    detail: `Deadline ${knownDate(dates.addDrop)}`,
     state: "todo",
-    chip: registered ? (countdown(dates.addDrop) ?? undefined) : undefined,
+    chip: registered && knownDate(dates.addDrop) !== "TBD" ? (countdown(dates.addDrop) ?? undefined) : undefined,
   }
 
   return [

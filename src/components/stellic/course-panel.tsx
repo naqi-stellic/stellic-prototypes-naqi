@@ -1,7 +1,9 @@
 import { cn } from "cn"
-import { useState, type ReactNode } from "react"
+import { useState, type ComponentProps, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
+import { CreditsLine, PanelHeader } from "@/components/stellic/panel-header"
+import { AuditIcon } from "@/components/stellic/primitives"
 import { useRegistration } from "@/components/stellic/registration"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,7 +11,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import type { CatalogEntry } from "@/data/catalog"
 import { activityFor, courseDetail, meetingLines } from "@/data/course-detail"
@@ -25,12 +27,11 @@ import {
   sectionsFor,
   STAGE_LABEL,
   stageOf,
-  TAB_MARK,
   usuallyOffered,
   type Instance,
   type SidebarSection,
   type Stage,
-  type Step,
+  type Step
 } from "@/data/course-sidebar"
 import type { ChosenSection } from "@/data/draft"
 import { DEGREE, type Meeting, type Term } from "@/data/plan"
@@ -55,7 +56,7 @@ export function Fold({
   extra,
   open,
   onToggle,
-  children,
+  children
 }: {
   title: string
   /** Said beside the title, so a folded section still answers its question. */
@@ -133,7 +134,7 @@ function Picker({
   label,
   value,
   options,
-  onChange,
+  onChange
 }: {
   label: string
   value: string
@@ -172,6 +173,15 @@ function Picker({
 
 /* ------------------------------------------------------------------- tabs */
 
+/** The audit's own mark for each point a course can be at, so the plan and the
+ *  audit say the same thing in the same square. */
+const AUDIT_STATE: Record<Stage, ComponentProps<typeof AuditIcon>["state"]> = {
+  planned: "planned",
+  registered: "pre-registered",
+  progress: "registered",
+  taken: "completed"
+}
+
 const CATALOG = "catalog"
 /** Prefix for "just added to this term", until the plan says where it is. */
 const ADDED = "added:"
@@ -184,49 +194,72 @@ const STEP_MARK: Record<Step["state"], ReactNode> = {
   done: <Icon name="check-circle" size={16} className="shrink-0 text-success-100" />,
   current: <span className="size-4 shrink-0 rounded-full border-2 border-warning-100" />,
   todo: <span className="size-4 shrink-0 rounded-full border-2 border-gray-60" />,
-  blocked: <Icon name="error-outline" size={16} className="shrink-0 text-alert-100" />,
+  blocked: <Icon name="error-outline" size={16} className="shrink-0 text-alert-100" />
 }
 
 function Checklist({
   steps,
   onCalendar,
-  onRegister,
+  onRegister
 }: {
   steps: Step[]
   onCalendar?: () => void
   onRegister?: () => void
 }) {
+  /* What is done is out of the way until it is asked for: what is next is the
+     reason to be here. With nothing left to do there is nothing to put away —
+     the whole fold folds instead. */
+  const [showDone, setShowDone] = useState(false)
+  const done = steps.filter((step) => step.state === "done").length
+  const putAway = done > 0 && done < steps.length
+  const listed = putAway && !showDone ? steps.filter((step) => step.state !== "done") : steps
+
   return (
-    <ol className="flex w-full flex-col gap-3">
-      {steps.map((step) => (
-        <li key={step.label} className="flex w-full items-center gap-2 text-body-md text-gray-100">
-          {/* Level with the step's first line, where it has a second. */}
-          <span className={cn("flex h-5 shrink-0 items-center", step.detail && "self-start")}>
-            {STEP_MARK[step.state]}
-          </span>
-          <span className="flex min-w-0 flex-1 flex-col">
-            {step.label}
-            {step.detail && <span className="text-gray-80">{step.detail}</span>}
-          </span>
-          {step.action === "calendar" && onCalendar && (
-            <Button size="sm" className="shrink-0" onClick={onCalendar}>
-              View in Schedule
-            </Button>
-          )}
-          {step.action === "register" && onRegister && (
-            <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
-              Register Now
-            </Button>
-          )}
-          {step.chip && (
-            <span className="flex shrink-0 items-center gap-1 rounded-md bg-gray-5 px-1.5 py-0.5 text-label-md text-gray-100">
-              <Icon name="timer" size={12} />
-              {step.chip}
+    <div className="flex w-full flex-col gap-3">
+      <ol className="flex w-full flex-col gap-3">
+        {listed.map((step) => (
+          <li
+            key={step.label}
+            className="flex w-full items-center gap-2 text-body-md text-gray-100"
+          >
+            {/* Level with the step's first line, where it has a second. */}
+            <span className={cn("flex h-5 shrink-0 items-center", step.detail && "self-start")}>
+              {STEP_MARK[step.state]}
             </span>
-          )}
-        </li>
-      ))}
-    </ol>
+            <span className="flex min-w-0 flex-1 flex-col">
+              {step.label}
+              {step.detail && <span className="text-gray-80">{step.detail}</span>}
+            </span>
+            {step.action === "calendar" && onCalendar && (
+              <Button size="sm" className="shrink-0" onClick={onCalendar}>
+                View Schedule
+              </Button>
+            )}
+            {step.action === "register" && onRegister && (
+              <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
+                Register Now
+              </Button>
+            )}
+            {step.chip && (
+              <span className="flex shrink-0 items-center gap-1 rounded-md bg-gray-5 px-1.5 py-0.5 text-label-md text-gray-100">
+                <Icon name="timer" size={12} />
+                {step.chip}
+              </span>
+            )}
+          </li>
+        ))}
+      </ol>
+      {putAway && (
+        <button
+          type="button"
+          aria-expanded={showDone}
+          onClick={() => setShowDone((was) => !was)}
+          className="w-fit cursor-pointer text-body-md text-gray-80 underline [text-underline-position:from-font]"
+        >
+          {showDone ? "Hide completed" : `Show ${done} completed`}
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -340,7 +373,7 @@ function SectionRow({
   why,
   canPick,
   onPick,
-  onPreview,
+  onPreview
 }: {
   section: SidebarSection
   chosen: boolean
@@ -445,7 +478,7 @@ export function CoursePanel({
   onRegister,
   onViewCalendar,
   onBack,
-  onClose,
+  onClose
 }: {
   entry: CatalogEntry
   /** Where it could be planned: the terms that would take it. */
@@ -466,7 +499,10 @@ export function CoursePanel({
   /** Settles one instance on a section. */
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
   /** The section the cursor is over, for a week beside the panel to draw. */
-  onPreviewSection?: (at: Instance, hovered: { section: string; meetings: Meeting[] } | null) => void
+  onPreviewSection?: (
+    at: Instance,
+    hovered: { section: string; meetings: Meeting[] } | null
+  ) => void
   /** Takes one instance out of the plan, where its term still takes changes. */
   onRemove?: (at: Instance) => void
   /** Opens the term's registration. */
@@ -495,33 +531,22 @@ export function CoursePanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      {/* The course's name sits in the bar beside the close, the way any
-          sidebar heads itself; a way back, where there is one, sits above it. */}
-      <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          {backLabel && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
-            >
-              <Icon name="chevron-left" size={14} className="shrink-0" />
-              <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
-            </button>
-          )}
-          <h2 className="text-h400 font-semibold text-gray-100">{entry.name}</h2>
-          <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-80">
+      {/* The head the placeholder and the search have: a bar for the way back
+          and the close, the course under it, and where it is under that. */}
+      <PanelHeader
+        className="border-b border-gray-40"
+        backLabel={backLabel}
+        onBack={onBack}
+        onClose={onClose}
+        closeLabel="Close course"
+        title={<h2 className="text-h400 font-semibold text-gray-100">{entry.name}</h2>}
+        subline={
+          <>
             <span>{entry.code}</span>
-            <span className="flex items-center gap-1">
-              <Icon name="watch-later" size={14} />
-              {detail.credits} Credits
-            </span>
-          </p>
-        </div>
-        {/* Always in the top right corner, whatever stands to their left: the
-            32px buttons are pulled up by the 6px they stand above the bar's
-            first 20px line. */}
-        <div className="-my-1.5 flex shrink-0 items-center gap-1">
+            <CreditsLine credits={detail.credits} />
+          </>
+        }
+        controls={
           <button
             type="button"
             aria-label={saved ? "Remove bookmark" : "Bookmark course"}
@@ -531,50 +556,39 @@ export function CoursePanel({
           >
             <Icon name={saved ? "bookmark" : "bookmark-border"} size={20} />
           </button>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label="Close course"
-            className="flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
+        }
+        footer={
+          <div
+            role="tablist"
+            aria-label="Where this course is"
+            className="flex w-full flex-wrap gap-2"
           >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-      </div>
-
-      <div role="tablist" aria-label="Where this course is" className="flex w-full flex-wrap gap-1 px-6 pt-4 pb-2">
-        {instances.map((instance) => {
-          const key = keyOf(instance)
-          return (
-            <button
-              key={key}
-              type="button"
+            {instances.map((instance) => {
+              const key = keyOf(instance)
+              return (
+                <Button
+                  key={key}
+                  role="tab"
+                  aria-selected={selected === key}
+                  selected={selected === key}
+                  onClick={() => setTab(key)}
+                >
+                  {instance.term.name}
+                </Button>
+              )
+            })}
+            <Button
               role="tab"
-              aria-selected={selected === key}
-              onClick={() => setTab(key)}
-              className={cn(
-                "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-body-md text-gray-100",
-                selected === key ? "bg-gray-5" : "hover:bg-gray-0"
-              )}
+              aria-selected={selected === CATALOG}
+              selected={selected === CATALOG}
+              onClick={() => setTab(CATALOG)}
             >
-              {instance.term.name}
-            </button>
-          )
-        })}
-        <button
-          type="button"
-          role="tab"
-          aria-selected={selected === CATALOG}
-          onClick={() => setTab(CATALOG)}
-          className={cn(
-            "flex cursor-pointer items-center gap-2 rounded-md px-3 py-2 text-body-md text-gray-100",
-            selected === CATALOG ? "bg-gray-5" : "hover:bg-gray-0"
-          )}
-        >
-          <Icon name="menu-book" size={16} />
-          Catalog
-        </button>
-      </div>
+              <Icon name="menu-book" size={16} />
+              Catalog
+            </Button>
+          </div>
+        }
+      />
 
       {/* Keyed on the tab, so each one opens the sections its own point in
           the course's life calls for rather than whatever the last tab left
@@ -587,9 +601,9 @@ export function CoursePanel({
           plan={plan}
           onPickSection={onPickSection}
           onPreviewSection={onPreviewSection}
-          onRemove={onRemove}
           onRegister={onRegister}
           onViewCalendar={onViewCalendar}
+          onRemove={onRemove}
         />
       ) : (
         <CatalogBody
@@ -614,7 +628,7 @@ function EligibilityFold({
   entry,
   at,
   open,
-  onToggle,
+  onToggle
 }: {
   entry: CatalogEntry
   /** The term it is read against, and the plan around it. */
@@ -662,7 +676,7 @@ function CountingFold({
   title,
   unmatched,
   open,
-  onToggle,
+  onToggle
 }: {
   entry: CatalogEntry
   title: string
@@ -692,10 +706,7 @@ function CountingFold({
           ) : (
             <>
               Satisfies “{entry.reason}” in{" "}
-              <a
-                href="/explain.html"
-                className="underline [text-underline-position:from-font]"
-              >
+              <a href="/explain.html" className="underline [text-underline-position:from-font]">
                 {DEGREE.credential}
               </a>
             </>
@@ -709,7 +720,7 @@ function CountingFold({
 function AboutFold({
   entry,
   open,
-  onToggle,
+  onToggle
 }: {
   entry: CatalogEntry
   open: boolean
@@ -789,7 +800,7 @@ function CatalogBody({
   terms,
   plan,
   startTerm,
-  onAdd,
+  onAdd
 }: {
   entry: CatalogEntry
   terms: Term[]
@@ -804,13 +815,21 @@ function CatalogBody({
   /* Read against the term it would be added to, so changing the term says
      whether it could be taken then. */
   const against = term ? { term, plan } : undefined
+  /* Already in the term it is being read against: adding it again is not on
+     offer, since the term's own tab is where it is. */
+  const planned = term != null && instancesOf(entry.code, plan).some((i) => i.term.id === term.id)
   const { met } = eligibility(entry, against)
-  const [open, setOpen] = useState({ eligibility: !met, sections: false, counting: false, about: met })
+  const [open, setOpen] = useState({
+    eligibility: !met,
+    sections: false,
+    counting: false,
+    about: met
+  })
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
 
   return (
     <>
-      <div className="mx-6 mb-6 flex flex-col gap-4 rounded-md bg-gray-0 p-4">
+      <div className="flex flex-col gap-4 bg-gray-0 px-6 py-6">
         <Picker label="Campus" value={campus} options={["Main", "Downtown"]} onChange={setCampus} />
         <div className="flex flex-col gap-2">
           <Picker
@@ -819,11 +838,11 @@ function CatalogBody({
             options={terms.map((t) => t.name)}
             onChange={(name) => setTermId(terms.find((t) => t.name === name)?.id ?? termId)}
           />
-          <span className="text-body-md text-gray-80">
+          <span className="text-body-md text-gray-100">
             Usually offered: {usuallyOffered(entry.code)}
           </span>
         </div>
-        {term && (
+        {term && !planned && (
           <Button variant="primary" className="w-fit" onClick={() => onAdd(term.id)}>
             Add to Plan
           </Button>
@@ -859,6 +878,34 @@ function CatalogBody({
   )
 }
 
+/** What can be done to this place the course sits in the plan. At the end of
+ *  its stage's row, beside what it says about how the course stands. */
+function CourseActions({ at, onRemove }: { at: Instance; onRemove?: (at: Instance) => void }) {
+  const stage = stageOf(at.term, at.course)
+  if (stage === "taken") return null
+  const canRemove = onRemove != null && !at.term.locked
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button className="shrink-0">Actions</Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-[180px]">
+        <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
+          <Icon name="sticky-note-2" size={16} />
+          Write a note
+        </DropdownMenuItem>
+        {canRemove && (
+          <DropdownMenuItem onSelect={() => onRemove?.(at)} className="gap-2 py-1.5 text-body-md">
+            <Icon name="close" size={16} />
+            Remove from plan
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 /* ------------------------------------------------------------ instance tab */
 
 /** One place the course sits in the plan, read at the point it is at. */
@@ -866,20 +913,23 @@ function InstanceBody({
   entry,
   at,
   plan,
+  onRemove,
   onPickSection,
   onPreviewSection,
-  onRemove,
   onRegister,
-  onViewCalendar,
+  onViewCalendar
 }: {
   entry: CatalogEntry
   at: Instance
   plan: Term[]
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
-  onPreviewSection?: (at: Instance, hovered: { section: string; meetings: Meeting[] } | null) => void
-  onRemove?: (at: Instance) => void
+  onPreviewSection?: (
+    at: Instance,
+    hovered: { section: string; meetings: Meeting[] } | null
+  ) => void
   onRegister?: (term: Term, courseId?: string) => void
   onViewCalendar?: (term: Term) => void
+  onRemove?: (at: Instance) => void
 }) {
   const { course, term } = at
   const registration = useRegistration()
@@ -890,54 +940,36 @@ function InstanceBody({
   const unmatched = stage === "taken" && grade === "F"
   const sectionsOut = term.scheduled === true || term.locked === true
   const planning = stage === "planned" || stage === "registered"
+  /* What is next, or — with everything done — nothing to open it for. */
+  const nothingNext = planningChecklist(term, course, met, registration).every(
+    (step) => step.state === "done"
+  )
   const [open, setOpen] = useState({
-    checklist: planning,
+    checklist: planning && !nothingNext,
     sections: planning && sectionsOut,
     canvas: stage === "progress",
     eligibility: planning && !met,
     counting: stage === "taken",
     about: false,
-    history: false,
+    history: false
   })
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
   const [campus, setCampus] = useState(course.campus ?? "Main")
   const [editingCampus, setEditingCampus] = useState(false)
-  const canRemove = onRemove != null && !term.locked && stage !== "taken"
   const moved = plan.find((t) => t.id !== term.id && !t.locked)?.name
   const activity = activityFor(entry.code, term.name, moved)
 
   return (
     <>
-      <div className="mx-6 mb-6 flex flex-col gap-3 rounded-md bg-gray-0 p-4">
+      <div className="flex flex-col gap-4 bg-gray-0 px-6 pt-4 pb-6">
         <div className="flex w-full items-center gap-2">
           {/* The state's own mark stands beside its name, rather than on the
               term's tab: the tab says where, this says how it stands. */}
           <h3 className="flex min-w-0 flex-1 items-center gap-2 text-caption-lg font-semibold text-gray-100">
-            <Icon name={TAB_MARK[stage].icon} size={16} className={cn("shrink-0", TAB_MARK[stage].tone)} />
+            <AuditIcon state={AUDIT_STATE[stage]} />
             {STAGE_LABEL[stage]}
           </h3>
-          {stage !== "taken" && (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button>Actions</Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-[180px]">
-                <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
-                  <Icon name="sticky-note-2" size={16} />
-                  Write a note
-                </DropdownMenuItem>
-                {canRemove && (
-                  <DropdownMenuItem
-                    onSelect={() => onRemove?.(at)}
-                    className="gap-2 py-1.5 text-body-md"
-                  >
-                    <Icon name="close" size={16} />
-                    Remove from plan
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          )}
+          <CourseActions at={at} onRemove={onRemove} />
         </div>
         {(stage === "progress" || stage === "taken") && (
           <div className="flex w-full items-center gap-4 text-body-md">
@@ -985,7 +1017,7 @@ function InstanceBody({
       </div>
 
       {planning && (
-        <Fold title="Planning checklist" open={open.checklist} onToggle={() => toggle("checklist")}>
+        <Fold title="What's Next" open={open.checklist} onToggle={() => toggle("checklist")}>
           <Checklist
             steps={planningChecklist(term, course, met, registration)}
             onCalendar={onViewCalendar && (() => onViewCalendar(term))}
@@ -1091,7 +1123,7 @@ function SectionsFold({
   onToggle,
   onPickSection,
   onPreviewSection,
-  onAddSection,
+  onAddSection
 }: {
   entry: CatalogEntry
   /** Where the course sits in the plan. A catalogue course is not anywhere
@@ -1101,7 +1133,10 @@ function SectionsFold({
   open: boolean
   onToggle: () => void
   onPickSection?: (at: Instance, section: string, meetings: Meeting[]) => void
-  onPreviewSection?: (at: Instance, hovered: { section: string; meetings: Meeting[] } | null) => void
+  onPreviewSection?: (
+    at: Instance,
+    hovered: { section: string; meetings: Meeting[] } | null
+  ) => void
   /** Where the course is not in the plan yet, a class's + puts the course
    *  there on that class. */
   onAddSection?: (section: string, meetings: Meeting[]) => void
@@ -1119,7 +1154,7 @@ function SectionsFold({
         /* Drawn at the hours the plan has it at, which is where it is true. */
         meetings: course.meetings ?? [],
         when: meetingLines(course.meetings),
-        instructors: course.instructor ? [course.instructor] : catalog[0].instructors,
+        instructors: course.instructor ? [course.instructor] : catalog[0].instructors
       }
     : null
   const sections: SidebarSection[] = own
@@ -1131,41 +1166,27 @@ function SectionsFold({
   const busy = new Map<string, string>()
   for (const other of term.courses) {
     if (other.id === course?.id) continue
-    for (const meeting of other.meetings ?? []) busy.set(`${meeting.day}-${meeting.from}`, other.code)
+    for (const meeting of other.meetings ?? [])
+      busy.set(`${meeting.day}-${meeting.from}`, other.code)
   }
   const clashOf = (section: SidebarSection) =>
     section.meetings.map((m) => busy.get(`${m.day}-${m.from}`)).find(Boolean) ?? null
   const settled = stage === "registered" || stage === "progress" || stage === "taken"
   const canPick = (onPickSection != null || onAddSection != null) && !term.locked
   /* Listed from the start: the student's own class, and nothing else once
-     they have one — the rest wait behind "see more". Until a class is chosen,
-     every one they can take and get a seat in. */
+     they have one — the rest wait behind a link. Until a class is chosen,
+     every one they can take; any with something in its way — not eligible,
+     or a clash with the term — waits behind it, so what is listed has no error
+     on it. A full one is only full, so it is listed and says so. */
+  const picked = course?.section != null || settled
   const listed = (section: SidebarSection) =>
-    section.code === course?.section ||
-    (!course?.section &&
-      !settled &&
-      section.available > 0 &&
-      heldBack(section, clashOf(section)) == null)
+    section.code === course?.section || (!picked && heldBack(section, clashOf(section)) == null)
+  const others = picked ? "other" : "ineligible"
   const visible = all ? sections : sections.filter(listed)
   const hidden = sections.length - sections.filter(listed).length
 
   return (
-    <Fold
-      title="Sections"
-      extra={
-        <button
-          type="button"
-          onClick={() => setAll((was) => !was)}
-          aria-pressed={all}
-          aria-label={all ? "Show only available sections" : "Show all sections"}
-          className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-        >
-          <Icon name="filter-alt" size={16} />
-        </button>
-      }
-      open={open}
-      onToggle={onToggle}
-    >
+    <Fold title="Sections" open={open} onToggle={onToggle}>
       <div className="flex w-full flex-col gap-2">
         {visible.map((section) => {
           const chosen = section.code === course?.section
@@ -1182,11 +1203,23 @@ function SectionsFold({
                   : onAddSection?.(section.code, section.meetings)
               }
               onPreview={(on) =>
-                at.course && onPreviewSection?.(at, on ? { section: section.code, meetings: section.meetings } : null)
+                at.course &&
+                onPreviewSection?.(
+                  at,
+                  on ? { section: section.code, meetings: section.meetings } : null
+                )
               }
             />
           )
         })}
+        {/* Everything has something in its way: say so, rather than leave the
+            list empty with only a link under it. */}
+        {!all && !picked && visible.length === 0 && hidden > 0 && (
+          <div className="w-full rounded-md border border-gray-40 bg-gray-0 px-4 py-3 text-body-md text-gray-100">
+            No sections are open to you this term. Show ineligible sections to see what is in the
+            way.
+          </div>
+        )}
         {hidden > 0 && (
           <button
             type="button"
@@ -1196,11 +1229,7 @@ function SectionsFold({
           >
             <Icon name={all ? "unfold-less" : "unfold-more"} size={16} className="shrink-0" />
             <span className="min-w-0 flex-1">
-              {all
-                ? `Showing all ${sections.length} sections`
-                : course?.section || settled
-                  ? `Showing ${settled ? "registered" : "selected"} section, see ${hidden} more available`
-                  : `Showing sections based on eligibility, planning details, seat availability, see ${hidden} more available`}
+              {all ? "Hide" : "Show"} {others} sections
             </span>
           </button>
         )}

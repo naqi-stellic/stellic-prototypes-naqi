@@ -1,6 +1,7 @@
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
+import { CreditsLine, PanelHeader } from "@/components/stellic/panel-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -116,6 +117,7 @@ export function CourseSearch({
 export function CourseSearchPanel({
   entries,
   backLabel,
+  credits,
   onOpenCourse,
   onBack,
   onClose,
@@ -123,35 +125,30 @@ export function CourseSearchPanel({
   entries: CatalogEntry[]
   /** What the way back is to, where there is one. */
   backLabel?: string
+  /** What the search is for, in credits, where it is for something that has them. */
+  credits?: number | string
   onOpenCourse?: (entry: CatalogEntry) => void
   onBack?: () => void
   onClose: () => void
 }) {
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      <div className="flex w-full shrink-0 items-start gap-2 border-b border-gray-40 px-6 py-4">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
-          {backLabel && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
-            >
-              <Icon name="chevron-left" size={14} className="shrink-0" />
-              <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
-            </button>
-          )}
-          <h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>
-        </div>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close course search"
-          className="-my-1.5 flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-        >
-          <Icon name="close" size={20} />
-        </button>
-      </div>
+      <PanelHeader
+        className="border-b border-gray-40"
+        backLabel={backLabel}
+        onBack={onBack}
+        onClose={onClose}
+        closeLabel="Close course search"
+        title={<h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>}
+        subline={
+          backLabel && (
+            <>
+              <span className="min-w-0 truncate">For {backLabel}</span>
+              {credits != null && <CreditsLine credits={credits} />}
+            </>
+          )
+        }
+      />
       <div className="flex w-full flex-col gap-4 px-6 pt-4">
         {/* What the search was run with. In a working planner the chevron
             opens the filters; here it is what it says it is. */}
