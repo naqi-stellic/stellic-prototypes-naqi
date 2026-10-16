@@ -199,10 +199,16 @@ function planActions(
         shown: metadata.includes(field.id),
       })),
     },
-    ...(generators
-      ? [{ label: "Generate plan", icon: "design-services" as const, toggles: true }]
-      : []),
-    ADD_REMAINING,
+    generators
+      ? {
+          label: "Complete my plan",
+          icon: "grid-view" as const,
+          choices: [
+            { id: "generate", label: "Generate plan automatically", icon: "design-services" as const },
+            { id: "manual", label: "Add courses manually", icon: "checklist" as const },
+          ],
+        }
+      : ADD_REMAINING,
     reviewAction(requested),
   ]
 }
@@ -1130,6 +1136,8 @@ export function PlanYourPath({
             narrowing={narrowing}
             onNarrow={setNarrowing}
             details={metadata}
+            /* Named for the choice that opened it where there is one. */
+            title={generators ? "Add courses manually" : undefined}
             onClose={() => setReqsOpen(false)}
             onOpenCourse={(index) => {
               const found = requirements.find((r) => r.index === index)
@@ -1229,13 +1237,15 @@ export function PlanYourPath({
             actions={planActions(metadata, generators, requested)}
             tabs={yearTabs(shown, undefined, () => setOpenTermId(null), openTermView)}
             pressed={generateOpen}
-            onAction={(action) => {
-              if (action.toggles) {
+            onChoose={(id) => {
+              if (id === "generate") {
                 /* One panel at a time, and its button says which. */
                 if (!generateOpen) setReqsOpen(false)
                 setGenerateOpen(!generateOpen)
-              }
-              else if (action.label === "Request review") setRequesting({ term: null })
+              } else if (id === "manual" && !reqsOpen) openRequirements()
+            }}
+            onAction={(action) => {
+              if (action.label === "Request review") setRequesting({ term: null })
               else if (action.label === "Requested") openReviewPanel()
             }}
             onToggleField={toggleMetadata}

@@ -28,10 +28,14 @@ export type PlanAction = {
   /** The requirements panel's toggle, drawn pressed while it is open. Left
    *  out of the row where the page has no panel to open. */
   sidebar?: boolean
+  /** Given, the action opens a menu of ways to do the one thing, and the page
+   *  is told which was picked. */
+  choices?: { id: string; label: string; icon: IconName }[]
 }
 
-/** What the degree still wants, to be dragged into the plan. It sits beside
- *  Generate plan: one is the plan filled for you, the other by hand. */
+/** What the degree still wants, to be dragged into the plan. Where the page
+ *  can generate too, the two are one action's choices — the plan filled for
+ *  you, or by hand — and this stands alone only where it is the only way. */
 export const ADD_REMAINING: PlanAction = {
   label: "Add remaining courses",
   icon: "checklist",
@@ -167,6 +171,7 @@ export function PlanHeader({
   pressed,
   onAction,
   onToggleField,
+  onChoose,
   sidebar,
 }: {
   actions: PlanAction[]
@@ -184,6 +189,8 @@ export function PlanHeader({
   pressed?: boolean
   onAction?: (action: PlanAction) => void
   onToggleField?: (id: string) => void
+  /** Which way of doing an action with choices was picked. */
+  onChoose?: (choiceId: string) => void
   /** The requirements panel this header's sidebar button opens.
    *  Omitted where there is nothing to open. */
   sidebar?: { open: boolean; onToggle: () => void }
@@ -305,6 +312,7 @@ export function PlanHeader({
                 <span data-action-label className={labelsGo}>{action.label}</span>
                 {/* How many of the details are on, so the button says what
                     the cards are carrying without opening it. */}
+                {action.choices && <Icon name="expand-more" size={16} className={labelsGo} />}
                 {action.fields && (
                   <Badge variant="primary" className={labelsGo}>
                     {action.fields.filter((field) => field.shown).length}
@@ -322,6 +330,31 @@ export function PlanHeader({
                   ` (${action.fields.filter((field) => field.shown).length} of ${action.fields.length})`}
               </TooltipContent>
             )
+
+            if (action.choices) {
+              return (
+                <DropdownMenu key={action.label}>
+                  <Tooltip>
+                    <DropdownMenuTrigger asChild>
+                      <TooltipTrigger asChild>{button}</TooltipTrigger>
+                    </DropdownMenuTrigger>
+                    {collapsed && tip}
+                  </Tooltip>
+                  <DropdownMenuContent align="start" className="w-[260px]">
+                    {action.choices.map((choice) => (
+                      <DropdownMenuItem
+                        key={choice.id}
+                        onSelect={() => onChoose?.(choice.id)}
+                        className="gap-2 py-1.5 text-body-md"
+                      >
+                        <Icon name={choice.icon} size={16} />
+                        {choice.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )
+            }
 
             if (!action.fields) {
               return (

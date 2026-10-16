@@ -314,8 +314,11 @@ export function RequirementsPanel({
   onNarrow,
   details,
   onOpenCourse,
+  title = "Add remaining courses",
   onClose,
 }: {
+  /** The panel's name, which says how it was asked for. */
+  title?: string
   /** What is still to place, in the order the degree asks for it, each with
    *  its place in that list. */
   entries: { entry: CatalogEntry; index: number }[]
@@ -377,12 +380,12 @@ export function RequirementsPanel({
           it, and the way out. */}
       <header className="flex shrink-0 items-center gap-2 border-b border-gray-40 px-6 pt-3 pb-[15px]">
         <h2 className="min-w-0 flex-1 text-caption-lg font-semibold text-foreground">
-          Add remaining courses
+          {title}
         </h2>
         <Button
           variant="ghost"
           size="icon"
-          aria-label="Close Add remaining courses"
+          aria-label={`Close ${title}`}
           onClick={onClose}
         >
           <Icon name="s-close" size={16} />

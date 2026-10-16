@@ -246,10 +246,20 @@ export function TermView({
     },
     ...(generators
       ? [
+          /* One action, two ways of filling the term: for you, or by hand. */
           {
-            label: term.scheduled ? "Generate Schedule" : "Generate Term",
-            icon: "design-services" as const,
-            toggles: true,
+            label: "Complete my term",
+            icon: "grid-view" as const,
+            choices: [
+              {
+                id: "generate",
+                label: term.scheduled
+                  ? "Generate schedule automatically"
+                  : "Generate term automatically",
+                icon: "design-services" as const,
+              },
+              { id: "manual", label: "Add courses manually", icon: "checklist" as const },
+            ],
           },
         ]
       : /* A prototype without the generators still has the scheduler, which is
@@ -258,9 +268,9 @@ export function TermView({
            and absent from one whose calendar is still disabled. It opens
            nothing here. */
         term.scheduled
-        ? [{ label: "Generate Schedule", icon: "design-services" as const }]
+        ? [{ label: "Generate schedule automatically", icon: "design-services" as const }]
         : []),
-    ADD_REMAINING,
+    ...(generators ? [] : [ADD_REMAINING]),
     reviewAction(requested),
   ]
 
@@ -286,6 +296,10 @@ export function TermView({
         }
         sidebar={sidebar}
         onToggleField={onToggleField}
+        onChoose={(id) => {
+          if (id === "generate") onGenerateTerm?.()
+          else if (id === "manual" && !sidebar?.open) sidebar?.onToggle()
+        }}
         onAction={(action) => {
           if (action.toggles) onGenerateTerm?.()
           else if (action.label === "Request review") onRequestReview?.()

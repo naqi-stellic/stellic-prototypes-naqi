@@ -31,6 +31,8 @@ const TOUR: {
   title: string
   body: string
   generates?: boolean
+  /** Where the page offers no generating, adding by hand is the whole of it. */
+  manual?: boolean
   registers?: boolean
 }[] = [
   {
@@ -41,13 +43,14 @@ const TOUR: {
     body: "Course details turns course names, sections, credits and more on or off for every course in your plan.",
   },
   {
-    find: '[data-tour="plan-actions"] [aria-label="Generate plan"]',
+    find: '[data-tour="plan-actions"] [aria-label^="Complete my"]',
     generates: true,
-    title: "Fill in the rest of your plan",
-    body: "Answer a few questions about your pace and preferences, then compare options and pick the one that fits.",
+    title: "Complete your plan",
+    body: "Have a plan generated from a few questions about your pace and preferences, or add the courses you still need by hand.",
   },
   {
     find: '[data-tour="plan-actions"] [aria-label^="Add remaining"]',
+    manual: true,
     title: "See what courses you still need to add",
     body: "Open the requirements that do not have a term yet, and drag each one into the term you will take it.",
   },
@@ -74,16 +77,23 @@ const CHANGES: {
   name: string
   does: string
   generates?: boolean
+  /** Where the page offers no generating, adding by hand is the whole of it. */
+  manual?: boolean
   registers?: boolean
 }[] = [
   { icon: "remove-red-eye", name: "Course details", does: "Choose which details show for each course" },
   {
-    icon: "design-services",
-    name: "Generate plan",
-    does: "Fill in the rest of your plan",
+    icon: "grid-view",
+    name: "Complete my plan",
+    does: "Generate a plan, or add the courses you still need by hand",
     generates: true,
   },
-  { icon: "checklist", name: "Add remaining courses", does: "See what courses you still need to add" },
+  {
+    icon: "checklist",
+    name: "Add remaining courses",
+    does: "See what courses you still need to add",
+    manual: true,
+  },
   { icon: "calendar-month", name: "Term schedules", does: "See your schedule for any term with classes out" },
   {
     icon: "event-available",
@@ -159,9 +169,12 @@ export function PlannerIntro({
   registration?: boolean
 }) {
   const changes = CHANGES.filter(
-    (change) => (generators || !change.generates) && (registration || !change.registers)
+    (change) =>
+      (generators ? !change.manual : !change.generates) && (registration || !change.registers)
   )
-  const tour = TOUR.filter((stop) => (generators || !stop.generates) && (registration || !stop.registers))
+  const tour = TOUR.filter(
+    (stop) => (generators ? !stop.manual : !stop.generates) && (registration || !stop.registers)
+  )
   const [step, setStep] = useState<Step>("welcome")
   const [rect, setRect] = useState<DOMRect | null>(null)
   /* What the second step was answered with, until Next is pressed on it; the

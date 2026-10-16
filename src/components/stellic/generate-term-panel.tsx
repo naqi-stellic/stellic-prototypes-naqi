@@ -137,7 +137,7 @@ export function GenerateTermPanel({
   const [view, setView] = useState<View>(1)
   const showing = options != null && options.length > 0
   const scheduling = mode === "schedule"
-  const title = scheduling ? "Generate Schedule" : "Generate Term"
+  const title = scheduling ? "Generate schedule automatically" : "Generate term automatically"
   /* Scheduling asks about class times as well, which is a step of its own. */
   const totalSteps = scheduling ? 3 : 2
   const step = view === 3 ? 3 : view === 2 ? 2 : 1
