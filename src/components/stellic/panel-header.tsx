@@ -4,12 +4,12 @@ import type { ReactNode } from "react"
 import { Icon } from "@/components/icon"
 
 /* The head of every sidebar that opens beside the plan: a placeholder, the
- * course search, a course. Two rows that are always there, so going from one to
- * another changes what they say and nothing about where they stand.
+ * course search, a course. The title, with the close — and whatever else the
+ * panel keeps there, a bookmark — on its own line at the right, and under it
+ * what it is. Where there is somewhere to go back to, that is one more line
+ * above the title and nothing else moves.
  *
- * The top bar is a fixed height whether or not there is a way back: the close
- * is in the same corner every time, and the title does not drop when a back
- * link appears above it. Under it the title, and a line of what it is. */
+ * Fixed at the top while the panel scrolls, down to its rule. */
 
 export function PanelHeader({
   backLabel,
@@ -45,36 +45,20 @@ export function PanelHeader({
     /* Stays where it is as the panel scrolls, down to its rule, so the way back,
        the close and where the course is are never further than the top. */
     <header
-      className={cn(
-        "sticky top-0 z-10 flex w-full shrink-0 flex-col gap-1 bg-card px-6 pt-4 pb-4",
-        className
-      )}
+      className={cn("sticky top-0 z-10 flex w-full shrink-0 flex-col bg-card px-6 py-4", className)}
     >
-      <div className="flex h-8 items-center gap-2">
-        <div className="flex min-w-0 flex-1 items-center">
-          {backLabel && (
-            <button
-              type="button"
-              onClick={onBack}
-              className="flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
-            >
-              <Icon name="chevron-left" size={14} className="shrink-0" />
-              <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
-            </button>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          {controls}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={closeLabel}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-          >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
-      </div>
+      {/* The way back is a line of its own above the title, and only there
+          when there is somewhere to go back to. */}
+      {backLabel && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
+        >
+          <Icon name="chevron-left" size={14} className="shrink-0" />
+          <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
+        </button>
+      )}
       <div className="flex items-start gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           {title}
@@ -85,6 +69,20 @@ export function PanelHeader({
           )}
         </div>
         {action}
+        {/* Level with the title, in the top right corner whatever stands to
+            their left: the 32px buttons are pulled up by the few pixels they
+            stand above the title's first line. */}
+        <div className="-my-1 flex shrink-0 items-center gap-1">
+          {controls}
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={closeLabel}
+            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
+          >
+            <Icon name="close" size={20} />
+          </button>
+        </div>
       </div>
       {footer && <div className="pt-3">{footer}</div>}
     </header>
