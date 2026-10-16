@@ -45,7 +45,7 @@ export function PanelHeader({
     /* Stays where it is as the panel scrolls, down to its rule, so the way back,
        the close and where the course is are never further than the top. */
     <header
-      className={cn("sticky top-0 z-10 flex w-full shrink-0 flex-col bg-card px-6 py-4", className)}
+      className={cn("sticky top-0 z-10 flex w-full shrink-0 flex-col bg-card px-6 py-6", className)}
     >
       {/* The way back is a line of its own above the title, and only there
           when there is somewhere to go back to. */}
@@ -73,7 +73,7 @@ export function PanelHeader({
       {/* In the top right corner of the head, level with its first line — the
           way back where there is one, the title where there is not — rather
           than down the middle of what stands beside it. */}
-      <div className="absolute top-3 right-6 flex items-center gap-1">
+      <div className="absolute top-5 right-6 flex items-center gap-1">
         {controls}
         <button
           type="button"
