@@ -1,7 +1,7 @@
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
-import { CreditsLine, PanelHeader } from "@/components/stellic/panel-header"
+import { PanelHeader } from "@/components/stellic/panel-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -141,12 +141,7 @@ export function CourseSearchPanel({
         closeLabel="Close course search"
         title={<h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>}
         subline={
-          backLabel && (
-            <>
-              <span className="min-w-0 truncate">For {backLabel}</span>
-              {credits != null && <CreditsLine credits={credits} />}
-            </>
-          )
+          backLabel && `For ${backLabel}${credits != null ? ` • ${credits} Credits` : ""}`
         }
       />
       <div className="flex w-full flex-col gap-4 px-6 pt-4">

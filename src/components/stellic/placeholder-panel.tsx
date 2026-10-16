@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Icon } from "@/components/icon"
 import { Fold, Heading } from "@/components/stellic/course-panel"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
-import { CreditsLine, PanelHeader } from "@/components/stellic/panel-header"
+import { PanelHeader } from "@/components/stellic/panel-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -106,12 +106,7 @@ export function PlaceholderPanel({
             </h2>
           )
         }
-        subline={
-          <>
-            <span>Course Requirement Placeholder</span>
-            <CreditsLine credits={credits} />
-          </>
-        }
+        subline={`Course Requirement Placeholder • ${credits} Credits`}
       />
 
       {/* What the placeholder is for: a course to stand in it, at the credits

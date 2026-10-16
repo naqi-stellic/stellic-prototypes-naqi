@@ -2,7 +2,7 @@ import { cn } from "cn"
 import { useState, type ComponentProps, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
-import { CreditsLine, PanelHeader } from "@/components/stellic/panel-header"
+import { PanelHeader } from "@/components/stellic/panel-header"
 import { AuditIcon } from "@/components/stellic/primitives"
 import { useRegistration } from "@/components/stellic/registration"
 import { Badge } from "@/components/ui/badge"
@@ -540,12 +540,7 @@ export function CoursePanel({
         onClose={onClose}
         closeLabel="Close course"
         title={<h2 className="text-h400 font-semibold text-gray-100">{entry.name}</h2>}
-        subline={
-          <>
-            <span>{entry.code}</span>
-            <CreditsLine credits={detail.credits} />
-          </>
-        }
+        subline={`${entry.code} • ${detail.credits} Credits`}
         controls={
           <button
             type="button"

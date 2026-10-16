@@ -65,11 +65,7 @@ export function PanelHeader({
       <div className="flex items-start gap-2">
         <div className="flex min-w-0 flex-1 flex-col gap-1 pr-20">
           {title}
-          {subline && (
-            <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-100">
-              {subline}
-            </p>
-          )}
+          {subline && <p className="text-body-md text-gray-100">{subline}</p>}
         </div>
         {action}
       </div>
@@ -89,15 +85,5 @@ export function PanelHeader({
       </div>
       {footer}
     </header>
-  )
-}
-
-/** "◷ 3 Credits", the way every head says it. */
-export function CreditsLine({ credits }: { credits: number | string }) {
-  return (
-    <span className="flex items-center gap-1">
-      <Icon name="watch-later" size={14} />
-      {credits} Credits
-    </span>
   )
 }
