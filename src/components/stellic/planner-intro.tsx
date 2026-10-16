@@ -119,7 +119,7 @@ const CHOICES: { label: string; fields: MetadataField[] }[] = [
   { label: "Modality", fields: ["modality"] },
   { label: "Instructor", fields: ["instructor"] },
   { label: "Campus", fields: ["campus"] },
-  { label: "Building and room", fields: ["building", "room"] },
+  { label: "Building and room", fields: ["location"] },
 ]
 
 /** A course, drawn with the details the student has switched on, so each
@@ -134,7 +134,7 @@ const PREVIEW_COURSE: PlannedCourse = {
   instructor: "Prof. A. Duval",
   campus: "Main",
   building: "Coburn Hall",
-  room: "Room 405",
+  room: "405",
 }
 
 /** The answer that is no destination: the tour is what follows. */

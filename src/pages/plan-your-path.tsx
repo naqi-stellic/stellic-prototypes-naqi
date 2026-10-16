@@ -194,7 +194,8 @@ function planActions(
     {
       label: "Course details",
       icon: "remove-red-eye",
-      fields: METADATA_FIELDS.map((field) => ({
+      /* Activities have a list of their own in a term, and are not courses. */
+      fields: METADATA_FIELDS.filter((field) => field.id !== "activities").map((field) => ({
         ...field,
         shown: metadata.includes(field.id),
       })),

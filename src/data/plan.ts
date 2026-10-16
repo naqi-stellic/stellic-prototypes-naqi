@@ -738,8 +738,7 @@ export type MetadataField =
   | "campus"
   | "instructor"
   | "topic"
-  | "building"
-  | "room"
+  | "location"
   | "attributes"
   | "subTerm"
   | "lastActivity"
@@ -753,8 +752,7 @@ export const METADATA_FIELDS: { id: MetadataField; label: string }[] = [
   { id: "campus", label: "Campus" },
   { id: "instructor", label: "Instructor" },
   { id: "topic", label: "Topic" },
-  { id: "building", label: "Building" },
-  { id: "room", label: "Room" },
+  { id: "location", label: "Building and room" },
   { id: "attributes", label: "Section Attributes" },
   { id: "subTerm", label: "Sub-term" },
   { id: "lastActivity", label: "Last activity" },
@@ -779,8 +777,10 @@ export function courseTags(course: PlannedCourse, shown: MetadataField[]): strin
     campus: course.campus,
     instructor: course.instructor,
     topic: course.topic,
-    building: course.building,
-    room: course.room,
+    /* One tag, because neither is any use without the other. */
+    location: [course.building, course.room && (/^\d/.test(course.room) ? `Room ${course.room}` : course.room)]
+      .filter(Boolean)
+      .join(", "),
     attributes: course.attributes,
     subTerm: course.subTerm,
   }
