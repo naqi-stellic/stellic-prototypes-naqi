@@ -155,14 +155,14 @@ export function GeneratePlanPanel({
               small label beside a larger title leaves it floating two pixels
               high. */}
           <div className="flex min-w-0 flex-1 items-baseline gap-2">
-            <h2 className="text-caption-lg font-semibold text-foreground">Generate plan automatically</h2>
+            <h2 className="text-caption-lg font-semibold text-foreground">Generate Plan</h2>
             {isStep && (
               <span className="text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
                 Step {view} of {TOTAL_STEPS}
               </span>
             )}
           </div>
-          <Button variant="ghost" size="icon" aria-label="Close Generate plan automatically" onClick={onClose}>
+          <Button variant="ghost" size="icon" aria-label="Close Generate Plan" onClick={onClose}>
             <Icon name="s-close" size={16} />
           </Button>
         </div>
