@@ -60,7 +60,7 @@ export function PanelHeader({
         </button>
       )}
       <div className="flex items-start gap-2">
-        <div className="flex min-w-0 flex-1 flex-col gap-1">
+        <div className="flex min-w-0 flex-1 flex-col gap-1 pr-20">
           {title}
           {subline && (
             <p className="flex flex-wrap items-center gap-3 text-body-md text-gray-100">
@@ -69,20 +69,20 @@ export function PanelHeader({
           )}
         </div>
         {action}
-        {/* Level with the title, in the top right corner whatever stands to
-            their left: the 32px buttons are pulled up by the few pixels they
-            stand above the title's first line. */}
-        <div className="-my-1 flex shrink-0 items-center gap-1">
-          {controls}
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={closeLabel}
-            className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-          >
-            <Icon name="close" size={20} />
-          </button>
-        </div>
+      </div>
+      {/* In the top right corner of the head, level with its first line — the
+          way back where there is one, the title where there is not — rather
+          than down the middle of what stands beside it. */}
+      <div className="absolute top-3 right-6 flex items-center gap-1">
+        {controls}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label={closeLabel}
+          className="flex size-8 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
+        >
+          <Icon name="close" size={20} />
+        </button>
       </div>
       {footer && <div className="pt-3">{footer}</div>}
     </header>
