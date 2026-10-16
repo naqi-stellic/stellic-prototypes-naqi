@@ -314,7 +314,7 @@ export function RequirementsPanel({
   onNarrow,
   details,
   onOpenCourse,
-  title = "Add remaining courses",
+  title = "Add Remaining Courses",
   onClose,
 }: {
   /** The panel's name, which says how it was asked for. */

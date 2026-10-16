@@ -205,7 +205,7 @@ function planActions(
           icon: "grid-view" as const,
           choices: [
             { id: "generate", label: "Auto generate plan", icon: "design-services" as const },
-            { id: "manual", label: "Add courses manually", icon: "checklist" as const },
+            { id: "manual", label: "Add remaining courses", icon: "checklist" as const },
           ],
         }
       : ADD_REMAINING,
@@ -1136,8 +1136,6 @@ export function PlanYourPath({
             narrowing={narrowing}
             onNarrow={setNarrowing}
             details={metadata}
-            /* Named for the choice that opened it where there is one. */
-            title={generators ? "Add courses manually" : undefined}
             onClose={() => setReqsOpen(false)}
             onOpenCourse={(index) => {
               const found = requirements.find((r) => r.index === index)

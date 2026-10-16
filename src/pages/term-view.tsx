@@ -258,7 +258,7 @@ export function TermView({
                   : "Auto generate term",
                 icon: "design-services" as const,
               },
-              { id: "manual", label: "Add courses manually", icon: "checklist" as const },
+              { id: "manual", label: "Add remaining courses", icon: "checklist" as const },
             ],
           },
         ]
