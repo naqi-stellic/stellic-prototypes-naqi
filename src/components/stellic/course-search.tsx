@@ -35,7 +35,7 @@ export function CourseRow({
     >
       <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-100" />
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-body-md text-gray-80">{code}</span>
+        <span className="text-body-md text-gray-100">{code}</span>
         <span className="text-body-md font-semibold text-foreground">{name}</span>
       </span>
     </div>

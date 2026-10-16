@@ -49,7 +49,7 @@ export function AddCourseMenu({
                   }}
                   className="flex-col items-start gap-0 text-body-md"
                 >
-                  <span className="text-gray-80">{entry.code}</span>
+                  <span className="text-gray-100">{entry.code}</span>
                   <span className="font-semibold text-foreground">{entry.name}</span>
                   <span className="text-label-md text-gray-80">{entry.reason}</span>
                 </CommandItem>

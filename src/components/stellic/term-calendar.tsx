@@ -110,7 +110,7 @@ function CourseCard({
             <Icon name="add" size={16} className={cn("mt-0.5 shrink-0", mark.note)} />
           ) : null}
           <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="flex items-center gap-1.5 text-body-md text-gray-80">
+            <span className="flex items-center gap-1.5 text-body-md text-gray-100">
               {needsReview && (
                 <Icon
                   name={stopped ? "error-outline" : "warning"}
@@ -525,7 +525,7 @@ function Week({
                         )}
                       />
                       <span className="flex min-w-0 flex-1 flex-col gap-1 p-2">
-                        <span className="truncate text-body-md text-gray-80">{course.code}</span>
+                        <span className="truncate text-body-md text-gray-100">{course.code}</span>
                         <span className="truncate text-body-md text-gray-80">was here</span>
                       </span>
                     </div>
@@ -563,7 +563,7 @@ function Week({
                         )}
                       />
                       <span className="flex min-w-0 flex-1 flex-col gap-1 p-2">
-                        <span className="flex items-center gap-1 truncate text-body-md text-gray-80">
+                        <span className="flex items-center gap-1 truncate text-body-md text-gray-100">
                           {/* An activity is not a class and has no class to
                               choose, so nothing about it is outstanding. */}
                           {term.courses.includes(course) &&

@@ -407,7 +407,7 @@ export function PlannerIntro({
                     <Icon name="drag-indicator" size={16} className="text-foreground" />
                     <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
                       <div>
-                        <p className="text-body-md text-gray-80">{PREVIEW_COURSE.code}</p>
+                        <p className="text-body-md text-gray-100">{PREVIEW_COURSE.code}</p>
                         {details.includes("name") && (
                           <p className="text-body-md font-semibold text-foreground">
                             {PREVIEW_COURSE.name}

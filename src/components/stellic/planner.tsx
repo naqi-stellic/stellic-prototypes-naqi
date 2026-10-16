@@ -226,7 +226,7 @@ export function AuditRow({
                   with it before anybody opens the term's line about it. */}
               <p
                 className={cn(
-                  "flex items-center gap-1.5 text-body-md text-gray-80",
+                  "flex items-center gap-1.5 text-body-md text-gray-100",
                   /* With the name off, the code is what gets struck. */
                   struck && !shown.includes("name") && "line-through"
                 )}

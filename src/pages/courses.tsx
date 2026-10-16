@@ -326,7 +326,7 @@ function TermContextLine({ context, shown }: { context: TermContext; shown: Set<
   if (parts.length === 0) return null
 
   return (
-    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
+    <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-body-md font-medium text-gray-80">
       {parts.flatMap((part, i) => (i === 0 ? [part] : [<span key={`dot-${i}`} aria-hidden="true">·</span>, part]))}
     </p>
   )

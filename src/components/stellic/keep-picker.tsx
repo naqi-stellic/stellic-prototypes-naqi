@@ -95,7 +95,7 @@ function CourseRow({
       />
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-2">
         <span>
-          <span className="block text-body-md text-gray-80">{course.code}</span>
+          <span className="block text-body-md text-gray-100">{course.code}</span>
           <span className="block text-body-md font-semibold text-foreground">{course.name}</span>
         </span>
         {course.section && (

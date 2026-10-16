@@ -151,7 +151,7 @@ export function RequirementRow({
       <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
 
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-body-md text-gray-80">{entry.code}</span>
+        <span className="truncate text-body-md text-gray-100">{entry.code}</span>
         <span className="truncate text-body-md font-semibold text-foreground">{entry.name}</span>
         {tagBadges}
         {/* Said the way a section says it, so a course that cannot be taken yet
@@ -165,7 +165,7 @@ export function RequirementRow({
         {/* What the course would count for, so a list grouped any other way
             than by requirement still says it. A seat is the requirement. */}
         {entry.reason && (
-          <span className="truncate pt-1 text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
+          <span className="truncate pt-1 text-body-md font-medium text-gray-80">
             Counting for {entry.reason}
           </span>
         )}

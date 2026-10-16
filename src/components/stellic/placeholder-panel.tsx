@@ -158,7 +158,7 @@ export function PlaceholderPanel({
                 className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 p-[7px] pl-3 text-left hover:bg-gray-5"
               >
                 <span className="flex min-w-0 flex-1 flex-col">
-                  <span className="text-body-md text-gray-80">{course.code}</span>
+                  <span className="text-body-md text-gray-100">{course.code}</span>
                   <span className="text-body-md font-semibold text-foreground">{course.name}</span>
                 </span>
                 <Icon name="chevron-right" size={16} className="shrink-0 text-gray-100" />

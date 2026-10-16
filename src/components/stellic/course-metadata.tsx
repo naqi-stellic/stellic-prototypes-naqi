@@ -48,7 +48,7 @@ export function CourseActivity({ course }: { course: PlannedCourse }) {
   if (!shown.includes("lastActivity") || !course.lastActivity) return null
 
   return (
-    <span className="text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
+    <span className="text-body-md font-medium text-gray-80">
       {course.lastActivity}
     </span>
   )

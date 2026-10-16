@@ -25,7 +25,7 @@ function CreditRow({ item }: { item: IncomingCredit }) {
     <div className="flex w-full items-center gap-2 rounded-md border border-gray-40 bg-card p-[7px]">
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
         <div>
-          <p className="text-body-md text-gray-80">{item.code}</p>
+          <p className="text-body-md text-gray-100">{item.code}</p>
           <p className="text-body-md font-semibold text-foreground">{item.name}</p>
         </div>
         {/* Where a course card says which class you are in, this says where
