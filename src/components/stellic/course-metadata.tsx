@@ -3,7 +3,7 @@ import { createContext, use } from "react"
 import { Badge } from "@/components/ui/badge"
 import { courseTags, METADATA_DEFAULT, type MetadataField, type PlannedCourse } from "@/data/plan"
 
-/* Which details "Plan details" is currently showing, and how a course card
+/* Which details "Course details" is currently showing, and how a course card
  * says them. The setting sits above the whole plan rather than being threaded
  * down through years, terms and rows, because every card answers to it and
  * dragging one must not carry a copy of it around. */

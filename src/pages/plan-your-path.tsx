@@ -182,7 +182,7 @@ const CUSTOM_ID = "custom"
 
 
 /** The plan's actions in the order the work goes: decide what the cards show,
- *  fill the plan — for you, or by hand — and have it looked at. Plan details
+ *  fill the plan — for you, or by hand — and have it looked at. Course details
  *  gets its menu built per render, since it has to show which details are
  *  currently on. */
 function planActions(
@@ -192,7 +192,7 @@ function planActions(
 ): PlanAction[] {
   return [
     {
-      label: "Plan details",
+      label: "Course details",
       icon: "remove-red-eye",
       fields: METADATA_FIELDS.map((field) => ({
         ...field,
@@ -305,7 +305,7 @@ export function PlanYourPath({
   initialYears?: Year[]
   /** The credit the student arrived with, where it is not the default set. */
   incoming?: IncomingGroup[]
-  /** An introduction drawn over the plan. It is handed what Plan details is
+  /** An introduction drawn over the plan. It is handed what Course details is
    *  showing and the way to change it, so it can ask the student about the
    *  cards before they have seen them. */
   intro?: (details: {
@@ -357,7 +357,7 @@ export function PlanYourPath({
     INCOMING_LABEL,
     ...initialYears.filter((year) => year.phase === "complete").map((year) => year.label),
   ])
-  /* Which details the cards are showing. Plan details owns this, and every
+  /* Which details the cards are showing. Course details owns this, and every
      card in the plan — canvas or term — answers to the same list. */
   const [metadata, setMetadata] = useState<MetadataField[]>(METADATA_DEFAULT)
   /* What leaving a generated plan would do, held while the student is asked

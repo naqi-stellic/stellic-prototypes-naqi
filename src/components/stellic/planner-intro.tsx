@@ -34,9 +34,11 @@ const TOUR: {
   registers?: boolean
 }[] = [
   {
-    find: '[data-tour="plan-actions"] [aria-label="Plan details"]',
+    /* Ends on "details" rather than naming it whole: an institution that says
+       subject for course has this button say "Subject details". */
+    find: '[data-tour="plan-actions"] [aria-label$=" details"]',
     title: "Choose which details show for each course",
-    body: "Plan details turns course names, sections, credits and more on or off for every course in your plan.",
+    body: "Course details turns course names, sections, credits and more on or off for every course in your plan.",
   },
   {
     find: '[data-tour="plan-actions"] [aria-label="Generate plan"]',
@@ -74,7 +76,7 @@ const CHANGES: {
   generates?: boolean
   registers?: boolean
 }[] = [
-  { icon: "remove-red-eye", name: "Plan details", does: "Choose which details show for each course" },
+  { icon: "remove-red-eye", name: "Course details", does: "Choose which details show for each course" },
   {
     icon: "design-services",
     name: "Generate plan",
@@ -145,7 +147,7 @@ export function PlannerIntro({
    *  has nowhere to take them, and the step does not offer it. */
   onRegister?: () => void
   onPlan?: () => void
-  /** What Plan details is showing, and how to change it. Where they are not
+  /** What Course details is showing, and how to change it. Where they are not
    *  given there is nothing to ask, and the card goes straight to the tour. */
   details?: MetadataField[]
   onToggleDetail?: (id: string) => void

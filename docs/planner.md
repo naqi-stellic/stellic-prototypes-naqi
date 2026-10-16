@@ -117,7 +117,7 @@ without saying it on every card.
 
 ## Where each course came from
 
-Every card can say who put it there, under Plan details. There are four
+Every card can say who put it there, under Course details. There are four
 answers, and the plan holds all four: the term under way was **synced from
 SIS**, because registration for it already happened in the registrar's system;
 most of what follows was **added by Pathway**, which is what a pathway is for;

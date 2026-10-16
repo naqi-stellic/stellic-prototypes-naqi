@@ -724,9 +724,9 @@ export function eligibleCourses(course: PlannedCourse): number {
   return 180 + (seed % 9) * 84 + (seed % 7) * 11
 }
 
-/* --------------------------------------------------------- plan details */
+/* --------------------------------------------------------- course details */
 
-/* What "Plan details" can put on a course card. Everything here is off the
+/* What "Course details" can put on a course card. Everything here is off the
  * card until it is switched on, and a field a course has no value for stays
  * off whatever the setting says — a card never carries an empty label. */
 

@@ -131,7 +131,7 @@ export function AuditRow({
   const draft = course.draft
   const style = draft ? DRAFT_STYLE[draft.mark] : null
   const struck = isStruck(course)
-  /* Plan details decides whether the card carries the name and section. */
+  /* Course details decides whether the card carries the name and section. */
   const shown = useMetadata()
   /* What the plan has against this course sitting where it does. A seat is
      never one of them: it says what it is itself. */
@@ -263,7 +263,7 @@ export function AuditRow({
           </>
         )}
 
-        {/* What Plan details is showing — nothing, until it is asked for. */}
+        {/* What Course details is showing — nothing, until it is asked for. */}
         <CourseTags course={course} />
         <CourseActivity course={course} />
         {draft && (

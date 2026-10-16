@@ -68,7 +68,7 @@ on a timetable this plan knows about, so `src/data/incoming.ts` keeps it as
 what it is rather than as two invented semesters.
 
 The total is said beside the heading. Each row's credits are a tag like any
-other detail, so they answer to Plan details and are not there until it asks
+other detail, so they answer to Course details and are not there until it asks
 for them; what stays on the row is the one fact the kind is worth knowing by. Those credits are extra rather than
 requirements, so the degree's forty and its hundred and twenty are untouched
 and the generator has the same work to do. Make them count instead by striking

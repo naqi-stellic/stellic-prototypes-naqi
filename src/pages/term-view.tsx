@@ -236,7 +236,7 @@ export function TermView({
      and having it looked at. */
   const plannerActions: PlanAction[] = [
     {
-      label: "Plan details",
+      label: "Course details",
       icon: "remove-red-eye",
       /* Activities have a list of their own here, so nothing to switch. */
       fields: METADATA_FIELDS.filter((field) => field.id !== "activities").map((field) => ({

@@ -60,7 +60,7 @@ export function RequirementRow({
 }: {
   entry: CatalogEntry
   id?: string
-  /** What Plan details has switched on. A requirement says what it can of
+  /** What Course details has switched on. A requirement says what it can of
    *  them: it has a credit value and the campus it would be taken on, but no
    *  instructor or room until a class is chosen, and what it cannot say it
    *  leaves off, as a card on the plan does. */
@@ -326,7 +326,7 @@ export function RequirementsPanel({
    *  left rather than as it starts. */
   narrowing: Narrowing
   onNarrow: (next: Narrowing) => void
-  /** What Plan details is showing, which the rows say of themselves too. */
+  /** What Course details is showing, which the rows say of themselves too. */
   details?: MetadataField[]
   /** Opens one of them on its own, by its place in the outstanding list. */
   onOpenCourse?: (index: number) => void

@@ -241,7 +241,7 @@ function CoursesCard({ onSelectTab }: { onSelectTab: (id: string) => void }) {
   )
 }
 
-/** The Plan details menu, grouped: an eye beside each detail, open or shut,
+/** The Course details menu, grouped: an eye beside each detail, open or shut,
  *  and the menu stays up to take the next one. */
 function DetailsMenu({ shown, onToggle }: { shown: Set<Detail>; onToggle: (id: Detail) => void }) {
   const groups = DETAIL_GROUPS.map((group) => ({
