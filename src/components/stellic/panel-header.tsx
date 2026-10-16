@@ -45,7 +45,10 @@ export function PanelHeader({
     /* Stays where it is as the panel scrolls, down to its rule, so the way back,
        the close and where the course is are never further than the top. */
     <header
-      className={cn("sticky top-0 z-10 flex w-full shrink-0 flex-col bg-card px-6 py-6", className)}
+      className={cn(
+        "sticky top-0 z-10 flex w-full shrink-0 flex-col gap-4 bg-card px-6 py-6",
+        className
+      )}
     >
       {/* The way back is a line of its own above the title, and only there
           when there is somewhere to go back to. */}
@@ -53,7 +56,7 @@ export function PanelHeader({
         <button
           type="button"
           onClick={onBack}
-          className="mb-1 flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
+          className="flex w-fit min-w-0 cursor-pointer items-center gap-1 text-label-md font-medium text-gray-80"
         >
           <Icon name="chevron-left" size={14} className="shrink-0" />
           <span className="min-w-0 truncate text-left">Back to {backLabel}</span>
@@ -84,7 +87,7 @@ export function PanelHeader({
           <Icon name="close" size={20} />
         </button>
       </div>
-      {footer && <div className="pt-3">{footer}</div>}
+      {footer}
     </header>
   )
 }
