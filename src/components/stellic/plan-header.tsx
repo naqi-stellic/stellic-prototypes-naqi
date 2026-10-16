@@ -306,9 +306,8 @@ export function PlanHeader({
                 {/* How many of the details are on, so the button says what
                     the cards are carrying without opening it. */}
                 {action.fields && (
-                  <Badge variant="secondary" className={labelsGo}>
-                    {action.fields.filter((field) => field.shown).length} of{" "}
-                    {action.fields.length}
+                  <Badge variant="primary" className={labelsGo}>
+                    {action.fields.filter((field) => field.shown).length}
                   </Badge>
                 )}
               </Button>
