@@ -254,8 +254,8 @@ export function TermView({
               {
                 id: "generate",
                 label: term.scheduled
-                  ? "Generate schedule automatically"
-                  : "Generate term automatically",
+                  ? "Auto generate schedule"
+                  : "Auto generate term",
                 icon: "design-services" as const,
               },
               { id: "manual", label: "Add courses manually", icon: "checklist" as const },
@@ -268,7 +268,7 @@ export function TermView({
            and absent from one whose calendar is still disabled. It opens
            nothing here. */
         term.scheduled
-        ? [{ label: "Generate schedule automatically", icon: "design-services" as const }]
+        ? [{ label: "Auto generate schedule", icon: "design-services" as const }]
         : []),
     ...(generators ? [] : [ADD_REMAINING]),
     reviewAction(requested),

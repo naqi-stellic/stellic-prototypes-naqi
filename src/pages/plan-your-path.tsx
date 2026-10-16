@@ -204,7 +204,7 @@ function planActions(
           label: "Complete my plan",
           icon: "grid-view" as const,
           choices: [
-            { id: "generate", label: "Generate plan automatically", icon: "design-services" as const },
+            { id: "generate", label: "Auto generate plan", icon: "design-services" as const },
             { id: "manual", label: "Add courses manually", icon: "checklist" as const },
           ],
         }
