@@ -114,11 +114,11 @@ const DIALOG = "w-full max-w-[480px]"
  *  details once they want it. Building and room are one switch, because
  *  nobody wants one without the other. */
 const CHOICES: { label: string; fields: MetadataField[] }[] = [
-  { label: "Credits", fields: ["credits"] },
   { label: "Section", fields: ["section"] },
+  { label: "Credits", fields: ["credits"] },
   { label: "Modality", fields: ["modality"] },
-  { label: "Instructor", fields: ["instructor"] },
   { label: "Campus", fields: ["campus"] },
+  { label: "Instructor", fields: ["instructor"] },
   { label: "Building and room", fields: ["location"] },
 ]
 

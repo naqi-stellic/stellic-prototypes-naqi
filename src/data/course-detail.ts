@@ -459,4 +459,4 @@ export function prereqsMet(entry: CatalogEntry): boolean {
   return options.length === 0 || options.some((option) => option.state === "earned")
 }
 
-export const PREREQ_LABEL = { met: "Met", not: "Not yet" } as const
+export const PREREQ_LABEL = { met: "Eligible now", not: "Not eligible right now" } as const

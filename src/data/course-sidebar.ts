@@ -208,7 +208,7 @@ export function planningChecklist(
   return [
     met
       ? { label: "Meet eligibility: prerequisites", state: "done" }
-      : { label: "Meet eligibility: prerequisites not met", state: "blocked" },
+      : { label: "Meet eligibility", detail: "Not eligible right now", state: "blocked" },
     select,
     /* Registering and the add/drop that follows it are not Stellic's where
        students register somewhere else. */

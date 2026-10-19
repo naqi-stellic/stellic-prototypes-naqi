@@ -269,7 +269,7 @@ function Checklist({
  *  for students who meet something more, a section can still be chosen —
  *  registering for a full one puts the student on its waitlist. */
 function heldBack(section: SidebarSection, clash: string | null): string | null {
-  if (!section.eligible) return "Section eligibility criteria not met"
+  if (!section.eligible) return "Not eligible for this section right now"
   if (clash) return `Clashes with ${clash}`
   return null
 }
@@ -302,7 +302,7 @@ function SectionDetail({ section }: { section: SidebarSection }) {
         <span className="flex items-center gap-2">
           <Heading>Section Eligibility</Heading>
           <Badge variant={section.eligible ? "success" : "danger"}>
-            {section.eligible ? "Met" : "Not met"}
+            {section.eligible ? "Eligible" : "Not eligible right now"}
           </Badge>
         </span>
         {section.eligible ? (
@@ -636,12 +636,18 @@ function EligibilityFold({
   return (
     <Fold
       title="Eligibility"
-      summary={<Badge variant={met ? "success" : "danger"}>{met ? "Met" : "Not Met"}</Badge>}
+      summary={
+        <Badge variant={met ? "success" : "danger"}>{met ? "Eligible" : "Not eligible right now"}</Badge>
+      }
       open={open}
       onToggle={onToggle}
     >
       <div className="flex w-full flex-col gap-3">
         <Heading>Prerequisites</Heading>
+        {/* Not eligible is a state to get out of, so it says how. */}
+        {!met && lines.length > 0 && (
+          <p className="text-body-md text-gray-80">Finish these to become eligible.</p>
+        )}
         {lines.length === 0 ? (
           <p className="text-body-md text-gray-80">This course has no prerequisites.</p>
         ) : (
