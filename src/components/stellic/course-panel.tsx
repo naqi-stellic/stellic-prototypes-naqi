@@ -182,6 +182,12 @@ const AUDIT_STATE: Record<Stage, ComponentProps<typeof AuditIcon>["state"]> = {
   taken: "completed"
 }
 
+/** The tab you are on reads as the section you are in: the light blue ground,
+ *  the primary border and the primary type, not the heavy ring a pressed button
+ *  gets. */
+const TAB_ACTIVE =
+  "data-[selected=true]:border-primary-50 data-[selected=true]:bg-primary-0 data-[selected=true]:text-primary-50 data-[selected=true]:shadow-none"
+
 const CATALOG = "catalog"
 /** Prefix for "just added to this term", until the plan says where it is. */
 const ADDED = "added:"
@@ -566,6 +572,7 @@ export function CoursePanel({
                   role="tab"
                   aria-selected={selected === key}
                   selected={selected === key}
+                  className={TAB_ACTIVE}
                   onClick={() => setTab(key)}
                 >
                   {instance.term.name}
@@ -576,6 +583,7 @@ export function CoursePanel({
               role="tab"
               aria-selected={selected === CATALOG}
               selected={selected === CATALOG}
+              className={TAB_ACTIVE}
               onClick={() => setTab(CATALOG)}
             >
               <Icon name="menu-book" size={16} />
