@@ -1225,8 +1225,7 @@ function SectionsFold({
             list empty with only a link under it. */}
         {!all && !picked && visible.length === 0 && hidden > 0 && (
           <div className="w-full rounded-md border border-gray-40 bg-gray-0 px-4 py-3 text-body-md text-gray-100">
-            No sections are open to you this term. Show ineligible sections to see what is in the
-            way.
+            You're not eligible for any section this term.
           </div>
         )}
         {hidden > 0 && (
