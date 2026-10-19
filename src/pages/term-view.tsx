@@ -59,7 +59,7 @@ function RegistrationAlert({
     /* The header block's negative margin eats the gap the page would put
        after it, so a banner at rest carries its own clearance from whatever
        is under it. */
-    <div className={cn("w-full", stuck ? "" : "px-6 pb-6")}>
+    <div className="w-full">
     <div
       className={cn(
         "flex w-full flex-wrap items-center gap-2 text-body-md",
@@ -285,6 +285,31 @@ export function TermView({
         tabs={tabs}
         term={term.name}
         progress={progress}
+        /* Out for review, or looked at: said beside where the term is, as the
+           planner says it on the term's card. */
+        status={
+          pending || term.reviewed ? (
+            <StatusPill status={pending ? "pending review" : "reviewed"}>
+              {pending ? "Pending Review" : "reviewed"}
+            </StatusPill>
+          ) : undefined
+        }
+        /* How the term is read, beside where it is. */
+        view={
+          <Tabs value={mode} onValueChange={setMode}>
+            <TabsList>
+              <TabsTrigger value="list">
+                <Icon name="list" size={16} />
+                List
+              </TabsTrigger>
+              {/* Nothing to draw until the schedule is out. */}
+              <TabsTrigger value="calendar" disabled={!term.scheduled}>
+                <Icon name="calendar-month" size={16} />
+                Calendar
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+        }
         /* The registration window holds at the top with the toolbar. Only
            this one: a warning is about a course you can scroll to, and it
            belongs beside the term it is about. */
@@ -323,33 +348,6 @@ export function TermView({
           onOpenCourse={onOpenCourse}
         />
       )}
-
-      <div className="flex w-full flex-wrap items-center justify-between gap-2">
-        <div className="flex min-w-0 items-center gap-2">
-          <h3 className="min-w-0 truncate text-h300 font-semibold text-gray-100">{term.name}</h3>
-          {/* Out for review, or looked at: said beside the term's name, where the
-              planner says it on the term's card. */}
-          {(pending || term.reviewed) && (
-            <StatusPill status={pending ? "pending review" : "reviewed"}>
-              {pending ? "Pending Review" : "reviewed"}
-            </StatusPill>
-          )}
-        </div>
-
-        <Tabs value={mode} onValueChange={setMode}>
-          <TabsList>
-            <TabsTrigger value="list">
-              <Icon name="list" size={16} />
-              List
-            </TabsTrigger>
-            {/* Nothing to draw until the schedule is out. */}
-            <TabsTrigger value="calendar" disabled={!term.scheduled}>
-              <Icon name="calendar-month" size={16} />
-              Calendar
-            </TabsTrigger>
-          </TabsList>
-        </Tabs>
-      </div>
 
       {mode === "calendar" && term.scheduled ? (
         <TermCalendar

@@ -106,6 +106,8 @@ export function PlanHeader({
   actions,
   tabs,
   term,
+  status,
+  view,
   progress,
   banner,
   pressed,
@@ -119,16 +121,14 @@ export function PlanHeader({
   tabs: YearTab[]
   /** The term the page is on, where it is on one: the last crumb. */
   term?: string
+  /** Where the term stands with the advisor, right after its name. */
+  status?: ReactNode
+  /** How the page is read, beside the crumbs: a term's list or its calendar. */
+  view?: ReactNode
   /** Where the student stands, as the two meters under the bar. */
   progress?: PlanProgressData
-  /** A banner that holds at the top with the toolbar rather than scrolling
-   *  away under it. The registration window is the one thing worth keeping in
-   *  reach the whole way down a term: everything on the page is something you
-   *  might register, and the button that does it should not be a scroll away.
-   *
-   *  It is given whether the toolbar is holding, because a banner sitting in
-   *  the page and a banner pinned to the top of it are not the same shape: one
-   *  is a card among cards, the other is a strip across the top. */
+  /** A banner under the meters: the registration window, say, for the term
+   *  being read. It is in the page, so it scrolls away with it. */
   banner?: (stuck: boolean) => ReactNode
   /** Whether the toggling action is currently showing its panel. */
   pressed?: boolean
@@ -334,19 +334,25 @@ export function PlanHeader({
         <div
           className={cn(
             "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-4 transition-colors",
-            /* The edge belongs to the bottom of the block, not to this row: where
-               a banner is held under it, the banner carries it. */
-            stuck && !banner ? "border-gray-40" : "border-transparent",
+            stuck ? "border-gray-40" : "border-transparent",
             stuck && "bg-card"
           )}
         >
-          <Crumbs tabs={tabs} term={term} />
+          <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-3">
+            <div className="flex min-w-0 flex-wrap items-center gap-3">
+              <Crumbs tabs={tabs} term={term} />
+              {status}
+            </div>
+            {view}
+          </div>
           {actionButtons}
         </div>
-        {banner?.(stuck)}
       </div>
       <span ref={sentinel} aria-hidden="true" className="hidden" />
       {progress && <PlanProgress progress={progress} />}
+      {/* Under the meters, in the page like anything else: it is about the term
+          you are reading, and it scrolls away with it. */}
+      {banner?.(false)}
     </>
   )
 }
