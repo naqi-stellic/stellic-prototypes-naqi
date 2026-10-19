@@ -1037,7 +1037,7 @@ function InstanceBody({
 
       {(stage === "progress" || stage === "taken") && (
         <Fold
-          title={stage === "progress" ? "Assignment Activity" : "Canvas Activity"}
+          title="Course Activity"
           open={open.canvas}
           onToggle={() => toggle("canvas")}
         >
