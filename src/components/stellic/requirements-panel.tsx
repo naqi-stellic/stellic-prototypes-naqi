@@ -24,14 +24,12 @@ import {
   type TermName,
 } from "@/data/catalog"
 import { PREREQ_LABEL, prereqsMet } from "@/data/course-detail"
-import { incomingTotals } from "@/data/incoming"
+import { eligibility } from "@/data/course-sidebar"
 import {
   CREDITS_PER_COURSE,
   DEGREE,
   courseTags,
-  planStanding,
   type MetadataField,
-  type Year,
 } from "@/data/plan"
 import { useNudge } from "@/lib/nudge"
 
@@ -77,6 +75,12 @@ export function RequirementRow({
   })
 
   const { props: nudge, nudged } = useNudge(!overlay && id != null && !isDragging)
+  /* The first prerequisite still to take, by its code, for the line under the
+     warning. */
+  const blocker =
+    entry.placeholder || prereqsMet(entry)
+    ? null
+    : (eligibility(entry).lines.find((line) => !line.met)?.label.split(",")[0] ?? null)
   const tags = courseTags(
     {
       id: "requirement",
@@ -154,12 +158,15 @@ export function RequirementRow({
         <span className="truncate text-body-md text-gray-100">{entry.code}</span>
         <span className="truncate text-body-md font-semibold text-foreground">{entry.name}</span>
         {tagBadges}
-        {/* Said the way a section says it, so a course that cannot be taken yet
-            is marked where it is read. */}
+        {/* Not eligible is a state to get out of, so it says what to do first:
+            the way a section says it, with the first thing still to take. */}
         {!prereqsMet(entry) && (
-          <span className="flex items-center gap-1 pt-1 text-body-md text-alert-100">
-            <Icon name="error-outline" size={14} className="shrink-0" />
-            <span className="min-w-0">Course eligibility criteria not met</span>
+          <span className="flex flex-col pt-1 text-body-md">
+            <span className="flex items-center gap-1 text-alert-100">
+              <Icon name="error-outline" size={14} className="shrink-0" />
+              <span className="min-w-0">Not eligible right now</span>
+            </span>
+            {blocker && <span className="text-gray-80">Take {blocker} first</span>}
           </span>
         )}
         {/* What the course would count for, so a list grouped any other way
@@ -265,51 +272,8 @@ const TERM_GROUP_ORDER = [
   "Any term",
 ]
 
-/** One of the shares of the degree, drawn as a length of the bar and read
- *  back underneath it. */
-type Share = {
-  label: string
-  count: number
-  icon: "check" | "watch-later" | "calendar-month" | "crop-square"
-  bar: string
-  tone: string
-}
-
-function Meter({ total, shares }: { total: number; shares: Share[] }) {
-  /* A share of nothing is not a share: it draws no bar and it has nothing to
-     report, so it is left out rather than shown as a nought. */
-  const held = shares.filter((share) => share.count > 0)
-
-  return (
-    <div className="flex w-full flex-col gap-2">
-      <span className="flex h-1.5 w-full overflow-hidden rounded-md bg-gray-5">
-        {held.map((share) => (
-          <span
-            key={share.label}
-            className={share.bar}
-            style={{ width: `${total === 0 ? 0 : (share.count / total) * 100}%` }}
-          />
-        ))}
-      </span>
-      <span className="flex flex-wrap items-center gap-4">
-        {held.map((share) => (
-          <span
-            key={share.label}
-            title={share.label}
-            className="flex items-center gap-1 text-body-md text-gray-100"
-          >
-            <Icon name={share.icon} size={16} className={share.tone} />
-            {share.count}
-          </span>
-        ))}
-      </span>
-    </div>
-  )
-}
-
 export function RequirementsPanel({
   entries,
-  years,
   narrowing,
   onNarrow,
   details,
@@ -322,8 +286,6 @@ export function RequirementsPanel({
   /** What is still to place, in the order the degree asks for it, each with
    *  its place in that list. */
   entries: { entry: CatalogEntry; index: number }[]
-  /** The plan as it stands, for the shares at the top. */
-  years: Year[]
   /** How the list is narrowed and filed. Held by the page rather than here,
    *  so opening one of these courses and coming back finds the list as it was
    *  left rather than as it starts. */
@@ -339,21 +301,7 @@ export function RequirementsPanel({
   const setFilters = (next: FilterState) => onNarrow({ ...narrowing, filters: next })
   const setGrouping = (next: Grouping) => onNarrow({ ...narrowing, grouping: next })
 
-  /* Where the student stands, in the four states they are in at once: the
-     credit they arrived with, the term they are sitting in, the terms they
-     have planned, and the requirements with no term yet. Each is read from
-     where it actually lives rather than inferred from the others — which is
-     also why the bar is the sum of its own shares rather than the degree's
-     forty: the credit that came in with them is credit the degree did not ask
-     for, and a bar drawn against forty would run past its end. */
-  const standing = planStanding(years, incomingTotals())
-  const done = standing.completed.reqs
-  const going = standing.inProgress.reqs
-  const placed = standing.planned.reqs
-  const total = done + going + placed + entries.length
-
-  /* Only what the filters leave. They narrow the list rather than the degree,
-     so the meters above go on describing the whole of it. */
+  /* Only what the filters leave. They narrow the list rather than the degree. */
   const shown = entries.filter(({ entry }) =>
     matches(filters, (field) => answers(entry, field))
   )
@@ -394,13 +342,10 @@ export function RequirementsPanel({
 
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
 
-      {/* What the plan answers to, which is what decides what is left, and
-          then how much of it is. Two blocks read the same way — a label
-          over its content — and stand evenly apart. The programme and the
-          minor beside it: two of them, because a plan that answers to both
-          is the case no single track is ever built for. Set on a gray box so
-          the two read as one summary of the degree, apart from the list. */}
-      <div className="flex w-full flex-col gap-6 rounded-md bg-gray-0 p-4">
+      {/* What the plan answers to, which is what decides what is left. The
+          programme and the minor beside it: two of them, because a plan that
+          answers to both is the case no single track is ever built for. */}
+      <div className="flex w-full flex-col gap-6">
         <PlanFacet
           label="Programs"
           add="add program"
@@ -410,43 +355,6 @@ export function RequirementsPanel({
           ]}
         />
 
-      <div className="flex w-full flex-col gap-2">
-        <span className="text-body-md font-semibold text-foreground">Progress</span>
-        <Meter
-          total={total}
-          shares={[
-            {
-              label: "Complete",
-              count: done,
-              icon: "check",
-              bar: "bg-success-50",
-              tone: "text-success-50",
-            },
-            {
-              label: "In progress",
-              /* Under way rather than bought: the clock, not the trolley. */
-              count: going,
-              icon: "watch-later",
-              bar: "bg-warning-50",
-              tone: "text-warning-50",
-            },
-            {
-              label: "Planned",
-              count: placed,
-              icon: "calendar-month",
-              bar: "bg-warning-25",
-              tone: "text-warning-25",
-            },
-            {
-              label: "Still to place",
-              count: entries.length,
-              icon: "crop-square",
-              bar: "bg-gray-40",
-              tone: "text-gray-80",
-            },
-          ]}
-        />
-      </div>
 
       </div>
 

@@ -47,6 +47,7 @@ import {
   PlanHeader,
   reviewAction,
   type PlanAction,
+  type PlanProgressData,
   type TabTerm,
   type YearTab,
 } from "@/components/stellic/plan-header"
@@ -109,6 +110,7 @@ import {
   INITIAL_YEARS,
   METADATA_DEFAULT,
   METADATA_FIELDS,
+  MILESTONES,
   expectedGraduation,
   findCourse,
   findTerm,
@@ -467,6 +469,17 @@ export function PlanYourPath({
   /* The plan against the degree, with the credit the student arrived with
      counted as the credit it is. */
   const standing = planStanding(years, incomingTotals(incoming))
+  /* Where the student stands, for the meters under the header: what they have
+     done, are doing and have placed, and what has no term yet. */
+  const progress: PlanProgressData = {
+    courses: {
+      done: standing.completed.reqs,
+      going: standing.inProgress.reqs,
+      planned: standing.planned.reqs,
+      remaining: requirements.length,
+    },
+    milestones: MILESTONES,
+  }
   /* The course opened on its own, from the remaining list or from the courses
      that could fill a seat. */
   const course = openCourse
@@ -1133,7 +1146,6 @@ export function PlanYourPath({
         (reqsOpen && (
           <RequirementsPanel
             entries={requirements}
-            years={shown}
             narrowing={narrowing}
             onNarrow={setNarrowing}
             details={metadata}
@@ -1194,6 +1206,7 @@ export function PlanYourPath({
             key={`${openTerm.id}-${openTermOn ?? "default"}`}
             term={openTerm}
             startOn={openTermOn}
+            progress={progress}
             tabs={yearTabs(
               shown,
               yearOf(shown, openTerm.id),
@@ -1235,6 +1248,7 @@ export function PlanYourPath({
           <PlanHeader
             actions={planActions(metadata, generators, requested)}
             tabs={yearTabs(shown, undefined, () => setOpenTermId(null), openTermView)}
+            progress={progress}
             pressed={generateOpen}
             onChoose={(id) => {
               if (id === "generate") {

@@ -70,63 +70,6 @@ export type YearTab = {
   onSelectTerm?: (termId: string) => void
 }
 
-/** A menu that opens on hover as well as on click. Hover is the quicker way
- *  to look down a year when you are pointing at it anyway; click stays the way
- *  it works, because on a touch screen it is the only way there is.
- *
- *  Both the trigger and the menu keep it open, with a moment's grace between
- *  them so crossing the gap does not close it. */
-function HoverMenu({ trigger, children }: { trigger: ReactNode; children: ReactNode }) {
-  const [open, setOpen] = useState(false)
-  /* Whether this was opened by pointing rather than pressing. A hovered menu
-     must not pull focus off whatever the keyboard was on. */
-  const hovered = useRef(false)
-  const leaving = useRef<number | undefined>(undefined)
-
-  useEffect(() => () => window.clearTimeout(leaving.current), [])
-
-  const enter = (event: React.PointerEvent) => {
-    /* Touch reports as "touch" and fires this on tap, which would open the
-       menu and then let the click close it again. */
-    if (event.pointerType !== "mouse") return
-    window.clearTimeout(leaving.current)
-    hovered.current = true
-    setOpen(true)
-  }
-  const leave = (event: React.PointerEvent) => {
-    if (event.pointerType !== "mouse") return
-    leaving.current = window.setTimeout(() => setOpen(false), 140)
-  }
-
-  return (
-    <DropdownMenu
-      open={open}
-      onOpenChange={(next) => {
-        hovered.current = false
-        setOpen(next)
-      }}
-      /* Not modal: a modal menu swallows the pointer everywhere else, so
-         moving from one year to the next would not reach the next tab. */
-      modal={false}
-    >
-      <DropdownMenuTrigger asChild onPointerEnter={enter} onPointerLeave={leave}>
-        {trigger}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        className="w-[200px]"
-        onPointerEnter={enter}
-        onPointerLeave={leave}
-        /* Opened by pointing, so it must not take the focus off whatever the
-           keyboard was on; opened by pressing, it should. */
-        onCloseAutoFocus={(event) => hovered.current && event.preventDefault()}
-      >
-        {children}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
-}
-
 /** Where the planner was opened from, if it was opened from anywhere:
  *  `?from=compliance` on the URL, put there by the record that sent you. */
 export function cameFrom(): string | null {
@@ -159,14 +102,11 @@ function CameFrom() {
   )
 }
 
-/** How far back up the pane has to come before the toolbar lets go again.
- *  Wider than the height the bar loses when a banner under it turns from a
- *  card into a strip, so sticking can never unstick itself. */
-const SLACK = 64
-
 export function PlanHeader({
   actions,
   tabs,
+  term,
+  progress,
   banner,
   pressed,
   onAction,
@@ -175,7 +115,12 @@ export function PlanHeader({
   sidebar,
 }: {
   actions: PlanAction[]
+  /** The years, which the breadcrumb's "All Years" opens onto. */
   tabs: YearTab[]
+  /** The term the page is on, where it is on one: the last crumb. */
+  term?: string
+  /** Where the student stands, as the two meters under the bar. */
+  progress?: PlanProgressData
   /** A banner that holds at the top with the toolbar rather than scrolling
    *  away under it. The registration window is the one thing worth keeping in
    *  reach the whole way down a term: everything on the page is something you
@@ -195,38 +140,15 @@ export function PlanHeader({
    *  Omitted where there is nothing to open. */
   sidebar?: { open: boolean; onToggle: () => void }
 }) {
-  /* The last stretch of header above the toolbar. Once all of it is out of the
-     pane the toolbar has reached the top and is holding there. */
   const sentinel = useRef<HTMLSpanElement>(null)
   const [stuck, setStuck] = useState(false)
 
-  /* Read off the scroll position rather than watched for, and with a dead band
-   * between sticking and letting go.
-   *
-   * Holding changes what the bar is: a banner under it becomes a strip, which
-   * is shorter than the card it was. On a page with barely anything to scroll
-   * that is a loop — sticking shortens the plan, the shorter plan scrolls back
-   * up, the bar lets go, the card returns, and it sticks again, several times
-   * a second. The band is wider than the height the bar can lose, so what
-   * sticking does to the page cannot undo the sticking. */
+  /* Holding at the top, once the page has scrolled under it: the bar takes a
+     ground and a rule then, and has none at rest. */
   useEffect(() => {
-    const mark = sentinel.current
-    const pane = mark?.closest("main")
-    if (!mark || !pane) return
-
-    /* How far down the pane's own content the toolbar sits. Fixed: everything
-       above it is the plan's name and what it is for, which do not move. */
-    const at =
-      mark.getBoundingClientRect().top - pane.getBoundingClientRect().top + pane.scrollTop
-
-    /* The band cannot reach above the top of the pane: with only the plan's
-       name above it, the toolbar sticks within SLACK of the top, and a
-       threshold below zero is one scrolling back up can never cross. At the
-       top, it always lets go. */
-    const release = Math.max(0, at - SLACK)
-    const read = () =>
-      setStuck((held) => (held ? pane.scrollTop > release : pane.scrollTop >= at))
-
+    const pane = sentinel.current?.closest("main")
+    if (!pane) return
+    const read = () => setStuck(pane.scrollTop > 4)
     read()
     pane.addEventListener("scroll", read, { passive: true })
     return () => pane.removeEventListener("scroll", read)
@@ -254,7 +176,8 @@ export function PlanHeader({
   /* Only the actions this page will draw: Add remaining goes where there is
      no panel for it to open. */
   const shown = actions.filter((action) => !action.sidebar || sidebar)
-  const crowded = shown.length > 3
+  /* The plan switcher stands in the row as well, so three actions here are four. */
+  const crowded = shown.length >= 3
 
   /* Step one: the actions keep their glyphs and lose their words. */
   /* Add remaining courses carries its words too, which is 148px more row
@@ -262,17 +185,6 @@ export function PlanHeader({
      icon button does not have), so each step comes that much sooner. */
   const labelsGo = crowded ? "@max-[1280px]/toolbar:hidden" : "@max-[1110px]/toolbar:hidden"
   const iconOnly = crowded ? "@max-[1280px]/toolbar:size-9" : "@max-[1110px]/toolbar:size-9"
-  /* Which year tabs survive the narrowest toolbar: the overview, always, and
-     the year that is open — or, where the overview is what is open, the first
-     year, so the row is never just one button. */
-  const keeping = new Set<number>([0])
-  const openYear = tabs.findIndex((tab, i) => i > 0 && tab.selected)
-  keeping.add(openYear > 0 ? openYear : 1)
-
-  /* Step two: even as glyphs the two groups no longer fit, so the years fold
-     down to the two that are worth keeping. */
-  const yearsGo = crowded ? "@max-[780px]/toolbar:hidden" : "@max-[740px]/toolbar:hidden"
-
   /* Whether the actions have lost their words, which is when a button needs
      another way to say what it is. Read off the label itself, since the
      toolbar's own width is what hid it and CSS is the only thing that knows
@@ -298,6 +210,7 @@ export function PlanHeader({
            the onboarding spotlight, which points at them. */
         <TooltipProvider delayDuration={200}>
         <div ref={actionsRef} data-tour="plan-actions" className="flex flex-wrap items-center gap-2">
+          <PlanSwitcher labelsGo={labelsGo} iconOnly={iconOnly} collapsed={collapsed} />
           {shown.map((action) => {
             const button = (
               <Button
@@ -312,7 +225,6 @@ export function PlanHeader({
                 <span data-action-label className={labelsGo}>{action.label}</span>
                 {/* How many of the details are on, so the button says what
                     the cards are carrying without opening it. */}
-                {action.choices && <Icon name="expand-more" size={16} className={labelsGo} />}
                 {action.fields && (
                   <Badge variant="primary" className={labelsGo}>
                     {action.fields.filter((field) => field.shown).length}
@@ -416,170 +328,177 @@ export function PlanHeader({
 
   return (
     <>
-    <section className="relative flex flex-col gap-4">
-      {/* Never in the way of a click: with the header down to one row, it sits
-          over the action buttons. */}
-      <span
-        ref={sentinel}
-        aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 bottom-0 h-6"
-      />
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-4">
-        {/* Which of their plans. A student knows whose plan it is; the name
-            only appears for staff, as the way back to the record they came
-            from, set back in gray. */}
-        <h2 className="flex flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
-          <CameFrom />
-          {/* The plans this student has, each with the programs it is for. Only
-              the one exists, and making another goes nowhere yet. */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <button
-                type="button"
-                className="flex cursor-pointer items-center gap-1 rounded-md text-gray-100 outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              >
-                Primary Plan
-                <Icon name="expand-more" size={16} />
-              </button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="start" className="w-[420px]">
-              <DropdownMenuItem className="items-start gap-2 py-2 text-body-md">
-                <Icon name="check" size={16} className="mt-0.5 shrink-0" />
-                <span className="flex min-w-0 flex-col gap-2">
-                  <span className="font-semibold text-foreground">Primary Plan</span>
-                  <span className="flex flex-wrap items-center gap-1">
-                    {[`${DEGREE.credential} (${DEGREE.concentration})`, `Minor in ${DEGREE.minor}`].map(
-                      (program) => (
-                        <Badge key={program} variant="outline" className="max-w-full">
-                          <span className="min-w-0 truncate">{program}</span>
-                        </Badge>
-                      )
-                    )}
-                  </span>
-                </span>
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
-                <Icon name="plus" size={16} className="shrink-0" />
-                Create new plan
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </h2>
-        {/* They are in the toolbar once it sticks, so they are never in two
-            places at once. */}
-        {!stuck && actionButtons}
+      {/* Where you are, and what can be done to the plan: one bar, which holds
+          at the top. Under it, where the plan stands. */}
+      <div className="sticky -top-6 z-20 -m-6 flex flex-col">
+        <div
+          className={cn(
+            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-4 transition-colors",
+            /* The edge belongs to the bottom of the block, not to this row: where
+               a banner is held under it, the banner carries it. */
+            stuck && !banner ? "border-gray-40" : "border-transparent",
+            stuck && "bg-card"
+          )}
+        >
+          <Crumbs tabs={tabs} term={term} />
+          {actionButtons}
+        </div>
+        {banner?.(stuck)}
       </div>
-
-    </section>
-
-    {/* Only this much of the header holds at the top: which years are in view,
-        and what can be done to the plan. Everything above it — the plan's name
-        and what it is for — is read once and scrolls away.
-
-        `-m-6 p-6` takes back the pane's own padding and puts it back inside, so
-        the bar paints edge to edge when it sticks without moving anything. */}
-    <div
-      className={cn(
-        /* -top-6 rather than top-0: the bar's margin box is pulled out by the
-           pane's padding, so it has to be pinned that much higher to come to
-           rest flush against the top of the pane rather than 24px inside it. */
-        "sticky -top-6 z-20 -m-6 flex flex-col"
-      )}
-    >
-    {/* The ground and the rule under it belong to the state, not the shape: at
-        rest the toolbar sits on the page like everything else, and only once
-        it is holding at the top does it need a band to hold the plan off it. A
-        banner below it is its own strip either way. */}
-      <div
-      className={cn(
-        "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b px-6 pb-6",
-        /* The same 16px above it as there is between the plan's name and its
-           actions when they wrap, so the three rows sit evenly apart. Holding
-           at the top it has the full 24 it always had. */
-        stuck ? "pt-6" : "pt-4",
-        "transition-colors",
-        /* The edge belongs to the bottom of the block, not to this row: where
-           a banner is held under it, the banner carries it. */
-        stuck && !banner ? "border-gray-40 bg-card" : "border-transparent",
-        stuck && "bg-card"
-      )}
-    >
-      <div className="flex flex-wrap items-center gap-2">
-        {tabs.map((tab, i) => {
-          /* Narrower still, and the years go too — all but two of them.
-             Whichever year is open stays, because it is the one you are
-             standing in; the overview stays, because it is the way back out.
-             On the canvas, where the overview is what is open, the year kept
-             beside it is the one the plan starts in. The rest are a menu press
-             away in the nav, and a second row of buttons is not. */
-          const gone = !keeping.has(i) && yearsGo
-
-          /* Step three, and the last thing there is to give: the overview keeps
-             its glyph and loses its word. Only it can — a grid means the whole
-             plan, where "2026-2027" as a symbol means nothing. */
-          const overview = i === 0
-
-          const button = (
-            <Button
-              size="sm"
-              selected={tab.selected}
-              onClick={tab.onSelect}
-              aria-label={overview ? tab.label : undefined}
-              /* Open reads as hovered, which is how the design marks the tab
-                 whose menu is showing. */
-              className={cn(
-                "data-[state=open]:bg-gray-5",
-                gone,
-                overview && "@max-[470px]/toolbar:size-8"
-              )}
-            >
-              {tab.icon && <Icon name={tab.icon} size={16} className={tab.tone} />}
-              {overview ? (
-                <span className="@max-[470px]/toolbar:hidden">{tab.label}</span>
-              ) : (
-                tab.label
-              )}
-            </Button>
-          )
-
-          if (!tab.terms || tab.terms.length === 0) {
-            /* The wrapper goes with it: a flex item with nothing in it still
-               takes the gap on either side of it. */
-            return (
-              <span key={tab.label} className={cn(gone)}>
-                {button}
-              </span>
-            )
-          }
-
-          return (
-            <HoverMenu key={tab.label} trigger={button}>
-              {tab.terms.map((term) => (
-                <DropdownMenuItem
-                  key={term.id}
-                  onSelect={() => tab.onSelectTerm?.(term.id)}
-                  className="gap-2 py-1.5 pr-2 pl-8 text-body-md"
-                >
-                  {/* In the checkmark's place, so the labels line up whether
-                      or not a term carries a mark. */}
-                  <Icon
-                    name={term.icon}
-                    size={16}
-                    className={cn("absolute left-2 shrink-0", term.tone)}
-                  />
-                  {term.label}
-                </DropdownMenuItem>
-              ))}
-            </HoverMenu>
-          )
-        })}
-      </div>
-
-      {stuck && actionButtons}
-    </div>
-    {banner?.(stuck)}
-    </div>
+      <span ref={sentinel} aria-hidden="true" className="hidden" />
+      {progress && <PlanProgress progress={progress} />}
     </>
+  )
+}
+
+/** The plans this student has, each with the programs it is for. First in the
+ *  row, since everything after it is about that plan. Only the one exists, and
+ *  making another goes nowhere yet. */
+function PlanSwitcher({
+  labelsGo,
+  iconOnly,
+  collapsed,
+}: {
+  labelsGo: string
+  iconOnly: string
+  collapsed: boolean
+}) {
+  return (
+    <DropdownMenu>
+      <Tooltip>
+        <DropdownMenuTrigger asChild>
+          <TooltipTrigger asChild>
+            <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", iconOnly)}>
+              <Icon name="calendar-today" size={16} />
+              <span data-action-label className={labelsGo}>
+                Primary Plan
+              </span>
+              <Icon name="expand-more" size={16} className={labelsGo} />
+            </Button>
+          </TooltipTrigger>
+        </DropdownMenuTrigger>
+        {collapsed && <TooltipContent>Primary Plan</TooltipContent>}
+      </Tooltip>
+      <DropdownMenuContent align="start" className="w-[420px]">
+        <DropdownMenuItem className="items-start gap-2 py-2 text-body-md">
+          <Icon name="check" size={16} className="mt-0.5 shrink-0" />
+          <span className="flex min-w-0 flex-col gap-2">
+            <span className="font-semibold text-foreground">Primary Plan</span>
+            <span className="flex flex-wrap items-center gap-1">
+              {[`${DEGREE.credential} (${DEGREE.concentration})`, `Minor in ${DEGREE.minor}`].map(
+                (program) => (
+                  <Badge key={program} variant="outline" className="max-w-full">
+                    <span className="min-w-0 truncate">{program}</span>
+                  </Badge>
+                )
+              )}
+            </span>
+          </span>
+        </DropdownMenuItem>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
+          <Icon name="plus" size={16} className="shrink-0" />
+          Create new plan
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+/** Where you are: the student, for staff, then the years, then the term. On a
+ *  term, "All Years" is the way back out to the whole plan. */
+function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
+  const overview = tabs[0]
+  const label = overview?.label ?? "All Years"
+
+  return (
+    <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
+      <CameFrom />
+      {term ? (
+        <>
+          <button
+            type="button"
+            onClick={() => overview?.onSelect?.()}
+            className="cursor-pointer rounded-md text-gray-80 outline-none hover:text-gray-100 focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            {label}
+          </button>
+          <Icon name="chevron-right" size={16} className="shrink-0 text-gray-80" />
+          <span className="text-gray-100">{term}</span>
+        </>
+      ) : (
+        <span className="text-gray-100">{label}</span>
+      )}
+    </nav>
+  )
+}
+
+/** What the student has done, is doing and has left, as two meters: the
+ *  courses, and the milestones on the way to the degree. */
+export type PlanProgressData = {
+  courses: { done: number; going: number; planned: number; remaining: number }
+  milestones: { done: number; planned: number; remaining: number }
+}
+
+function Meter({
+  title,
+  icon,
+  shares,
+  className,
+}: {
+  title: string
+  icon?: IconName
+  shares: { label: string; count: number; bar: string }[]
+  className?: string
+}) {
+  const total = shares.reduce((sum, share) => sum + share.count, 0)
+  const held = shares.filter((share) => share.count > 0)
+  return (
+    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
+        <span className="flex items-center gap-1 text-body-md font-semibold text-gray-100">
+          {icon && <Icon name={icon} size={16} />}
+          {title}
+        </span>
+        <span className="text-body-md text-gray-100">
+          {held.map((share) => `${share.count} ${share.label}`).join(", ")}
+        </span>
+      </div>
+      <span className="flex h-2 w-full overflow-hidden rounded-md bg-gray-40">
+        {held.map((share) => (
+          <span
+            key={share.label}
+            className={share.bar}
+            style={{ width: `${total === 0 ? 0 : (share.count / total) * 100}%` }}
+          />
+        ))}
+      </span>
+    </div>
+  )
+}
+
+function PlanProgress({ progress }: { progress: PlanProgressData }) {
+  const { courses, milestones } = progress
+  return (
+    <div className="grid grid-cols-1 gap-x-8 gap-y-4 pt-2 @3xl:grid-cols-[2fr_1fr]">
+      <Meter
+        title="Courses"
+        shares={[
+          { label: "completed", count: courses.done, bar: "bg-success-50" },
+          { label: "in progress", count: courses.going, bar: "bg-warning-50" },
+          { label: "planned", count: courses.planned, bar: "bg-warning-25" },
+          { label: "remaining", count: courses.remaining, bar: "bg-gray-40" },
+        ]}
+      />
+      <Meter
+        title="Milestones"
+        icon="outlined-flag"
+        shares={[
+          { label: "completed", count: milestones.done, bar: "bg-success-50" },
+          { label: "planned", count: milestones.planned, bar: "bg-warning-25" },
+          { label: "remaining", count: milestones.remaining, bar: "bg-gray-40" },
+        ]}
+      />
+    </div>
   )
 }

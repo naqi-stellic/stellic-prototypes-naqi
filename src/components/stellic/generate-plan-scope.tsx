@@ -1,70 +1,9 @@
-import { cn } from "cn"
+import { DEGREE } from "@/data/plan"
 
-import { Icon, type IconName } from "@/components/icon"
-import { DEGREE, type PlanStanding } from "@/data/plan"
+/* Step 1: what the plan is for. Where the student stands is in the header, so
+ * it is not said again here. The questions themselves start at step 2. */
 
-/* Step 1: where the student stands, and what the plan is for. The questions
- * themselves start at step 2. */
-
-type Segment = { share: number; className: string }
-
-/** Leading segments take their share of the width; the last one absorbs the
- *  remainder, so the bar always fills exactly. */
-function ProgressBar({ segments }: { segments: Segment[] }) {
-  /* Only the shares that are actually there. A segment of nothing still drew
-     its own divider, which put a hairline at the head of the bar. */
-  const shown = segments.filter((segment, i) => i === segments.length - 1 || segment.share > 0)
-
-  return (
-    /* The pill is the bar's shape rather than its first and last segments', so
-       both ends stay round whichever shares happen to be in it. */
-    <div className="flex h-2 w-full items-start overflow-hidden rounded-full">
-      {shown.map((segment, i) => {
-        const last = i === shown.length - 1
-        return (
-          <div
-            key={i}
-            className={cn(
-              "h-full",
-              last ? "min-w-0 flex-1" : "border-r border-white",
-              segment.className
-            )}
-            style={last ? undefined : { width: `${segment.share * 100}%` }}
-          />
-        )
-      })}
-    </div>
-  )
-}
-
-function Tally({ items }: { items: { icon: IconName; tone: string; value: number }[] }) {
-  /* The same rule the bar follows: nothing of a share means no share. */
-  const held = items.filter((item) => item.value > 0)
-
-  return (
-    <div className="flex flex-wrap items-center gap-x-[17px]">
-      {held.map((item) => (
-        <span
-          key={item.icon + item.value}
-          className="flex items-center gap-1 text-body-md text-gray-80"
-        >
-          <Icon name={item.icon} size={16} className={item.tone} />
-          {item.value}
-        </span>
-      ))}
-    </div>
-  )
-}
-
-export function GeneratePlanScope({
-  standing,
-  graduation,
-}: {
-  standing: PlanStanding
-  graduation: string
-}) {
-  const courses = standing.total.reqs
-
+export function GeneratePlanScope({ graduation }: { graduation: string }) {
   /* What the plan is for, which is more than one thing: the degree and the
      minor are both programmes with requirements to place, so they are both
      under Programs, each on its own line. */
@@ -84,32 +23,6 @@ export function GeneratePlanScope({
           Answer three questions and we'll draft a term-by-term plan. You can change anything
           before you save it.
         </p>
-      </div>
-
-      <div className="flex w-full flex-col gap-6">
-        <div className="flex w-full flex-col gap-2">
-          <p className="text-body-md font-semibold text-gray-100">Progress</p>
-          {/* Four states, because the student is in four of them at once: the
-              credit they arrived with, the term they are sitting in, the terms
-              they have planned, and everything still to place. */}
-          <ProgressBar
-            segments={[
-              { share: standing.completed.reqs / courses, className: "bg-success-50" },
-              { share: standing.inProgress.reqs / courses, className: "bg-warning-50" },
-              { share: standing.planned.reqs / courses, className: "bg-warning-25" },
-              { share: 0, className: "bg-gray-5" },
-            ]}
-          />
-          <Tally
-            items={[
-              { icon: "check", tone: "text-success-50", value: standing.completed.reqs },
-              { icon: "watch-later", tone: "text-warning-50", value: standing.inProgress.reqs },
-              { icon: "calendar-month", tone: "text-warning-25", value: standing.planned.reqs },
-              { icon: "crop-square", tone: "text-alert-50", value: standing.remaining.reqs },
-            ]}
-          />
-        </div>
-
       </div>
 
       <div className="flex w-full flex-col gap-2">

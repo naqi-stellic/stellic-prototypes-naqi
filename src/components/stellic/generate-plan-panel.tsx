@@ -184,7 +184,7 @@ export function GeneratePlanPanel({
 
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
         {view === 1 && (
-          <GeneratePlanScope standing={standing} graduation={graduation} />
+          <GeneratePlanScope graduation={graduation} />
         )}
 
         {view === 2 && (
