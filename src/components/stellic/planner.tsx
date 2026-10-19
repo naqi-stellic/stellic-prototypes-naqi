@@ -878,8 +878,8 @@ export function YearSection({
         <div className="flex min-w-0 flex-1 flex-col pb-4">
           <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-4 gap-y-1">
             <h3 className="min-w-0">{heading}</h3>
-            <p className="text-label-md text-gray-100">{yearSummary(year)}</p>
           </div>
+          <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
         </div>
       </section>
     )
@@ -903,6 +903,8 @@ export function YearSection({
               </Button>
             )}
           </div>
+          {/* What the year holds, said the same way folded or open. */}
+          <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
         </div>
         {/* A term needs ~384px to read properly: two fit from 768px, three from
             1152px. Below that they stack rather than squeeze. */}
