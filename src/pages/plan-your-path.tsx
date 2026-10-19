@@ -1206,7 +1206,6 @@ export function PlanYourPath({
             key={`${openTerm.id}-${openTermOn ?? "default"}`}
             term={openTerm}
             startOn={openTermOn}
-            progress={progress}
             tabs={yearTabs(
               shown,
               yearOf(shown, openTerm.id),

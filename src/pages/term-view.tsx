@@ -7,7 +7,6 @@ import {
   PlanHeader,
   reviewAction,
   type PlanAction,
-  type PlanProgressData,
   type YearTab,
 } from "@/components/stellic/plan-header"
 import { TermCalendar, type Preview } from "@/components/stellic/term-calendar"
@@ -156,7 +155,6 @@ function ActionsAlert({
 export function TermView({
   term,
   tabs,
-  progress,
   metadata,
   onToggleField,
   onRegister,
@@ -180,8 +178,6 @@ export function TermView({
   /** The year filter, with the term's own year marked. It is also the way out:
    *  any other year, or All Years, goes back to the whole plan. */
   tabs: YearTab[]
-  /** Where the student stands, for the header's meters. */
-  progress?: PlanProgressData
   /** Which details the cards are showing. The menu is the same one the whole
    *  plan uses, so a change made here holds when you go back out to it. */
   metadata: MetadataField[]
@@ -284,7 +280,6 @@ export function TermView({
         actions={plannerActions}
         tabs={tabs}
         term={term.name}
-        progress={progress}
         /* Out for review, or looked at: said beside where the term is, as the
            planner says it on the term's card. */
         status={
