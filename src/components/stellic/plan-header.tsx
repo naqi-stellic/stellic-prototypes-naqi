@@ -203,7 +203,7 @@ export function PlanHeader({
   const shown = actions.filter((action) => !action.sidebar || sidebar)
   /* The plan switcher, Course details, Complete my plan, Request review and the
      more menu with their words and gaps; a fourth action takes another button. */
-  const actionsWidth = 725 + (shown.length >= 4 ? 200 : 0)
+  const actionsWidth = 795 + (shown.length >= 4 ? 200 : 0)
   /* The crumbs alone; the term's switch beside them; the review tag; the
      student's name where staff are looking at a plan. */
   const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
@@ -237,123 +237,146 @@ export function PlanHeader({
     return () => watch.disconnect()
   }, [stuck])
 
+  /* One of the plan's buttons, with the menu it opens where it opens one. */
+  const renderAction = (action: PlanAction) => {
+    const button = (
+      <Button
+        aria-pressed={
+          action.toggles ? pressed : action.sidebar ? sidebar?.open : undefined
+        }
+        aria-label={action.label}
+        onClick={() => (action.sidebar ? sidebar?.onToggle() : onAction?.(action))}
+        className={cn("data-[state=open]:bg-gray-5", iconOnly)}
+      >
+        <Icon name={action.icon} size={16} />
+        <span data-action-label className={labelsGo}>{action.label}</span>
+        {/* How many of the details are on, so the button says what
+            the cards are carrying without opening it. */}
+        {action.fields && action.fields.some((field) => field.shown) && (
+          <Badge variant="primary" className={labelsGo}>
+            {action.fields.filter((field) => field.shown).length}
+          </Badge>
+        )}
+        {/* A button that opens a menu says so; one that acts does not. */}
+        {(action.fields || action.choices) && (
+          <Icon name="expand-more" size={16} className={labelsGo} />
+        )}
+      </Button>
+    )
+
+    /* Said on hover once the words are gone, with the count where the
+       button carries one. */
+    const tip = (
+      <TooltipContent>
+        {action.label}
+        {action.fields &&
+          ` (${action.fields.filter((field) => field.shown).length} of ${action.fields.length})`}
+      </TooltipContent>
+    )
+
+    if (action.choices) {
+      return (
+        <DropdownMenu key={action.label}>
+          <Tooltip>
+            <DropdownMenuTrigger asChild>
+              <TooltipTrigger asChild>{button}</TooltipTrigger>
+            </DropdownMenuTrigger>
+            {collapsed && tip}
+          </Tooltip>
+          <DropdownMenuContent align="start" className="w-[260px]">
+            {action.choices.map((choice) => (
+              <DropdownMenuItem
+                key={choice.id}
+                onSelect={() => onChoose?.(choice.id)}
+                className="gap-2 py-1.5 text-body-md"
+              >
+                <Icon name={choice.icon} size={16} />
+                {choice.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )
+    }
+
+    if (!action.fields) {
+      return (
+        <span key={action.label}>
+          <Tooltip>
+            <TooltipTrigger asChild>{button}</TooltipTrigger>
+            {collapsed && tip}
+          </Tooltip>
+        </span>
+      )
+    }
+
+    return (
+      <DropdownMenu key={action.label}>
+        <Tooltip>
+          <DropdownMenuTrigger asChild>
+            <TooltipTrigger asChild>{button}</TooltipTrigger>
+          </DropdownMenuTrigger>
+          {collapsed && tip}
+        </Tooltip>
+        <DropdownMenuContent align="end" className="w-[200px]">
+          {action.fields.map((field) => (
+            <DropdownMenuItem
+              key={field.id}
+              /* Switching one detail on is rarely the only one you
+                 want, so the menu stays open to take the next. */
+              onSelect={(event) => {
+                event.preventDefault()
+                onToggleField?.(field.id)
+              }}
+              className="gap-2 py-1.5 pr-2 pl-8 text-body-md"
+            >
+              <Icon
+                name={field.shown ? "remove-red-eye" : "visibility-off"}
+                size={16}
+                className={cn(
+                  "absolute left-2 shrink-0",
+                  field.shown ? "text-gray-100" : "text-gray-40"
+                )}
+              />
+              {field.label}
+            </DropdownMenuItem>
+          ))}
+        </DropdownMenuContent>
+      </DropdownMenu>
+    )
+  }
+
+  /* Two groups, by what a button is for: the ones that say which plan and how
+     it looks, and the ones that do something to it. */
+  const viewActions = shown.filter((action) => action.fields)
+  const doActions = shown.filter((action) => !action.fields)
+
   const actionButtons = (
         /* Named for anything that has to find the plan's actions on the page —
            the onboarding spotlight, which points at them. */
         <TooltipProvider delayDuration={200}>
-        <div ref={actionsRef} data-tour="plan-actions" className="flex flex-wrap items-center gap-2">
-          <PlanSwitcher labelsGo={labelsGo} iconOnly={iconOnly} collapsed={collapsed} />
-          {shown.map((action) => {
-            const button = (
-              <Button
-                aria-pressed={
-                  action.toggles ? pressed : action.sidebar ? sidebar?.open : undefined
-                }
-                aria-label={action.label}
-                onClick={() => (action.sidebar ? sidebar?.onToggle() : onAction?.(action))}
-                className={cn("data-[state=open]:bg-gray-5", iconOnly)}
-              >
-                <Icon name={action.icon} size={16} />
-                <span data-action-label className={labelsGo}>{action.label}</span>
-                {/* How many of the details are on, so the button says what
-                    the cards are carrying without opening it. */}
-                {action.fields && action.fields.some((field) => field.shown) && (
-                  <Badge variant="primary" className={labelsGo}>
-                    {action.fields.filter((field) => field.shown).length}
-                  </Badge>
-                )}
-              </Button>
-            )
-
-            /* Said on hover once the words are gone, with the count where the
-               button carries one. */
-            const tip = (
-              <TooltipContent>
-                {action.label}
-                {action.fields &&
-                  ` (${action.fields.filter((field) => field.shown).length} of ${action.fields.length})`}
-              </TooltipContent>
-            )
-
-            if (action.choices) {
-              return (
-                <DropdownMenu key={action.label}>
-                  <Tooltip>
-                    <DropdownMenuTrigger asChild>
-                      <TooltipTrigger asChild>{button}</TooltipTrigger>
-                    </DropdownMenuTrigger>
-                    {collapsed && tip}
-                  </Tooltip>
-                  <DropdownMenuContent align="start" className="w-[260px]">
-                    {action.choices.map((choice) => (
-                      <DropdownMenuItem
-                        key={choice.id}
-                        onSelect={() => onChoose?.(choice.id)}
-                        className="gap-2 py-1.5 text-body-md"
-                      >
-                        <Icon name={choice.icon} size={16} />
-                        {choice.label}
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )
-            }
-
-            if (!action.fields) {
-              return (
-                <span key={action.label}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>{button}</TooltipTrigger>
-                    {collapsed && tip}
-                  </Tooltip>
-                </span>
-              )
-            }
-
-            return (
-              <DropdownMenu key={action.label}>
-                <Tooltip>
-                  <DropdownMenuTrigger asChild>
-                    <TooltipTrigger asChild>{button}</TooltipTrigger>
-                  </DropdownMenuTrigger>
-                  {collapsed && tip}
-                </Tooltip>
-                <DropdownMenuContent align="end" className="w-[200px]">
-                  {action.fields.map((field) => (
-                    <DropdownMenuItem
-                      key={field.id}
-                      /* Switching one detail on is rarely the only one you
-                         want, so the menu stays open to take the next. */
-                      onSelect={(event) => {
-                        event.preventDefault()
-                        onToggleField?.(field.id)
-                      }}
-                      className="gap-2 py-1.5 pr-2 pl-8 text-body-md"
-                    >
-                      <Icon
-                        name={field.shown ? "remove-red-eye" : "visibility-off"}
-                        size={16}
-                        className={cn(
-                          "absolute left-2 shrink-0",
-                          field.shown ? "text-gray-100" : "text-gray-40"
-                        )}
-                      />
-                      {field.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )
-          })}
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button size="icon" aria-label="More options">
-                <Icon name="more-horiz" size={16} />
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>More options</TooltipContent>
-          </Tooltip>
+        <div
+          ref={actionsRef}
+          data-tour="plan-actions"
+          className="flex flex-wrap items-center gap-x-4 gap-y-2"
+        >
+          <div className="flex items-center gap-2">
+            <PlanSwitcher labelsGo={labelsGo} iconOnly={iconOnly} collapsed={collapsed} />
+            {viewActions.map(renderAction)}
+          </div>
+          {/* The line between the two groups. */}
+          <span aria-hidden="true" className="h-6 w-px shrink-0 bg-gray-40" />
+          <div className="flex items-center gap-2">
+            {doActions.map(renderAction)}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon" aria-label="More options">
+                  <Icon name="more-horiz" size={16} />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>More options</TooltipContent>
+            </Tooltip>
+          </div>
         </div>
         </TooltipProvider>
   )
