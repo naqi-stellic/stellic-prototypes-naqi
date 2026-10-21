@@ -155,8 +155,6 @@ export function AppShell({
                 </>
               )}
             </ResizablePanelGroup>
-            {/* Same rail, decorative, when there is nothing to divide. */}
-            {!panel && wide && <div aria-hidden="true" className="w-1 shrink-0 bg-gray-40" />}
           </div>
         </div>
       </div>
