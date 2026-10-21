@@ -152,7 +152,9 @@ function Picker({
 }) {
   return (
     <div className="flex w-full flex-col gap-2">
-      <span className="text-body-md font-semibold text-foreground">{label}</span>
+      {/* A picker with no label of its own is the whole of its row: no empty line
+          above it to push it off the label beside it. */}
+      {label && <span className="text-body-md font-semibold text-foreground">{label}</span>}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <button
@@ -854,7 +856,7 @@ function CatalogBody({
 
   return (
     <>
-      <div className="flex flex-col gap-4 bg-gray-0 px-6 py-6">
+      <div className="flex flex-col gap-4 px-6 py-6">
         <Picker label="Campus" value={campus} options={["Main", "Downtown"]} onChange={setCampus} />
         <div className="flex flex-col gap-2">
           <Picker
