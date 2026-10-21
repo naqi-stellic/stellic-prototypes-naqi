@@ -522,7 +522,7 @@ function PlanProgress({ progress }: { progress: PlanProgressData }) {
 
   return (
     <TooltipProvider delayDuration={100}>
-      <div className="flex w-full flex-col gap-2 pt-2">
+      <div className="flex w-full max-w-[1024px] flex-col gap-2 pt-2">
         <p className="text-caption-md font-medium text-gray-100">Courses</p>
         {/* The bar the compliance screen draws, read off the planner's own
             counts: done, under way, placed in a term, and still to place. */}
