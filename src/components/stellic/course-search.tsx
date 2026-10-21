@@ -29,14 +29,15 @@ export function CourseRow({
     <div
       onClick={onOpen}
       className={cn(
-        "flex w-full cursor-grab items-center gap-2 rounded-md border border-gray-40 bg-card p-[7px]",
+        "flex w-full cursor-grab items-center gap-2 rounded-md border border-gray-40 bg-card p-[11px]",
         onOpen && "cursor-pointer transition-colors hover:bg-gray-0"
       )}
     >
       <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-100" />
-      <span className="flex min-w-0 flex-1 flex-col">
-        <span className="text-body-md text-gray-100">{code}</span>
-        <span className="text-body-md font-semibold text-foreground">{name}</span>
+      {/* Code and name run on in one line, and the name wraps if it has to. */}
+      <span className="min-w-0 flex-1 text-body-md">
+        <span className="mr-2 text-gray-100">{code}</span>
+        <span className="font-semibold text-foreground">{name}</span>
       </span>
     </div>
   )

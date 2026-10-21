@@ -38,7 +38,7 @@ export function CourseTags({ course }: { course: PlannedCourse }) {
     <span className="flex flex-wrap items-start gap-1">
       {section && (
         <Badge variant="secondary">
-          <Icon name="calendar-today" size={14} />
+          <Icon name="calendar-today" size={12} />
           {section}
         </Badge>
       )}

@@ -160,8 +160,11 @@ export function RequirementRow({
       <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
 
       <span className="flex min-w-0 flex-1 flex-col">
-        <span className="truncate text-body-md text-gray-100">{entry.code}</span>
-        <span className="truncate text-body-md font-semibold text-foreground">{entry.name}</span>
+        {/* The code and the name share a line, the way a card on the plan has them. */}
+        <span className="flex min-w-0 items-center gap-2 text-body-md">
+          <span className="shrink-0 text-gray-100">{entry.code}</span>
+          <span className="min-w-0 truncate font-semibold text-foreground">{entry.name}</span>
+        </span>
         {tagBadges}
         {/* Not eligible is a state to get out of, so it says what to do first:
             the way a section says it, with the first thing still to take. */}

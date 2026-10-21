@@ -1,6 +1,7 @@
 import { useState } from "react"
 
 import { Icon } from "@/components/icon"
+import { Badge } from "@/components/ui/badge"
 import { Checkbox } from "@/components/ui/checkbox"
 import { termCredits, type PlannedCourse, type Term, type Year } from "@/data/plan"
 
@@ -87,22 +88,22 @@ function CourseRow({
   onToggle: (keep: boolean) => void
 }) {
   return (
-    <label className="flex w-full cursor-pointer items-center gap-2 rounded-md border border-gray-40 bg-card p-[7px]">
+    <label className="flex w-full cursor-pointer items-center gap-2 rounded-md border border-gray-40 bg-card p-[11px]">
       <Checkbox
         checked={kept}
         onCheckedChange={(next) => onToggle(next === true)}
         aria-label={`Keep ${course.name}`}
       />
       <span className="flex min-w-0 flex-1 flex-col justify-center gap-2">
-        <span>
-          <span className="block text-body-md text-gray-100">{course.code}</span>
-          <span className="block text-body-md font-semibold text-foreground">{course.name}</span>
+        <span className="text-body-md">
+          <span className="mr-2 text-gray-100">{course.code}</span>
+          <span className="font-semibold text-foreground">{course.name}</span>
         </span>
         {course.section && (
-          <span className="flex items-center gap-1 text-body-md text-foreground">
-            <Icon name="calendar-today" size={14} />
+          <Badge variant="secondary">
+            <Icon name="calendar-today" size={12} />
             {course.section}
-          </span>
+          </Badge>
         )}
       </span>
     </label>

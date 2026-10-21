@@ -195,7 +195,9 @@ export function AuditRow({
         /* A seat is as tall at rest as with its buttons showing, so hovering
            it never moves anything. */
         held && onRemove && !overlay && "min-h-[51px]",
-        locked ? "px-[15px] py-[7px]" : "p-[7px]",
+        /* 12px on every side, the border's 1px taken off. Without the drag handle
+           the text starts 16px clear of the status bar, which takes the first 4px. */
+        locked ? "py-[11px] pr-[11px] pl-[19px]" : "p-[11px]",
         style && !joining ? style.card : held ? "border-gray-40 bg-gray-0" : "border-gray-40",
         /* A held seat is drawn as an outline waiting to be filled, and stays
            that way while a draft is proposing it — the dashes are what say it

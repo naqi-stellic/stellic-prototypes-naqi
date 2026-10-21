@@ -108,7 +108,10 @@ function CourseCard({
           aria-hidden="true"
           className={cn("w-1 shrink-0", course.accent ? ACCENT[course.accent] : "bg-gray-40")}
         />
-        <label onClick={onOpen} className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 p-3">
+        <label
+          onClick={onOpen}
+          className="flex min-w-0 flex-1 cursor-pointer items-start gap-3 py-3 pr-3 pl-4"
+        >
           {/* A proposed class carries its mark. Which classes go through
               registration is asked once, in the dialog that does it — a tick
               on every card asks the same question five times and answers
@@ -117,34 +120,36 @@ function CourseCard({
             <Icon name="add" size={16} className={cn("mt-0.5 shrink-0", mark.note)} />
           ) : null}
           <span className="flex min-w-0 flex-1 flex-col gap-1">
-            <span className="flex items-center gap-1.5 text-body-md text-gray-100">
-              {needsReview && (
-                <Icon
-                  name={stopped ? "error-outline" : "warning"}
-                  size={14}
-                  className={cn("shrink-0", stopped ? "text-alert-100" : "text-warning-100")}
-                />
-              )}
-              {course.code}
-            </span>
-            {shown.includes("name") && (
-              <span
-                className={cn(
-                  "text-body-md font-semibold text-gray-100",
-                  isStruck(course) && "line-through"
+            <span className="flex min-w-0 items-center gap-2 text-body-md">
+              <span className="flex shrink-0 items-center gap-1.5 text-gray-100">
+                {needsReview && (
+                  <Icon
+                    name={stopped ? "error-outline" : "warning"}
+                    size={14}
+                    className={cn("shrink-0", stopped ? "text-alert-100" : "text-warning-100")}
+                  />
                 )}
-              >
-                {course.name}
+                {course.code}
               </span>
-            )}
-            {course.section && shown.includes("section") && (
-              <span className="flex items-center gap-1 text-body-md text-gray-100">
-                <Icon name="calendar-today" size={14} />
-                {course.section}
-              </span>
-            )}
-            {tags.length > 0 && (
+              {shown.includes("name") && (
+                <span
+                  className={cn(
+                    "min-w-0 truncate font-semibold text-gray-100",
+                    isStruck(course) && "line-through"
+                  )}
+                >
+                  {course.name}
+                </span>
+              )}
+            </span>
+            {((course.section && shown.includes("section")) || tags.length > 0) && (
               <span className="flex flex-wrap items-start gap-1 pt-2">
+                {course.section && shown.includes("section") && (
+                  <Badge variant="secondary">
+                    <Icon name="calendar-today" size={12} />
+                    {course.section}
+                  </Badge>
+                )}
                 {tags.map((tag) => (
                   <Badge key={tag} variant="secondary">
                     {tag}
