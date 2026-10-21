@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { ShareBar } from "@/components/stellic/student-profile"
 import { DEGREE, STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
@@ -474,54 +475,19 @@ export type PlanProgressData = {
   courses: { done: number; going: number; planned: number; remaining: number }
 }
 
-function Meter({
-  title,
-  icon,
-  shares,
-  className,
-}: {
-  title: string
-  icon?: IconName
-  shares: { label: string; count: number; bar: string }[]
-  className?: string
-}) {
-  const total = shares.reduce((sum, share) => sum + share.count, 0)
-  const held = shares.filter((share) => share.count > 0)
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-1", className)}>
-      <div className="flex flex-wrap items-baseline justify-between gap-x-4">
-        <span className="flex items-center gap-1 text-body-md font-semibold text-gray-100">
-          {icon && <Icon name={icon} size={16} />}
-          {title}
-        </span>
-        <span className="text-body-md text-gray-100">
-          {held.map((share) => `${share.count} ${share.label}`).join(", ")}
-        </span>
-      </div>
-      <span className="flex h-2 w-full overflow-hidden rounded-md bg-gray-40">
-        {held.map((share) => (
-          <span
-            key={share.label}
-            className={share.bar}
-            style={{ width: `${total === 0 ? 0 : (share.count / total) * 100}%` }}
-          />
-        ))}
-      </span>
-    </div>
-  )
-}
-
 function PlanProgress({ progress }: { progress: PlanProgressData }) {
   const { courses } = progress
   return (
-    <div className="pt-2">
-      <Meter
-        title="Courses"
+    <div className="flex w-full flex-col gap-2 pt-2">
+      <p className="text-body-md text-gray-100">Courses</p>
+      {/* The bar the compliance screen draws, read off the planner's own counts:
+          done, under way, placed in a term, and still to place. */}
+      <ShareBar
         shares={[
-          { label: "completed", count: courses.done, bar: "bg-success-50" },
-          { label: "in progress", count: courses.going, bar: "bg-warning-50" },
-          { label: "planned", count: courses.planned, bar: "bg-warning-25" },
-          { label: "remaining", count: courses.remaining, bar: "bg-gray-40" },
+          { count: courses.done, colour: "bg-success-50", dot: "bg-success-50" },
+          { count: courses.going, colour: "bg-warning-50", dot: "bg-warning-50" },
+          { count: courses.planned, colour: "bg-warning-25", dot: "bg-warning-25" },
+          { count: courses.remaining, colour: "bg-gray-40", dot: "bg-gray-40" },
         ]}
       />
     </div>

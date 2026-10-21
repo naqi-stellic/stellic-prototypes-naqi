@@ -47,7 +47,7 @@ function Fact({ icon, children }: { icon?: IconName; children: ReactNode }) {
 /** A bar of shares, and the dots that say what each share was. The widths are
  *  the counts rather than the frame's pixels, so the bar moves when the audit
  *  does — which is the point of computing one. */
-function ShareBar({
+export function ShareBar({
   shares,
   className,
 }: {
