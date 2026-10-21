@@ -902,10 +902,13 @@ export function YearSection({
             {/* A year already behind you takes no more terms, and neither
                 does one that has its summer. */}
             {canAddTerm(year) && (
-              <Button onClick={onAddTerm}>
-                <Icon name="add" size={16} />
-                Add Summer
-              </Button>
+              <button
+                type="button"
+                onClick={onAddTerm}
+                className="shrink-0 cursor-pointer text-body-md text-gray-80 underline [text-underline-position:from-font]"
+              >
+                + Add Summer {year.label.split("-")[1]}
+              </button>
             )}
           </div>
         </div>
