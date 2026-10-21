@@ -360,7 +360,12 @@ export function AuditRow({
      The two share the line between them, so the strip carries no bottom edge
      and the row below it no top one. */
   return (
-    <div {...nudge} className={cn("flex w-full flex-col", nudged && "animate-nudge")}>
+    <div
+      {...nudge}
+      /* Named for the tour, which points at an empty seat. */
+      data-tour={held ? "requirement" : undefined}
+      className={cn("flex w-full flex-col", nudged && "animate-nudge")}
+    >
       <div
         onClick={overlay ? undefined : () => onOpenSeat?.("detail")}
         className={cn(

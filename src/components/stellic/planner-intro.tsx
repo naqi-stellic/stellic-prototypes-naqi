@@ -65,6 +65,12 @@ const TOUR: {
     title: "Register from your plan",
     body: "When registration opens, this shows the deadline. Register for every course that is ready in one go.",
   },
+  {
+    /* An empty seat, wherever the plan has one. */
+    find: '[data-tour="requirement"]',
+    title: "A place held for a course",
+    body: "A requirement saves room in your plan for a course you have not chosen yet. Select it to see the options and pick one.",
+  },
 ]
 
 /** The tour card's width, which placing it against the window needs. */
@@ -100,6 +106,11 @@ const CHANGES: {
     name: "Registration",
     does: "Register for every ready course from your plan",
     registers: true,
+  },
+  {
+    icon: "class",
+    name: "Requirements",
+    does: "A place held in your plan for a course you have not chosen yet",
   },
 ]
 
@@ -219,9 +230,12 @@ export function PlannerIntro({
     if (typeof step !== "number") return
     let frame = 0
     const find = () => document.querySelector(tour[step].find)
+    /* A stop whose thing is not on this page is passed over, not waited on. */
+    let waited = 0
     const measure = () => {
       const target = find()
       if (target) setRect(target.getBoundingClientRect())
+      else if (++waited > 90) setStep(step + 1 < tour.length ? step + 1 : "done")
       else frame = requestAnimationFrame(measure)
     }
     const target = find()
