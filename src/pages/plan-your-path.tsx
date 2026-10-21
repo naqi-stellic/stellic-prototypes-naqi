@@ -110,7 +110,6 @@ import {
   INITIAL_YEARS,
   METADATA_DEFAULT,
   METADATA_FIELDS,
-  MILESTONES,
   expectedGraduation,
   findCourse,
   findTerm,
@@ -158,7 +157,7 @@ function yearTabs(
   onOpenTerm: (termId: string) => void
 ): YearTab[] {
   return [
-    { label: "All Years", icon: "grid-view", selected: !openYear, onSelect: onLeave },
+    { label: "Planner", icon: "grid-view", selected: !openYear, onSelect: onLeave },
     ...years.map((year) => ({
       label: year.label,
       ...PHASE_TAB[year.phase],
@@ -478,7 +477,6 @@ export function PlanYourPath({
       planned: standing.planned.reqs,
       remaining: requirements.length,
     },
-    milestones: MILESTONES,
   }
   /* The course opened on its own, from the remaining list or from the courses
      that could fill a seat. */
@@ -1291,12 +1289,6 @@ export function PlanYourPath({
           {/* Keyed on the option so switching one replays the entrances rather
               than swapping the cards in place. */}
           <div key={draft ? `draft-${streamId}` : "plan"} className="contents">
-            <IncomingCredits
-              groups={incoming}
-              collapsed={collapsed.includes(INCOMING_LABEL)}
-              onToggleCollapse={() => toggleCollapsed(INCOMING_LABEL)}
-            />
-
             {shown.map((year) => (
               <YearSection
                 key={year.label}
@@ -1347,6 +1339,16 @@ export function PlanYourPath({
               + Add Year {nextYearNumber(shown)}
             </AddSlot>
           </section>
+
+          {/* What came in with the student sits last: it is behind them, and
+              what is still to plan is the reason to be here. */}
+          <div className="contents">
+            <IncomingCredits
+              groups={incoming}
+              collapsed={collapsed.includes(INCOMING_LABEL)}
+              onToggleCollapse={() => toggleCollapsed(INCOMING_LABEL)}
+            />
+          </div>
           </main>
         )}
 

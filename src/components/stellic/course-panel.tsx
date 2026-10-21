@@ -238,7 +238,7 @@ function Checklist({
             </span>
             {step.action === "calendar" && onCalendar && (
               <Button size="sm" className="shrink-0" onClick={onCalendar}>
-                View Schedule
+                View Term
               </Button>
             )}
             {step.action === "register" && onRegister && (

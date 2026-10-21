@@ -117,7 +117,7 @@ export function PlanHeader({
   sidebar,
 }: {
   actions: PlanAction[]
-  /** The years, which the breadcrumb's "All Years" opens onto. */
+  /** The planner and its years: the first is the way back out to the whole plan. */
   tabs: YearTab[]
   /** The term the page is on, where it is on one: the last crumb. */
   term?: string
@@ -412,10 +412,10 @@ function PlanSwitcher({
 }
 
 /** Where you are: the student, for staff, then the years, then the term. On a
- *  term, "All Years" is the way back out to the whole plan. */
+ *  term, "Planner" is the way back out to the whole plan. */
 function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
   const overview = tabs[0]
-  const label = overview?.label ?? "All Years"
+  const label = overview?.label ?? "Planner"
 
   return (
     <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
@@ -439,11 +439,9 @@ function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
   )
 }
 
-/** What the student has done, is doing and has left, as two meters: the
- *  courses, and the milestones on the way to the degree. */
+/** What the student has done, is doing and has left, as one meter of the courses. */
 export type PlanProgressData = {
   courses: { done: number; going: number; planned: number; remaining: number }
-  milestones: { done: number; planned: number; remaining: number }
 }
 
 function Meter({
@@ -484,9 +482,9 @@ function Meter({
 }
 
 function PlanProgress({ progress }: { progress: PlanProgressData }) {
-  const { courses, milestones } = progress
+  const { courses } = progress
   return (
-    <div className="grid grid-cols-1 gap-x-8 gap-y-4 pt-2 @3xl:grid-cols-[2fr_1fr]">
+    <div className="pt-2">
       <Meter
         title="Courses"
         shares={[
@@ -494,15 +492,6 @@ function PlanProgress({ progress }: { progress: PlanProgressData }) {
           { label: "in progress", count: courses.going, bar: "bg-warning-50" },
           { label: "planned", count: courses.planned, bar: "bg-warning-25" },
           { label: "remaining", count: courses.remaining, bar: "bg-gray-40" },
-        ]}
-      />
-      <Meter
-        title="Milestones"
-        icon="outlined-flag"
-        shares={[
-          { label: "completed", count: milestones.done, bar: "bg-success-50" },
-          { label: "planned", count: milestones.planned, bar: "bg-warning-25" },
-          { label: "remaining", count: milestones.remaining, bar: "bg-gray-40" },
         ]}
       />
     </div>

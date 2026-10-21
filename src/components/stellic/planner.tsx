@@ -641,16 +641,16 @@ export function SemesterCard({
                 <Button
                   className="shrink-0 self-start"
                   onClick={onOpen}
-                  aria-label={`${term.scheduled ? "View schedule" : "View term"} for ${term.name}`}
+                  aria-label={`View term for ${term.name}`}
                 >
                   <Icon name={term.scheduled ? "calendar-month" : "list"} size={16} />
                   <span ref={labelRef} className="@max-sm/term:hidden">
-                    {term.scheduled ? "View Schedule" : "View Term"}
+                    View Term
                   </span>
                 </Button>
               </TooltipTrigger>
               {iconOnly && (
-                <TooltipContent>{term.scheduled ? "View Schedule" : "View Term"}</TooltipContent>
+                <TooltipContent>View Term</TooltipContent>
               )}
             </Tooltip>
           </TooltipProvider>

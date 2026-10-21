@@ -176,7 +176,7 @@ export function TermView({
 }: {
   term: Term
   /** The year filter, with the term's own year marked. It is also the way out:
-   *  any other year, or All Years, goes back to the whole plan. */
+   *  any other year, or the planner, goes back to the whole plan. */
   tabs: YearTab[]
   /** Which details the cards are showing. The menu is the same one the whole
    *  plan uses, so a change made here holds when you go back out to it. */

@@ -115,10 +115,6 @@ export const CREDITS_PER_COURSE = 3
  *  plan themselves says so by their username. */
 export const STUDENT = { name: "Scott Abott", username: "sabott" }
 
-/** The marks on the way to the degree that the plan header counts beside the
- *  courses: declaring the programs, finishing the core, graduating. */
-export const MILESTONES = { done: 1, planned: 2, remaining: 6 }
-
 /* Where a course in the plan came from, said the way somebody reading their
  * own plan would say it: the registrar's system, the pathway the programme
  * publishes, the advisor by their first name, or the student themselves — who

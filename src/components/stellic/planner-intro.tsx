@@ -55,9 +55,9 @@ const TOUR: {
     body: "Open the requirements that do not have a term yet, and drag each one into the term you will take it.",
   },
   {
-    find: '[data-term="spring-2027"] [aria-label^="View schedule"]',
-    title: "See your schedule",
-    body: "Select View Schedule on a term to open it. Once its classes are out, it opens on a calendar of your week.",
+    find: '[data-term="spring-2027"] [aria-label^="View term"]',
+    title: "Open a term",
+    body: "Select View Term to open a term. Once its classes are out, it opens on a calendar of your week.",
   },
   {
     find: '[data-term="spring-2027"] [role="alert"]',
@@ -94,7 +94,7 @@ const CHANGES: {
     does: "See what courses you still need to add",
     manual: true,
   },
-  { icon: "calendar-month", name: "Term schedules", does: "See your schedule for any term with classes out" },
+  { icon: "calendar-month", name: "View Term", does: "Open any term, and see its week once its classes are out" },
   {
     icon: "event-available",
     name: "Registration",
