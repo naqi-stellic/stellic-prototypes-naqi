@@ -231,7 +231,7 @@ function Checklist({
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex w-full items-center justify-between gap-4">
-        <h3 className="text-h300 font-semibold text-gray-100">{title}</h3>
+        <h3 className="text-caption-md font-medium text-gray-100">{title}</h3>
         {putAway && (
           <button
             type="button"
@@ -416,7 +416,7 @@ function SectionRow({
       onMouseLeave={() => onPreview?.(false)}
       className={cn(
         "flex w-full flex-col rounded-md border bg-card",
-        chosen ? "border-primary-50 bg-primary-0" : "border-gray-40"
+        chosen ? "border-primary-50" : "border-gray-40"
       )}
     >
       <div className="flex w-full items-stretch">
@@ -557,6 +557,7 @@ export function CoursePanel({
           backLabel={backLabel}
           onBack={onBack}
           closeLabel="Close course"
+          ruled={false}
           onClose={onClose}
           actions={
             <Button
@@ -977,7 +978,7 @@ function InstanceBody({
         <div className="flex w-full items-center gap-2">
           {/* The state, then the audit's own mark after it, so the plan and the
               audit say the same thing in the same square. */}
-          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-h300 font-semibold text-gray-100">
+          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-caption-lg font-medium text-gray-100">
             {STAGE_LABEL[stage]}
             <AuditIcon state={AUDIT_STATE[stage]} />
           </h3>
@@ -1036,7 +1037,7 @@ function InstanceBody({
            its steps and not a section that folds. */
         <section className="flex w-full flex-col px-6 pb-6">
           <Checklist
-            title="What's Next"
+            title="What's next"
             steps={planningChecklist(term, course, met, registration)}
             onCalendar={onViewCalendar && (() => onViewCalendar(term))}
             onRegister={onRegister && (() => onRegister(term, course.id))}
@@ -1101,7 +1102,7 @@ function InstanceBody({
         onToggle={() => toggle("counting")}
       />
       <AboutFold entry={entry} open={open.about} onToggle={() => toggle("about")} />
-      <Fold title="Activity History" open={open.history} onToggle={() => toggle("history")}>
+      <Fold title="Activity history" open={open.history} onToggle={() => toggle("history")}>
         <ul className="flex w-full flex-col gap-4">
           {activity.map((event, i) => (
             <li key={i} className="flex w-full items-start gap-2">

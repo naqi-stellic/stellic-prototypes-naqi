@@ -1,3 +1,4 @@
+import { cn } from "cn"
 import type { ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
@@ -15,6 +16,7 @@ export function PanelTopHeader({
   backLabel,
   onBack,
   closeLabel,
+  ruled = true,
   onClose,
 }: {
   /** A string, or a field standing in for it while the name is being edited. */
@@ -28,10 +30,17 @@ export function PanelTopHeader({
   backLabel?: string
   onBack?: () => void
   closeLabel?: string
+  /** The rule under the bar. Left off where a strip of tabs follows with its own. */
+  ruled?: boolean
   onClose?: () => void
 }) {
   return (
-    <header className="flex shrink-0 flex-col border-b border-gray-40 px-6 pt-3 pb-[15px]">
+    <header
+      className={cn(
+        "flex shrink-0 flex-col px-6 pt-3 pb-[15px]",
+        ruled && "border-b border-gray-40"
+      )}
+    >
       <div className="flex w-full items-center gap-2">
         {onBack && (
           <button

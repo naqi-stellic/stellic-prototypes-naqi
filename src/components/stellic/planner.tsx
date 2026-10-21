@@ -247,12 +247,12 @@ export function AuditRow({
           </p>
         ) : (
           <>
-            <div>
+            <div className="flex min-w-0 items-center gap-2">
               {/* The code carries the mark, so a card says something is wrong
                   with it before anybody opens the term's line about it. */}
               <p
                 className={cn(
-                  "flex items-center gap-1.5 text-body-md text-gray-100",
+                  "flex shrink-0 items-center gap-1.5 text-body-md text-gray-100",
                   /* With the name off, the code is what gets struck. */
                   struck && !shown.includes("name") && "line-through"
                 )}
@@ -272,7 +272,7 @@ export function AuditRow({
               {shown.includes("name") && (
                 <p
                   className={cn(
-                    "text-body-md font-semibold text-foreground",
+                    "min-w-0 truncate text-body-md font-semibold text-foreground",
                     struck && "line-through"
                   )}
                 >

@@ -209,7 +209,7 @@ export function PlaceholderPanel({
         />
       </Fold>
 
-      <Fold title="Activity History" open={open.history} onToggle={() => toggle("history")}>
+      <Fold title="Activity history" open={open.history} onToggle={() => toggle("history")}>
         <ul className="flex w-full flex-col gap-4">
           {activityFor(seat.code, term.name).map((event, i) => (
             <li key={i} className="flex w-full items-start gap-2">
