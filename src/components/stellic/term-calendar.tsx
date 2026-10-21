@@ -7,6 +7,7 @@ import { AddToTerm } from "@/components/stellic/add-to-term"
 import { ALL_ELECTIVES, ELECTIVE_COURSES, type CatalogEntry } from "@/data/catalog"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
 import { AuditIcon } from "@/components/stellic/primitives"
+import { useMetadata } from "@/components/stellic/course-metadata"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
 import { meetingLines } from "@/data/course-detail"
 import { Badge } from "@/components/ui/badge"
@@ -21,6 +22,7 @@ import {
   CREDIT_GROUP_LABEL,
   creditGroup,
   courseStatus,
+  courseTags,
   termCredits,
   termHours,
   termWeek,
@@ -70,6 +72,11 @@ function CourseCard({
   onOpenSeat?: () => void
 }) {
   const issue = useCourseIssues(term, course.id)[0] ?? null
+  /* What Course details has on, which a card here says the same as a card in the
+     plan: the name, the section and each tag when they are switched on, and
+     nothing it has been told to leave off. */
+  const shown = useMetadata()
+  const tags = courseTags(course, shown)
   const needsReview = issue != null || courseStatus(course, term) === "needs review"
   const stopped = issue?.severity === "error"
   const mark = course.draft ? DRAFT_STYLE[course.draft.mark] : null
@@ -120,25 +127,31 @@ function CourseCard({
               )}
               {course.code}
             </span>
-            <span
-              className={cn(
-                "text-body-md font-semibold text-gray-100",
-                isStruck(course) && "line-through"
-              )}
-            >
-              {course.name}
-            </span>
-            {course.section && (
+            {shown.includes("name") && (
+              <span
+                className={cn(
+                  "text-body-md font-semibold text-gray-100",
+                  isStruck(course) && "line-through"
+                )}
+              >
+                {course.name}
+              </span>
+            )}
+            {course.section && shown.includes("section") && (
               <span className="flex items-center gap-1 text-body-md text-gray-100">
                 <Icon name="calendar-today" size={14} />
                 {course.section}
               </span>
             )}
-            <span className="flex flex-wrap items-start gap-1 pt-2">
-              <Badge variant="secondary">{course.credits} credits</Badge>
-              {course.campus && <Badge variant="secondary">{course.campus}</Badge>}
-              {course.modality && <Badge variant="secondary">{course.modality}</Badge>}
-            </span>
+            {tags.length > 0 && (
+              <span className="flex flex-wrap items-start gap-1 pt-2">
+                {tags.map((tag) => (
+                  <Badge key={tag} variant="secondary">
+                    {tag}
+                  </Badge>
+                ))}
+              </span>
+            )}
             {/* Under the badges, where the card has room to say why it is here. */}
             <DraftNote course={course} className="pt-1" />
           </span>
