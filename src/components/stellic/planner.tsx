@@ -442,7 +442,7 @@ function CreditGroup({
     <div className={cn("flex w-full items-center justify-between gap-2", first ? "pt-4" : "pt-2")}>
       <p
         className={cn(
-          "flex items-center gap-2 text-body-md font-semibold text-gray-80",
+          "flex items-center gap-2 text-body-md font-semibold text-gray-100",
           /* The design gives planned groups a 24px band; registered hug at 20. */
           state === "planned" && "h-6"
         )}
