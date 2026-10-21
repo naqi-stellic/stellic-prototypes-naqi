@@ -55,7 +55,7 @@ function GroupCard({ group }: { group: IncomingGroup }) {
       <div className="flex w-full flex-col gap-2">
         <h4 className="truncate text-caption-lg font-semibold text-gray-100">{group.kind}</h4>
 
-        <p className="flex items-center gap-2 pt-4 text-body-md font-semibold text-gray-100">
+        <p className="flex items-center gap-2 pt-4 text-body-md font-semibold text-gray-80">
           <AuditIcon state="completed" />
           Earned ({credits} Credit{credits === 1 ? "" : "s"})
         </p>
