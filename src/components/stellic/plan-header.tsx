@@ -44,13 +44,11 @@ export const ADD_REMAINING: PlanAction = {
   sidebar: true,
 }
 
-/** Request review, or — once a request is out on the plan as it stands —
- *  Requested, which opens the request rather than making another. Any change
- *  to the plan makes it something to ask about again. */
-export function reviewAction(requested: boolean): PlanAction {
-  return requested
-    ? { label: "Requested", icon: "check-circle-outline" }
-    : { label: "Request review", icon: "assignment" }
+/** Request review, which is left out once a request is out on the plan as it
+ *  stands: the request is read in its own panel, so there is nothing to make
+ *  again. Any change to the plan makes it something to ask about again. */
+export function reviewAction(requested: boolean): PlanAction[] {
+  return requested ? [] : [{ label: "Request review", icon: "assignment" }]
 }
 
 /** A term as the year filter offers it: its own state, not its year's. */

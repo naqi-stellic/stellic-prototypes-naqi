@@ -170,7 +170,6 @@ export function TermView({
   onGenerateTerm,
   onRequestReview,
   requested = false,
-  onShowReview,
   startOn,
   generators = true,
   sidebar,
@@ -204,8 +203,6 @@ export function TermView({
   startOn?: "calendar" | "list"
   /** A request is out on this term, and nothing has moved since. */
   requested?: boolean
-  /** Opens the request that is out, beside the term. */
-  onShowReview?: () => void
   /** Whether this prototype offers to generate the term or its schedule. */
   generators?: boolean
   /** The requirements panel the header's sidebar button opens. */
@@ -278,7 +275,7 @@ export function TermView({
         ? [{ label: "Auto generate schedule", icon: "design-services" as const }]
         : []),
     ...(generators ? [] : [ADD_REMAINING]),
-    reviewAction(requested),
+    ...reviewAction(requested),
   ]
 
   return (
@@ -336,7 +333,6 @@ export function TermView({
         onAction={(action) => {
           if (action.toggles) onGenerateTerm?.()
           else if (action.label === "Request review") onRequestReview?.()
-          else if (action.label === "Requested") onShowReview?.()
         }}
       />
 

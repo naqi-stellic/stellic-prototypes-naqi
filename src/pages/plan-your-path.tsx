@@ -211,7 +211,7 @@ function planActions(
           ],
         }
       : ADD_REMAINING,
-    reviewAction(requested),
+    ...reviewAction(requested),
   ]
 }
 
@@ -849,17 +849,6 @@ export function PlanYourPath({
     setGenerateOpen(true)
   }
 
-  /* The request already out, opened beside the plan rather than made again. */
-  function openReviewPanel() {
-    closeGenerators()
-    setReviewPanel(true)
-    setReqsOpen(false)
-    setOpenSeat(null)
-    setOpenPlanned(null)
-    setOpenCourse(null)
-    setSearching(null)
-  }
-
   function openSeatPanel(courseId: string, view: "detail" | "search") {
     closeGenerators()
     setOpenSeat({ id: courseId, view })
@@ -1240,7 +1229,6 @@ export function PlanYourPath({
             }}
             onRequestReview={() => setRequesting({ term: openTerm })}
             requested={requested && pending!.terms.includes(openTerm.id)}
-            onShowReview={openReviewPanel}
             generators={generators}
             sidebar={{ open: reqsOpen, onToggle: openRequirements }}
             addable={addable}
@@ -1275,7 +1263,6 @@ export function PlanYourPath({
             }}
             onAction={(action) => {
               if (action.label === "Request review") setRequesting({ term: null })
-              else if (action.label === "Requested") openReviewPanel()
             }}
             onToggleField={toggleMetadata}
             sidebar={{ open: reqsOpen, onToggle: openRequirements }}
