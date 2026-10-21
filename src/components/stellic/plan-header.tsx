@@ -104,29 +104,30 @@ function CameFrom() {
   )
 }
 
-/** The toolbar widths at which the actions give up their words, in steps. Tailwind
+/** The toolbar widths at which the actions give up their words, in steps, and
+ *  only above the phone layout, where they take a row and keep their words. Tailwind
  *  reads class names from the source and cannot see one assembled at runtime,
  *  so every step is written out. */
 const FIT: Record<number, { labels: string; icon: string }> = {
-  880: { labels: "@max-[880px]/toolbar:hidden", icon: "@max-[880px]/toolbar:size-9" },
-  920: { labels: "@max-[920px]/toolbar:hidden", icon: "@max-[920px]/toolbar:size-9" },
-  960: { labels: "@max-[960px]/toolbar:hidden", icon: "@max-[960px]/toolbar:size-9" },
-  1000: { labels: "@max-[1000px]/toolbar:hidden", icon: "@max-[1000px]/toolbar:size-9" },
-  1040: { labels: "@max-[1040px]/toolbar:hidden", icon: "@max-[1040px]/toolbar:size-9" },
-  1080: { labels: "@max-[1080px]/toolbar:hidden", icon: "@max-[1080px]/toolbar:size-9" },
-  1120: { labels: "@max-[1120px]/toolbar:hidden", icon: "@max-[1120px]/toolbar:size-9" },
-  1160: { labels: "@max-[1160px]/toolbar:hidden", icon: "@max-[1160px]/toolbar:size-9" },
-  1200: { labels: "@max-[1200px]/toolbar:hidden", icon: "@max-[1200px]/toolbar:size-9" },
-  1240: { labels: "@max-[1240px]/toolbar:hidden", icon: "@max-[1240px]/toolbar:size-9" },
-  1280: { labels: "@max-[1280px]/toolbar:hidden", icon: "@max-[1280px]/toolbar:size-9" },
-  1320: { labels: "@max-[1320px]/toolbar:hidden", icon: "@max-[1320px]/toolbar:size-9" },
-  1360: { labels: "@max-[1360px]/toolbar:hidden", icon: "@max-[1360px]/toolbar:size-9" },
-  1400: { labels: "@max-[1400px]/toolbar:hidden", icon: "@max-[1400px]/toolbar:size-9" },
-  1440: { labels: "@max-[1440px]/toolbar:hidden", icon: "@max-[1440px]/toolbar:size-9" },
-  1480: { labels: "@max-[1480px]/toolbar:hidden", icon: "@max-[1480px]/toolbar:size-9" },
-  1520: { labels: "@max-[1520px]/toolbar:hidden", icon: "@max-[1520px]/toolbar:size-9" },
-  1560: { labels: "@max-[1560px]/toolbar:hidden", icon: "@max-[1560px]/toolbar:size-9" },
-  1600: { labels: "@max-[1600px]/toolbar:hidden", icon: "@max-[1600px]/toolbar:size-9" },
+  880: { labels: "@min-[641px]/toolbar:@max-[880px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[880px]/toolbar:size-9" },
+  920: { labels: "@min-[641px]/toolbar:@max-[920px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[920px]/toolbar:size-9" },
+  960: { labels: "@min-[641px]/toolbar:@max-[960px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[960px]/toolbar:size-9" },
+  1000: { labels: "@min-[641px]/toolbar:@max-[1000px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1000px]/toolbar:size-9" },
+  1040: { labels: "@min-[641px]/toolbar:@max-[1040px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1040px]/toolbar:size-9" },
+  1080: { labels: "@min-[641px]/toolbar:@max-[1080px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1080px]/toolbar:size-9" },
+  1120: { labels: "@min-[641px]/toolbar:@max-[1120px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1120px]/toolbar:size-9" },
+  1160: { labels: "@min-[641px]/toolbar:@max-[1160px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1160px]/toolbar:size-9" },
+  1200: { labels: "@min-[641px]/toolbar:@max-[1200px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1200px]/toolbar:size-9" },
+  1240: { labels: "@min-[641px]/toolbar:@max-[1240px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1240px]/toolbar:size-9" },
+  1280: { labels: "@min-[641px]/toolbar:@max-[1280px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1280px]/toolbar:size-9" },
+  1320: { labels: "@min-[641px]/toolbar:@max-[1320px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1320px]/toolbar:size-9" },
+  1360: { labels: "@min-[641px]/toolbar:@max-[1360px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1360px]/toolbar:size-9" },
+  1400: { labels: "@min-[641px]/toolbar:@max-[1400px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1400px]/toolbar:size-9" },
+  1440: { labels: "@min-[641px]/toolbar:@max-[1440px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1440px]/toolbar:size-9" },
+  1480: { labels: "@min-[641px]/toolbar:@max-[1480px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1480px]/toolbar:size-9" },
+  1520: { labels: "@min-[641px]/toolbar:@max-[1520px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1520px]/toolbar:size-9" },
+  1560: { labels: "@min-[641px]/toolbar:@max-[1560px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1560px]/toolbar:size-9" },
+  1600: { labels: "@min-[641px]/toolbar:@max-[1600px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1600px]/toolbar:size-9" },
 }
 const FIT_STEPS = Object.keys(FIT).map(Number)
 
@@ -216,6 +217,8 @@ export function PlanHeader({
   const fit = stepFor((view ? 330 : 115) + beside + actionsWidth + 64)
   const labelsGo = fit.labels
   const iconOnly = fit.icon
+  /* On a phone the two buttons of the first row each take half of it. */
+  const fillRow = "@max-[640px]/toolbar:flex-1"
 
   /* Whether the actions have lost their words, which is when a button needs
      another way to say what it is. Read off the label itself, since the
@@ -246,7 +249,7 @@ export function PlanHeader({
         }
         aria-label={action.label}
         onClick={() => (action.sidebar ? sidebar?.onToggle() : onAction?.(action))}
-        className={cn("data-[state=open]:bg-gray-5", iconOnly)}
+        className={cn("data-[state=open]:bg-gray-5", iconOnly, action.fields && fillRow)}
       >
         <Icon name={action.icon} size={16} />
         <span data-action-label className={labelsGo}>{action.label}</span>
@@ -259,7 +262,11 @@ export function PlanHeader({
         )}
         {/* A button that opens a menu says so; one that acts does not. */}
         {(action.fields || action.choices) && (
-          <Icon name="expand-more" size={16} className={labelsGo} />
+          <Icon
+            name="expand-more"
+            size={16}
+            className={cn(labelsGo, action.choices && "@max-[640px]/toolbar:hidden")}
+          />
         )}
       </Button>
     )
@@ -358,15 +365,21 @@ export function PlanHeader({
         <div
           ref={actionsRef}
           data-tour="plan-actions"
-          className="flex flex-wrap items-center gap-x-4 gap-y-2"
+          className="flex flex-wrap items-center gap-x-4 gap-y-2 @max-[640px]/toolbar:w-full @max-[640px]/toolbar:gap-x-2"
         >
-          <div className="flex items-center gap-2">
-            <PlanSwitcher labelsGo={labelsGo} iconOnly={iconOnly} collapsed={collapsed} />
+          {/* On a phone the two that say which plan and how it looks share a
+              row, each half of it. */}
+          <div className="flex items-center gap-2 @max-[640px]/toolbar:w-full">
+            <PlanSwitcher labelsGo={labelsGo} iconOnly={cn(iconOnly, fillRow)} collapsed={collapsed} />
             {viewActions.map(renderAction)}
           </div>
-          {/* The line between the two groups. */}
-          <span aria-hidden="true" className="h-6 w-px shrink-0 bg-gray-40" />
-          <div className="flex items-center gap-2">
+          {/* The line between the two groups, which a phone does not need: the
+              groups are on rows of their own. */}
+          <span aria-hidden="true" className="h-6 w-px shrink-0 bg-gray-40 @max-[640px]/toolbar:hidden" />
+          {/* The three that do something to the plan stay in the row with the rest.
+              The moment the bar is narrow enough to put them on a line of their
+              own they go, since a plan on a phone is for reading. */}
+          <div className="flex items-center gap-2 @max-[640px]/toolbar:hidden">
             {doActions.map(renderAction)}
             <Tooltip>
               <TooltipTrigger asChild>
@@ -388,19 +401,21 @@ export function PlanHeader({
       <div className="sticky -top-6 z-20 -m-6 flex flex-col">
         <div
           className={cn(
-            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-6 transition-colors",
+            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-6 transition-colors max-sm:px-4",
             /* The edge belongs to the bottom of the block, not to this row: where
                a banner is held under it, the banner carries it. */
             stuck && !banner ? "border-gray-40" : "border-transparent",
             stuck && "bg-card"
           )}
         >
-          <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-3 @max-[640px]/toolbar:w-full @max-[640px]/toolbar:gap-x-3">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <Crumbs tabs={tabs} term={term} />
               {status}
             </div>
-            {view?.(switchFit.labels)}
+            {/* On a phone the switch has its words and stands at the right,
+                beside the crumbs or on the line under them. */}
+            <div className="@max-[640px]/toolbar:ml-auto">{view?.(switchFit.labels)}</div>
           </div>
           {actionButtons}
         </div>
