@@ -14,7 +14,7 @@ import {
 import { HoverCard } from "radix-ui"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ShareBar } from "@/components/stellic/student-profile"
-import { DEGREE, STUDENT } from "@/data/plan"
+import { STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
  * are in view. The planner and a term share it — only the actions and the
@@ -257,7 +257,7 @@ export function PlanHeader({
                 <span data-action-label className={labelsGo}>{action.label}</span>
                 {/* How many of the details are on, so the button says what
                     the cards are carrying without opening it. */}
-                {action.fields && (
+                {action.fields && action.fields.some((field) => field.shown) && (
                   <Badge variant="primary" className={labelsGo}>
                     {action.fields.filter((field) => field.shown).length}
                   </Badge>
@@ -409,29 +409,22 @@ function PlanSwitcher({
             <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", iconOnly)}>
               <Icon name="calendar-today" size={16} />
               <span data-action-label className={labelsGo}>
-                Primary Plan
+                My Plan
               </span>
               <Icon name="expand-more" size={16} className={labelsGo} />
             </Button>
           </TooltipTrigger>
         </DropdownMenuTrigger>
-        {collapsed && <TooltipContent>Primary Plan</TooltipContent>}
+        {collapsed && <TooltipContent>My Plan</TooltipContent>}
       </Tooltip>
-      <DropdownMenuContent align="start" className="w-[420px]">
-        <DropdownMenuItem className="items-start gap-2 py-2 text-body-md">
-          <Icon name="check" size={16} className="mt-0.5 shrink-0" />
-          <span className="flex min-w-0 flex-col gap-2">
-            <span className="font-semibold text-foreground">Primary Plan</span>
-            <span className="flex flex-wrap items-center gap-1">
-              {[`${DEGREE.credential} (${DEGREE.concentration})`, `Minor in ${DEGREE.minor}`].map(
-                (program) => (
-                  <Badge key={program} variant="outline" className="max-w-full">
-                    <span className="min-w-0 truncate">{program}</span>
-                  </Badge>
-                )
-              )}
-            </span>
-          </span>
+      <DropdownMenuContent align="start" className="w-[260px]">
+        {/* The plan you are in, and that it is the main one: "Primary" is for
+            whoever has others to tell it from, so it is a badge in here and the
+            button just says whose plan it is. */}
+        <DropdownMenuItem className="gap-2 py-2 text-body-md">
+          <Icon name="check" size={16} className="shrink-0" />
+          <span className="font-semibold text-foreground">My Plan</span>
+          <Badge variant="success">Primary</Badge>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
