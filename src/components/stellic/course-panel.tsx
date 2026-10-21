@@ -414,10 +414,7 @@ function SectionRow({
     <div
       onMouseEnter={() => onPreview?.(true)}
       onMouseLeave={() => onPreview?.(false)}
-      className={cn(
-        "flex w-full flex-col rounded-md border bg-card",
-        chosen ? "border-primary-50" : "border-gray-40"
-      )}
+      className="flex w-full flex-col rounded-md border border-gray-40 bg-card"
     >
       <div className="flex w-full items-stretch">
         {canPick || chosen ? (
@@ -429,11 +426,11 @@ function SectionRow({
             className={cn(
               "flex w-10 shrink-0 items-center justify-center border-r",
               chosen
-                ? "cursor-default border-primary-50 text-primary-50"
+                ? "cursor-default border-gray-40 text-primary-50"
                 : "cursor-pointer border-gray-40 text-gray-100 hover:bg-gray-5"
             )}
           >
-            <Icon name={chosen ? "check" : "add"} size={16} />
+            <Icon name={chosen ? "check-circle" : "add"} size={chosen ? 20 : 16} />
           </button>
         ) : null}
         <div className="flex min-w-0 flex-1 flex-col gap-1 py-3 pl-4">

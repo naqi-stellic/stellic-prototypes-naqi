@@ -403,7 +403,7 @@ export function PlanHeader({
     <>
       {/* Where you are, and what can be done to the plan: one bar, which holds
           at the top, with the registration window held under it. */}
-      <div className="sticky -top-6 z-20 -m-6 flex flex-col">
+      <div className="sticky -top-6 z-20 -m-6 flex flex-col max-sm:static">
         <div
           ref={toolbar}
           className={cn(
