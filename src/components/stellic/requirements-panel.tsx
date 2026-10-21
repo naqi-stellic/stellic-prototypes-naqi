@@ -53,11 +53,16 @@ export function RequirementRow({
   entry,
   id,
   details = [],
+  groupedBy = "Requirement",
   overlay,
   onOpen,
 }: {
   entry: CatalogEntry
   id?: string
+  /** How the list is filed. Whatever the heading over the row already says is
+   *  not said again on it: filed by requirement, the row says when the course
+   *  is offered; filed by term, it says what the course counts for. */
+  groupedBy?: "Requirement" | "Term offered"
   /** What Course details has switched on. A requirement says what it can of
    *  them: it has a credit value and the campus it would be taken on, but no
    *  instructor or room until a class is chosen, and what it cannot say it
@@ -169,12 +174,20 @@ export function RequirementRow({
             {blocker && <span className="text-gray-80">Take {blocker} first</span>}
           </span>
         )}
-        {/* What the course would count for, so a list grouped any other way
-            than by requirement still says it. A seat is the requirement. */}
-        {entry.reason && (
-          <span className="truncate pt-1 text-body-md font-medium text-gray-80">
-            Counting for {entry.reason}
-          </span>
+        {/* The one thing the heading above does not say. A seat is the
+            requirement, so it needs neither. */}
+        {groupedBy === "Requirement" ? (
+          offeredIn(entry.code).length > 0 && (
+            <span className="truncate pt-1 text-body-md font-medium text-gray-80">
+              Offered in {offeredIn(entry.code).join(", ")}
+            </span>
+          )
+        ) : (
+          entry.reason && (
+            <span className="truncate pt-1 text-body-md font-medium text-gray-80">
+              Counting for {entry.reason}
+            </span>
+          )
         )}
       </span>
     </div>
@@ -435,6 +448,7 @@ export function RequirementsPanel({
               id={`${REQUIREMENT_ID}${index}`}
               entry={entry}
               details={details}
+              groupedBy={grouping}
               onOpen={onOpenCourse && (() => onOpenCourse(index))}
             />
           ))}

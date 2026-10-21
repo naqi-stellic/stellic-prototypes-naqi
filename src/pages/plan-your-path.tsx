@@ -1434,7 +1434,14 @@ export function PlanYourPath({
 
     <DragOverlay>
       {dragging && <AuditRow course={dragging.course} overlay />}
-      {draggingEntry && <RequirementRow entry={draggingEntry} details={metadata} overlay />}
+      {draggingEntry && (
+        <RequirementRow
+          entry={draggingEntry}
+          details={metadata}
+          groupedBy={narrowing.grouping}
+          overlay
+        />
+      )}
     </DragOverlay>
     </DndContext>
     </RegistrationProvider>
