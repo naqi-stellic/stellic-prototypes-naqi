@@ -11,6 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { HoverCard } from "radix-ui"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { ShareBar } from "@/components/stellic/student-profile"
 import { DEGREE, STUDENT } from "@/data/plan"
@@ -470,26 +471,70 @@ function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
   )
 }
 
-/** What the student has done, is doing and has left, as one meter of the courses. */
+/** What the student has done, is doing and has left, as one meter of the courses,
+ *  with the credits behind each count for what is said on hover. */
 export type PlanProgressData = {
   courses: { done: number; going: number; planned: number; remaining: number }
+  credits: { done: number; going: number; planned: number; remaining: number }
 }
 
+const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`
+
 function PlanProgress({ progress }: { progress: PlanProgressData }) {
-  const { courses } = progress
+  const { courses, credits } = progress
+  const rows = [
+    { label: "Completed", count: courses.done, credits: credits.done, colour: "bg-success-50" },
+    { label: "In progress", count: courses.going, credits: credits.going, colour: "bg-warning-50" },
+    { label: "Planned", count: courses.planned, credits: credits.planned, colour: "bg-warning-25" },
+    { label: "Remaining", count: courses.remaining, credits: credits.remaining, colour: "bg-gray-40" },
+  ]
+
   return (
-    <div className="flex w-full flex-col gap-2 pt-2">
-      <p className="text-body-md text-gray-100">Courses</p>
-      {/* The bar the compliance screen draws, read off the planner's own counts:
-          done, under way, placed in a term, and still to place. */}
-      <ShareBar
-        shares={[
-          { count: courses.done, colour: "bg-success-50", dot: "bg-success-50" },
-          { count: courses.going, colour: "bg-warning-50", dot: "bg-warning-50" },
-          { count: courses.planned, colour: "bg-warning-25", dot: "bg-warning-25" },
-          { count: courses.remaining, colour: "bg-gray-40", dot: "bg-gray-40" },
-        ]}
-      />
-    </div>
+    <TooltipProvider delayDuration={100}>
+      <div className="flex w-full flex-col gap-2 pt-2">
+        <p className="text-body-md text-gray-100">Courses</p>
+        {/* The bar the compliance screen draws, read off the planner's own
+            counts: done, under way, placed in a term, and still to place. */}
+        <ShareBar
+          shares={rows.map((row) => ({ count: row.count, colour: row.colour, dot: row.colour }))}
+          /* Its name, on its dot. */
+          dotted={(node, i) => (
+            <Tooltip>
+              <TooltipTrigger asChild>{node}</TooltipTrigger>
+              <TooltipContent>{rows[i].label}</TooltipContent>
+            </Tooltip>
+          )}
+          /* Its place among the others, on its length of the bar, with the one
+             being pointed at set in bold. */
+          segment={(node, i) => (
+            <HoverCard.Root openDelay={60} closeDelay={60}>
+              <HoverCard.Trigger asChild>{node}</HoverCard.Trigger>
+              <HoverCard.Portal>
+                <HoverCard.Content
+                  side="top"
+                  align="center"
+                  sideOffset={8}
+                  className="z-50 w-[340px] rounded-md border border-gray-40 bg-card p-4 text-body-md shadow-lg"
+                >
+                  <dl className="grid grid-cols-[110px_1fr] gap-x-4 gap-y-2">
+                    {rows.map((row, j) => (
+                      <div key={row.label} className="contents">
+                        <dt className={j === i ? "font-semibold text-gray-100" : "text-gray-80"}>
+                          {row.label}
+                        </dt>
+                        <dd className={j === i ? "font-semibold text-gray-100" : "text-gray-80"}>
+                          {plural(row.count, "course")} ({plural(row.credits, "credit")})
+                        </dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <HoverCard.Arrow className="fill-card" />
+                </HoverCard.Content>
+              </HoverCard.Portal>
+            </HoverCard.Root>
+          )}
+        />
+      </div>
+    </TooltipProvider>
   )
 }

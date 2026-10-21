@@ -109,6 +109,7 @@ import {
   addYear,
   INITIAL_YEARS,
   METADATA_DEFAULT,
+  CREDITS_PER_COURSE,
   METADATA_FIELDS,
   expectedGraduation,
   findCourse,
@@ -476,6 +477,12 @@ export function PlanYourPath({
       going: standing.inProgress.reqs,
       planned: standing.planned.reqs,
       remaining: requirements.length,
+    },
+    credits: {
+      done: standing.completed.credits,
+      going: standing.inProgress.credits,
+      planned: standing.planned.credits,
+      remaining: requirements.length * CREDITS_PER_COURSE,
     },
   }
   /* The course opened on its own, from the remaining list or from the courses
