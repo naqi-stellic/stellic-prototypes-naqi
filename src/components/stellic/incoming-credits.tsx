@@ -2,7 +2,7 @@ import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
 import { CourseTags } from "@/components/stellic/course-metadata"
-import { TimelineRail } from "@/components/stellic/planner"
+import { STATUS_BAR, YearMarker } from "@/components/stellic/planner"
 import { AuditIcon } from "@/components/stellic/primitives"
 import { Card } from "@/components/ui/card"
 import {
@@ -22,7 +22,12 @@ export const INCOMING_LABEL = "Incoming Credits"
 
 function CreditRow({ item }: { item: IncomingCredit }) {
   return (
-    <div className="flex w-full items-center gap-2 rounded-md border border-gray-40 bg-card p-[7px]">
+    <div className="relative flex w-full items-center gap-2 rounded-md border border-gray-40 bg-card px-[15px] py-[7px]">
+      {/* Earned already, so the bar a completed course carries. */}
+      <span
+        aria-hidden="true"
+        className={cn("absolute inset-y-0 left-0 w-1 rounded-l-[3px]", STATUS_BAR.taken)}
+      />
       <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
         <div>
           <p className="text-body-md text-gray-100">{item.code}</p>
@@ -46,16 +51,16 @@ function GroupCard({ group }: { group: IncomingGroup }) {
   const credits = groupCredits(group)
 
   return (
-    <Card className="@container/term w-full min-w-0 gap-0 rounded-md border-gray-40 p-[23px] shadow-none">
+    <Card className="@container/term w-full min-w-0 gap-0 rounded-md border-gray-40 p-[15px] shadow-none">
       <div className="flex w-full flex-col gap-2">
         <h4 className="truncate text-caption-lg font-semibold text-gray-100">{group.kind}</h4>
 
-        <p className="flex items-center gap-2 pt-4 text-body-md font-semibold text-gray-80">
+        <p className="flex items-center gap-2 pt-4 text-body-md font-semibold text-gray-100">
           <AuditIcon state="completed" />
           Earned ({credits} Credit{credits === 1 ? "" : "s"})
         </p>
 
-        <div className="flex w-full flex-col gap-2 pt-2">
+        <div className="flex w-full flex-col gap-2">
           {group.items.map((item) => (
             <CreditRow key={item.id} item={item} />
           ))}
@@ -91,25 +96,27 @@ export function IncomingCredits({
 
   if (collapsed) {
     return (
-      <section className="flex items-start gap-4">
-        <TimelineRail phase="complete" nodes={1} />
-        <div className="flex min-w-0 flex-1 flex-col pb-4">
-          <div className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1">
+      <section className="flex flex-col">
+        <div className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <YearMarker phase="complete" />
             <h3 className="min-w-0">{heading}</h3>
-            <p className="text-body-md text-gray-80">{summary}</p>
           </div>
+          <p className="text-body-md text-gray-80">{summary}</p>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="flex items-start gap-4">
-      <TimelineRail phase="complete" nodes={2} />
-      <div className="flex min-w-0 flex-1 flex-col items-start pb-8">
-        <div className="-mb-px flex w-full flex-col pb-4">
+    <section className="flex flex-col items-start">
+      <div className="flex min-w-0 w-full flex-col items-start">
+        <div className="-mb-px flex w-full flex-col pb-2.5">
           <div className="flex min-h-9 w-full flex-wrap items-center gap-x-4 gap-y-2">
-            <h3 className="min-w-0">{heading}</h3>
+            <div className="flex min-w-0 items-center gap-2">
+              <YearMarker phase="complete" />
+              <h3 className="min-w-0">{heading}</h3>
+            </div>
             <p className="text-body-md text-gray-80">{summary}</p>
           </div>
         </div>

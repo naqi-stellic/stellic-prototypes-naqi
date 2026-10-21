@@ -8,6 +8,7 @@ import { Icon } from "@/components/icon"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
 import { CourseActivity, CourseTags, useMetadata } from "@/components/stellic/course-metadata"
 import { TermActions } from "@/components/stellic/term-actions"
+import { stageOf } from "@/data/course-sidebar"
 import { AddSlot, AuditIcon, StatusPill } from "@/components/stellic/primitives"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
 import { usePendingReview } from "@/components/stellic/review-state"
@@ -95,6 +96,15 @@ type AuditRowProps = {
   selected?: boolean
 }
 
+/** The bar a card carries for where its course stands. The audit's own colors,
+ *  so the plan, the progress bar and the legend all say the same thing. */
+export const STATUS_BAR = {
+  taken: "bg-success-50",
+  progress: "bg-warning-50",
+  registered: "bg-accent-amber",
+  planned: "bg-warning-25",
+} as const
+
 /** How wide a term can be before its courses' note button is only a glyph. */
 const NARROW_TERM = 460
 
@@ -133,6 +143,10 @@ export function AuditRow({
   const struck = isStruck(course)
   /* Course details decides whether the card carries the name and section. */
   const shown = useMetadata()
+  /* Where the course stands, as a bar down the edge of its card. A seat has no
+     course, and a card a draft is proposing has a colour of its own to say so. */
+  const statusBar =
+    term && !course.placeholder && !course.draft ? STATUS_BAR[stageOf(term, course)] : null
   /* What the plan has against this course sitting where it does. A seat is
      never one of them: it says what it is itself. */
   const issue = useCourseIssues(term ?? NO_TERM, course.id)[0] ?? null
@@ -196,6 +210,18 @@ export function AuditRow({
         nudged && !filled && !held && "animate-nudge"
       )}
     >
+      {statusBar && (
+        <span
+          aria-hidden="true"
+          /* Inside the 1px border, so its corners are the card's 4px less that:
+             3px. A card sitting under its requirement is square at the top. */
+          className={cn(
+            "absolute inset-y-0 left-0 w-1",
+            filled ? "rounded-bl-[3px]" : "rounded-l-[3px]",
+            statusBar
+          )}
+        />
+      )}
       {!locked && <Icon name="drag-indicator" size={16} className="text-foreground" />}
 
       <div
@@ -784,24 +810,12 @@ const RAIL_NODE = {
   future: { icon: "arrow-circle-right", tone: "text-gray-60", line: "bg-gray-60" },
 } as const
 
-export function TimelineRail({ phase, nodes }: { phase: YearPhase; nodes: 1 | 2 }) {
-  /* The line runs between two nodes, so it is the colour of the nodes it
-     joins — a finished year is green from end to end. */
-  const { icon, tone, line } = RAIL_NODE[phase]
-
-  /* One gutter and one lead whether the year is folded or not: the node sits
-   * level with the year's heading either way, so unfolding moves nothing. */
-  return (
-    <div className="flex w-6 shrink-0 flex-col items-center self-stretch pt-2">
-      <Icon name={icon} size={20} className={tone} />
-      {nodes === 2 && (
-        <>
-          <span className={cn("w-0.5 min-h-0 flex-1", line)} />
-          <Icon name={icon} size={20} className={tone} />
-        </>
-      )}
-    </div>
-  )
+export function YearMarker({ phase }: { phase: YearPhase }) {
+  /* The year's state, as a marker beside its name. The line that once ran down
+     from it, and the second marker at its foot, are gone: the cards under the
+     heading run from the page's edge, level with the marker above them. */
+  const { icon, tone } = RAIL_NODE[phase]
+  return <Icon name={icon} size={20} className={cn("shrink-0", tone)} />
 }
 
 /* ============================================================ YearSection */
@@ -870,33 +884,35 @@ export function YearSection({
 
   if (collapsed) {
     return (
-      <section className="flex items-start gap-4">
-        <TimelineRail phase={year.phase} nodes={1} />
-        {/* The band is 36px tall, as the unfolded header's Add Summer button
-            makes it, with the same 16px beneath — so the heading and the node
-            beside it stay put when the year opens. */}
-        <div className="flex min-w-0 flex-1 flex-col">
-          <div className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1">
+      <section className="flex flex-col">
+        {/* The band is 36px tall, as the unfolded header's Add Summer link
+            makes it, so the heading and the marker beside it stay put when the
+            year opens. */}
+        <div className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1">
+          <div className="flex min-w-0 items-center gap-2">
+            <YearMarker phase={year.phase} />
             <h3 className="min-w-0">{heading}</h3>
-            <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
           </div>
+          <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="flex items-start gap-4">
-      <TimelineRail phase={year.phase} nodes={2} />
-      <div className="flex min-w-0 flex-1 flex-col items-start">
+    <section className="flex flex-col items-start">
+      <div className="flex min-w-0 w-full flex-col items-start">
         {/* The band holds its 36px whether or not the year offers a term to
             add, so a finished year lines up with the rest. */}
-        <div className="-mb-px flex w-full flex-col pb-4">
+        <div className="-mb-px flex w-full flex-col pb-2.5">
           <div className="flex min-h-9 w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
             {/* What the year holds, beside its name, said the same way folded or
                 open. */}
             <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
-              <h3 className="min-w-0">{heading}</h3>
+              <div className="flex min-w-0 items-center gap-2">
+                <YearMarker phase={year.phase} />
+                <h3 className="min-w-0">{heading}</h3>
+              </div>
               <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
             </div>
             {/* A year already behind you takes no more terms, and neither
