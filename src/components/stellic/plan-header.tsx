@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { HoverCard } from "radix-ui"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { STUDENT } from "@/data/plan"
+import { PLAN_NAME, STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
  * are in view. The planner and a term share it — only the actions and the
@@ -236,57 +236,47 @@ export function PlanHeader({
   /* Only the actions this page will draw: Add remaining goes where there is
      no panel for it to open. */
   const shown = actions.filter((action) => !action.sidebar || sidebar)
-  /* Widths of the toolbar's content, measured off the rendered rows. Words go in
-     stages as the bar narrows: the switch first, then the two that say which
-     plan and how it looks, and only last the ones that do something to it,
-     since those are what the page is for. */
-  const group1Full = 318 // My Plan and Course details, with words, a badge and carets
-  const group1Icons = 80
+  /* Widths of the toolbar's content, measured off the rendered rows. The
+     buttons carry no icon, so they always keep their words and wrap to a line
+     of their own when the bar is narrow; only the switch, whose buttons have
+     icons, gives up its words. */
+  const group1Full = 318 // My Plan and Course details, with a badge and carets
   const group2Full = 377 + (shown.length >= 4 ? 200 : 0) // Complete my plan, Request review, more
   const divider = 33
   const gap = 16
-  /* The crumbs alone; the term's switch beside them, with its words and without;
-     the review tag; the student's name where staff are looking at a plan. */
-  const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0) + (progress ? 455 : 0)
-  const leftFull = (view ? 440 : 85) + beside
-  const leftSwitchIcons = (view ? 330 : 85) + beside
+  /* The crumbs, with the review tag and the student's name where staff are
+     looking at a plan, and the switch beside them, with its words and without. */
+  const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
+  const left = (view ? 240 : 85) + beside
+  const switchFull = view ? 232 : 0
+  const switchIcons = view ? 122 : 0
   const stepFor = (need: number) =>
     FIT[FIT_STEPS.find((width) => width >= need) ?? FIT_STEPS[FIT_STEPS.length - 1]]
-  const switchFit = stepFor(leftFull + gap + group1Full + divider + group2Full)
-  const fit1 = stepFor(leftSwitchIcons + gap + group1Full + divider + group2Full)
-  const fit2 = stepFor(leftSwitchIcons + gap + group1Icons + divider + group2Full)
-  /* On a phone the two buttons of the first row each take half of it. */
-  const fillRow = "@max-[640px]/toolbar:flex-1"
+  const switchFit = stepFor(left + switchFull + gap + group1Full + divider + group2Full)
+  /* The width the whole row needs once the switch has dropped its words, which
+     is the last thing to give. Narrower than that the controls go to a line of
+     their own. */
+  const rowNeeds = left + switchIcons + gap + group1Full + divider + group2Full
+  /* On a phone the four buttons are a two by two grid, each the width of its column. */
+  const fillRow = "@max-[640px]/toolbar:w-full"
 
-  /* Whether a group has lost its words, which is when its buttons need another
-     way to say what they are. Read off the label itself, since the toolbar's
-     own width is what hid it and CSS is the only thing that knows where. */
-  const actionsRef = useRef<HTMLDivElement>(null)
-  const [collapsed1, setCollapsed1] = useState(false)
-  const [collapsed2, setCollapsed2] = useState(false)
+  const hasProgress = progress != null
+  /* How wide the toolbar has to lay out in, to know whether the controls have
+     gone below the name. */
+  const toolbar = useRef<HTMLDivElement>(null)
+  const [toolbarWidth, setToolbarWidth] = useState(0)
   useEffect(() => {
-    const row = actionsRef.current
-    const bar = row?.parentElement
-    if (!row || !bar) return
-    const hidden = (group: string) => {
-      const label = row.querySelector<HTMLElement>(`[data-group="${group}"] [data-action-label]`)
-      return label != null && label.offsetParent === null
-    }
-    const read = () => {
-      setCollapsed1(hidden("1"))
-      setCollapsed2(hidden("2"))
-    }
-    read()
+    const row = toolbar.current
+    if (!row) return
+    const read = (entries: ResizeObserverEntry[]) => setToolbarWidth(entries[0].contentRect.width)
     const watch = new ResizeObserver(read)
-    watch.observe(bar)
+    watch.observe(row)
     return () => watch.disconnect()
-  }, [stuck])
-
+  }, [])
+  const rowWraps = toolbarWidth > 0 && toolbarWidth < rowNeeds
+  const controlsBelow = hasProgress && rowWraps
   /* One of the plan's buttons, with the menu it opens where it opens one. */
   const renderAction = (action: PlanAction) => {
-    const labelsGo = (action.fields ? fit1 : fit2).labels
-    const iconOnly = (action.fields ? fit1 : fit2).icon
-    const collapsed = action.fields ? collapsed1 : collapsed2
     const button = (
       <Button
         aria-pressed={
@@ -294,47 +284,27 @@ export function PlanHeader({
         }
         aria-label={action.label}
         onClick={() => (action.sidebar ? sidebar?.onToggle() : onAction?.(action))}
-        className={cn("data-[state=open]:bg-gray-5", iconOnly, action.fields && fillRow)}
+        className={cn("data-[state=open]:bg-gray-5", fillRow)}
       >
-        <Icon name={action.icon} size={16} />
-        <span data-action-label className={labelsGo}>{action.label}</span>
+        {action.label}
         {/* How many of the details are on, so the button says what
             the cards are carrying without opening it. */}
         {action.fields && action.fields.some((field) => field.shown) && (
-          <Badge variant="primary" className={labelsGo}>
+          <Badge variant="primary">
             {action.fields.filter((field) => field.shown).length}
           </Badge>
         )}
         {/* A button that opens a menu says so; one that acts does not. */}
         {(action.fields || action.choices) && (
-          <Icon
-            name="expand-more"
-            size={16}
-            className={cn(labelsGo, action.choices && "@max-[640px]/toolbar:hidden")}
-          />
+          <Icon name="expand-more" size={16} />
         )}
       </Button>
-    )
-
-    /* Said on hover once the words are gone, with the count where the
-       button carries one. */
-    const tip = (
-      <TooltipContent>
-        {action.label}
-        {action.fields &&
-          ` (${action.fields.filter((field) => field.shown).length} of ${action.fields.length})`}
-      </TooltipContent>
     )
 
     if (action.choices) {
       return (
         <DropdownMenu key={action.label}>
-          <Tooltip>
-            <DropdownMenuTrigger asChild>
-              <TooltipTrigger asChild>{button}</TooltipTrigger>
-            </DropdownMenuTrigger>
-            {collapsed && tip}
-          </Tooltip>
+          <DropdownMenuTrigger asChild>{button}</DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-[260px]">
             {action.choices.map((choice) => (
               <DropdownMenuItem
@@ -353,23 +323,15 @@ export function PlanHeader({
 
     if (!action.fields) {
       return (
-        <span key={action.label}>
-          <Tooltip>
-            <TooltipTrigger asChild>{button}</TooltipTrigger>
-            {collapsed && tip}
-          </Tooltip>
+        <span key={action.label} className="@max-[640px]/toolbar:flex">
+          {button}
         </span>
       )
     }
 
     return (
       <DropdownMenu key={action.label}>
-        <Tooltip>
-          <DropdownMenuTrigger asChild>
-            <TooltipTrigger asChild>{button}</TooltipTrigger>
-          </DropdownMenuTrigger>
-          {collapsed && tip}
-        </Tooltip>
+        <DropdownMenuTrigger asChild>{button}</DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
           {action.fields.map((field) => (
             <DropdownMenuItem
@@ -408,31 +370,25 @@ export function PlanHeader({
            the onboarding spotlight, which points at them. */
         <TooltipProvider delayDuration={200}>
         <div
-          ref={actionsRef}
           data-tour="plan-actions"
-          className="flex flex-wrap items-center gap-x-4 gap-y-2 @max-[640px]/toolbar:w-full @max-[640px]/toolbar:gap-x-2"
+          className="flex flex-wrap items-center gap-x-4 gap-y-2 @max-[640px]/toolbar:grid @max-[640px]/toolbar:w-full @max-[640px]/toolbar:grid-cols-2 @max-[640px]/toolbar:gap-2"
         >
           {/* On a phone the two that say which plan and how it looks share a
               row, each half of it. */}
-          <div data-group="1" className="flex items-center gap-2 @max-[640px]/toolbar:w-full">
-            <PlanSwitcher
-              labelsGo={fit1.labels}
-              iconOnly={cn(fit1.icon, fillRow)}
-              collapsed={collapsed1}
-            />
+          <div data-group="1" className="flex items-center gap-2 @max-[640px]/toolbar:contents">
+            <PlanSwitcher className={fillRow} />
             {viewActions.map(renderAction)}
           </div>
           {/* The line between the two groups, which a phone does not need: the
               groups are on rows of their own. */}
           <span aria-hidden="true" className="h-6 w-px shrink-0 bg-gray-40 @max-[640px]/toolbar:hidden" />
-          {/* The three that do something to the plan stay in the row with the rest.
-              The moment the bar is narrow enough to put them on a line of their
-              own they go, since a plan on a phone is for reading. */}
-          <div data-group="2" className="flex items-center gap-2 @max-[640px]/toolbar:hidden">
+          {/* The three that do something to the plan stay in the row with the rest,
+              and on a phone take a row of their own. */}
+          <div data-group="2" className="flex items-center gap-2 @max-[640px]/toolbar:contents">
             {doActions.map(renderAction)}
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button size="icon" aria-label="More options">
+                <Button size="icon" aria-label="More options" className="@max-[640px]/toolbar:hidden">
                   <Icon name="more-horiz" size={16} />
                 </Button>
               </TooltipTrigger>
@@ -448,34 +404,54 @@ export function PlanHeader({
       {/* Where you are, and what can be done to the plan: one bar, which holds
           at the top, with the registration window held under it. */}
       <div className="sticky -top-6 z-20 -m-6 flex flex-col">
-        {progress && <PlanProgressBar progress={progress} />}
         <div
+          ref={toolbar}
           className={cn(
-            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pb-6 transition-colors max-sm:px-4",
-            /* The bar takes its 6px off the top, so the name stands where it
-               does on a page with no bar, and opening a term does not move it. */
-            progress ? "pt-[18px]" : "pt-6",
+            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 transition-colors max-sm:px-4",
+            /* With the bar and the controls under the name, the three stand an
+               equal distance apart. */
+            controlsBelow && "gap-y-4",
+            /* The bar under the name stands a little way from it. */
+            progress ? "pb-4" : "pb-6",
+
             /* The edge belongs to the bottom of the block, not to this row: where
                a banner is held under it, the banner carries it. */
             stuck && !banner ? "border-gray-40" : "border-transparent",
             stuck && "bg-card"
           )}
         >
-          <div className="flex min-w-0 flex-wrap items-center gap-x-6 gap-y-3 @max-[640px]/toolbar:w-full @max-[640px]/toolbar:gap-x-3">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-3 @max-[640px]/toolbar:w-full">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <Crumbs tabs={tabs} term={term} />
               {status}
             </div>
-            {progress && <PlanLegend progress={progress} />}
-            {/* On a phone the switch has its words and stands at the right,
-                beside the crumbs or on the line under them. */}
-            <div className="@max-[640px]/toolbar:ml-auto">{view?.(switchFit.labels)}</div>
+            {/* How the page is read, beside where it is. */}
+            {view && (
+              <div className="@max-[640px]/toolbar:ml-auto">
+                {view(rowWraps ? "" : switchFit.labels)}
+              </div>
+            )}
           </div>
+          {/* With the controls on a line of their own, the bar stays with the
+              name and they go under it. */}
+          {controlsBelow && progress && (
+            /* As far from the controls as the controls are from the first year:
+               the toolbar's 12px, the page's 24px and the years' 8px, less the
+               16px the rows already stand apart. */
+            <div className="w-full pb-7">
+              <ProgressBlock progress={progress} />
+            </div>
+          )}
           {actionButtons}
         </div>
         {banner?.(stuck)}
       </div>
       <span ref={sentinel} aria-hidden="true" className="hidden" />
+      {progress && !controlsBelow && (
+        <div>
+          <ProgressBlock progress={progress} />
+        </div>
+      )}
     </>
   )
 }
@@ -483,41 +459,30 @@ export function PlanHeader({
 /** The plans this student has, each with the programs it is for. First in the
  *  row, since everything after it is about that plan. Only the one exists, and
  *  making another goes nowhere yet. */
-function PlanSwitcher({
-  labelsGo,
-  iconOnly,
-  collapsed,
-}: {
-  labelsGo: string
-  iconOnly: string
-  collapsed: boolean
-}) {
+function PlanSwitcher({ className }: { className?: string }) {
   return (
     <DropdownMenu>
-      <Tooltip>
-        <DropdownMenuTrigger asChild>
-          <TooltipTrigger asChild>
-            <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", iconOnly)}>
-              <Icon name="route" size={16} />
-              {/* A select's width, 140px with the icon and the chevron, so a
-                  longer plan name truncates rather than moving the toolbar. */}
-              <span data-action-label className={cn("w-[60px] truncate text-left", labelsGo)}>
-                My Plan
-              </span>
-              <Icon name="expand-more" size={16} className={labelsGo} />
-            </Button>
-          </TooltipTrigger>
-        </DropdownMenuTrigger>
-        {collapsed && <TooltipContent>My Plan</TooltipContent>}
-      </Tooltip>
+      <DropdownMenuTrigger asChild>
+        <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", className)}>
+          {/* Fixed in width, so a longer plan name truncates rather than moving
+              the toolbar. */}
+          <span className="flex w-[100px] gap-1 text-left">
+            <span className="shrink-0 text-gray-80">Plan:</span>
+            <span className="min-w-0 truncate">{PLAN_NAME}</span>
+          </span>
+          <Icon name="expand-more" size={16} />
+        </Button>
+      </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[260px]">
         {/* The plan you are in, and that it is the main one: "Primary" is for
             whoever has others to tell it from, so it is a badge in here and the
             button just says whose plan it is. */}
-        <DropdownMenuItem className="gap-2 py-2 text-body-md">
-          <Icon name="check" size={16} className="shrink-0" />
-          <span className="font-semibold text-foreground">My Plan</span>
-          <Badge variant="success">Primary</Badge>
+        <DropdownMenuItem className="items-start gap-2 py-2 text-body-md">
+          <Icon name="check" size={16} className="mt-0.5 shrink-0" />
+          <span className="min-w-0 flex-1 font-semibold text-foreground">{PLAN_NAME}</span>
+          <Badge variant="success" className="mt-px shrink-0">
+            Primary
+          </Badge>
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem className="gap-2 py-1.5 text-body-md">
@@ -530,10 +495,10 @@ function PlanSwitcher({
 }
 
 /** Where you are: the student, for staff, then the years, then the term. On a
- *  term, "Planner" is the way back out to the whole plan. */
+ *  term, "My Plan" is the way back out to the whole plan. */
 function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
   const overview = tabs[0]
-  const label = overview?.label ?? "Planner"
+  const label = overview?.label ?? "My Plan"
 
   return (
     <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
@@ -603,15 +568,15 @@ function progressRows(progress: PlanProgressData) {
   ]
 }
 
-/** A strip along the top edge of the page, under the app bar, edge to edge:
- *  done, registered, planned, and what is left. Each share says where it stands on
+/** A bar under the page's name, rounded at its ends: done, registered,
+ *  planned, and what is left. Each share says where it stands on
  *  hover, with the one being pointed at set in bold. */
 function PlanProgressBar({ progress }: { progress: PlanProgressData }) {
   const rows = progressRows(progress)
   const total = rows.reduce((sum, row) => sum + row.count, 0)
 
   return (
-    <div role="img" aria-label="Plan progress" className="flex h-1.5 w-full shrink-0">
+    <div role="img" aria-label="Plan progress" className="flex h-2 w-full shrink-0 overflow-hidden rounded-full">
       {rows.map((row, i) => (
         <HoverCard.Root key={row.label} openDelay={60} closeDelay={60}>
           <HoverCard.Trigger asChild>
@@ -650,7 +615,21 @@ function PlanProgressBar({ progress }: { progress: PlanProgressData }) {
   )
 }
 
-/** The strip's counts, in words, beside the page's name. */
+/** The bar, and what it counts in words, one under the other. */
+function ProgressBlock({ progress }: { progress: PlanProgressData }) {
+  return (
+    /* As wide as the counts under it, and a little over: the bar reaches 24px
+       past where the last of them ends, but not off a phone's screen. */
+    <div className="flex w-fit max-w-full flex-col gap-2">
+      <div className="mr-[-24px] max-sm:mr-0">
+        <PlanProgressBar progress={progress} />
+      </div>
+      <PlanLegend progress={progress} />
+    </div>
+  )
+}
+
+/** The bar's counts, in words, under it. */
 function PlanLegend({ progress }: { progress: PlanProgressData }) {
   return (
     <ul className="flex flex-wrap items-center gap-x-[17px] gap-y-1">

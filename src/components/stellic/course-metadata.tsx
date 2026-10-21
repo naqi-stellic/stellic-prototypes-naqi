@@ -1,5 +1,6 @@
 import { createContext, use } from "react"
 
+import { Icon } from "@/components/icon"
 import { Badge } from "@/components/ui/badge"
 import { courseTags, METADATA_DEFAULT, type MetadataField, type PlannedCourse } from "@/data/plan"
 
@@ -25,13 +26,22 @@ export function useMetadata(): MetadataField[] {
 }
 
 /** The tags a card carries: one gray badge per detail that is switched on and
- *  that this course actually has. */
+ *  that this course actually has. The section, where there is one to show, is a
+ *  tag like the rest and always the first of them. */
 export function CourseTags({ course }: { course: PlannedCourse }) {
-  const tags = courseTags(course, useMetadata())
-  if (tags.length === 0) return null
+  const shown = useMetadata()
+  const tags = courseTags(course, shown)
+  const section = shown.includes("section") ? course.section : undefined
+  if (tags.length === 0 && !section) return null
 
   return (
     <span className="flex flex-wrap items-start gap-1">
+      {section && (
+        <Badge variant="secondary">
+          <Icon name="calendar-today" size={14} />
+          {section}
+        </Badge>
+      )}
       {tags.map((tag) => (
         <Badge key={tag} variant="secondary">
           {tag}

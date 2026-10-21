@@ -7,6 +7,9 @@ import { defineConfig } from 'vite'
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   server: {
+    /* Listen on the network too, so a phone on the same Wi-Fi can open the
+     * prototype at this machine's address. */
+    host: true,
     /* fsevents delivery on this machine is unreliable — its fseventsd has
      * been up for months and ballooned past 2GB — so the watcher silently
      * stops firing and Vite serves stale modules. Polling does not depend on

@@ -151,6 +151,10 @@ export const DEGREE = {
   credits: 120,
 }
 
+/** What a plan is called until it is renamed: the programs it is for, the major
+ *  and its concentration, then the minor. */
+export const PLAN_NAME = `${DEGREE.major}, ${DEGREE.concentration}, ${DEGREE.minor} Minor`
+
 /** Institution settings the generator always honours. These are facts about
  *  the school rather than answers the student gives, which is why the summary
  *  lists them separately under "Also accounting for". */

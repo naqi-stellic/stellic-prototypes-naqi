@@ -2,7 +2,14 @@ import { useDroppable } from "@dnd-kit/core"
 import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable"
 import { CSS } from "@dnd-kit/utilities"
 import { cn } from "cn"
-import { useEffect, useRef, useState, type ReactNode } from "react"
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from "react"
 
 import { Icon } from "@/components/icon"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
@@ -280,12 +287,6 @@ export function AuditRow({
                 </p>
               )}
             </div>
-            {shown.includes("section") && course.section && (
-              <p className="flex items-center gap-1 text-body-md text-foreground">
-                <Icon name="calendar-today" size={14} />
-                {course.section}
-              </p>
-            )}
           </>
         )}
 
@@ -850,8 +851,12 @@ export function YearSection({
   onOpenCourse,
   openSeatId,
   onPickSection,
+  across,
 }: {
   year: Year
+  /** Laid along a timeline rather than down the page: the year's name stands
+   *  above its first term, and the terms keep one width side by side. */
+  across?: boolean
   renderAlert?: (term: Term) => ReactNode
   settling?: boolean
   revealed: number
@@ -875,6 +880,54 @@ export function YearSection({
   onOpenTerm?: (termId: string) => void
   onPickSection?: (termId: string, courseId: string) => void
 }) {
+  if (across) {
+    return (
+      <section className="flex shrink-0 flex-col gap-2.5">
+        {/* Over the year's first term, and as wide as the year's terms, so what
+            the year comes to has room beside its name. */}
+        <div className="flex min-h-9 min-w-0 items-center gap-x-4">
+          <div className="flex shrink-0 items-center gap-2">
+            <YearMarker phase={year.phase} />
+            <h3 className="text-h300 font-semibold text-gray-100">{year.label}</h3>
+          </div>
+          <p className="min-w-0 flex-1 truncate text-body-md text-gray-80">{yearSummary(year)}</p>
+          {/* At the end of the year's span, over its last term, which is the
+              one the summer would follow. */}
+          {canAddTerm(year) && (
+            <button
+              type="button"
+              onClick={onAddTerm}
+              className="shrink-0 cursor-pointer text-body-md text-gray-80 underline [text-underline-position:from-font]"
+            >
+              + Add Summer {year.label.split("-")[1]}
+            </button>
+          )}
+        </div>
+        <div className="flex items-start gap-4">
+          {year.terms.map((term) => (
+            <div key={term.id} className="w-[384px] shrink-0">
+              <SemesterCard
+                term={term}
+                alert={renderAlert?.(term)}
+                settling={settling}
+                revealed={revealed}
+                dropAt={drop?.termId === term.id ? drop.index : undefined}
+                dropHeight={drop?.height ?? 64}
+                onRemoveCourse={onRemoveCourse}
+                onSearchCourses={onSearchCourses && (() => onSearchCourses(term.id))}
+                onOpen={onOpenTerm && (() => onOpenTerm(term.id))}
+                onOpenSeat={onOpenSeat}
+                onOpenCourse={onOpenCourse}
+                openSeatId={openSeatId}
+                onPickSection={onPickSection}
+              />
+            </div>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
   const heading = (
     <button
       type="button"
@@ -962,5 +1015,282 @@ export function YearSection({
         </div>
       </div>
     </section>
+  )
+}
+
+/* ============================================================ TermDeck
+   Every term of the plan as a deck of cards, for a phone: one card the width
+   of the screen on top, the next one underneath it. A swipe left
+   throws the top card off — it follows the finger and tilts — and the next
+   settles into its place; a swipe right brings the last one back from the
+   side, straightening as it lands. The cards are moved by hand, off the
+   pointer, rather than by scrolling, so they can behave like cards. */
+
+type TermCardProps = Pick<
+  ComponentProps<typeof YearSection>,
+  | "renderAlert"
+  | "settling"
+  | "revealed"
+  | "drop"
+  | "onRemoveCourse"
+  | "onSearchCourses"
+  | "onOpenTerm"
+  | "onOpenSeat"
+  | "onOpenCourse"
+  | "openSeatId"
+  | "onPickSection"
+>
+
+const TILT = 12 // degrees at a full width of drag
+const PEEK = 12 // px of the next card showing below the top one
+const SETTLE = 280 // ms
+const EASE = "cubic-bezier(0.22, 0.8, 0.24, 1)"
+
+export function TermDeck({
+  years,
+  renderAlert,
+  settling,
+  revealed,
+  drop,
+  onRemoveCourse,
+  onSearchCourses,
+  onOpenTerm,
+  onOpenSeat,
+  onOpenCourse,
+  openSeatId,
+  onPickSection,
+}: TermCardProps & { years: Year[] }) {
+  const items = years.flatMap((year) => year.terms.map((term) => ({ year, term })))
+  const [index, setIndex] = useState(0)
+  const at = Math.min(index, Math.max(0, items.length - 1))
+  const current = items[at]
+
+  const stage = useRef<HTMLDivElement>(null)
+  const layers = useRef(new Map<string, HTMLDivElement>())
+  const heights = useRef(new Map<string, number>())
+  const [height, setHeight] = useState(0)
+  const drag = useRef<{
+    x: number
+    y: number
+    id: number
+    live: boolean
+    dx: number
+    at: number
+  } | null>(null)
+  const moved = useRef(false)
+  const settle = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  /* The deck is as tall as the card on top; the ones under it are cut to that. */
+  const topId = current?.term.id
+  useEffect(() => {
+    const watch = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const id = (entry.target as HTMLElement).dataset.deckInner
+        if (id) heights.current.set(id, entry.contentRect.height)
+      }
+      if (topId) setHeight(heights.current.get(topId) ?? 0)
+    })
+    layers.current.forEach((layer) => {
+      const inner = layer.firstElementChild
+      if (inner) watch.observe(inner)
+    })
+    return () => watch.disconnect()
+  }, [topId, items.length])
+
+  /* Where every card is, for a drag of `dx` pixels (left is negative) — the
+     same function draws the rest, the drag, and the throw. */
+  function place(dx: number, ease: boolean) {
+    const width = stage.current?.offsetWidth ?? 1
+    const t = Math.min(1, Math.abs(dx) / width)
+    const hasPrev = at > 0
+    items.forEach(({ term }, i) => {
+      const el = layers.current.get(term.id)
+      if (!el) return
+      const k = i - at
+      el.style.transition = ease ? `transform ${SETTLE}ms ${EASE}` : "none"
+      el.style.pointerEvents = k === 0 ? "auto" : "none"
+      el.style.height = k === 0 ? "" : `${height}px`
+      el.style.overflow = k === 0 ? "" : "hidden"
+      let transform = ""
+      let origin = "50% 50%"
+      let visible = true
+      let z = 0
+      if (k < -1) {
+        transform = "translateX(-130%)"
+        visible = false
+      } else if (k === -1) {
+        z = 3
+        if (dx > 0) {
+          const x = -width * 1.2 + Math.min(dx, width) * 1.2
+          transform = `translateX(${x}px) rotate(${-TILT * (1 - t)}deg)`
+        } else {
+          transform = `translateX(-130%) rotate(${-TILT}deg)`
+          visible = ease
+        }
+      } else if (k === 0) {
+        z = 2
+        if (dx < 0) {
+          transform = `translateX(${dx}px) rotate(${(dx / width) * TILT}deg)`
+        } else if (dx > 0 && hasPrev) {
+          origin = "50% 0"
+          transform = `translateY(${(height * 0.06 + PEEK) * t}px) scale(${1 - 0.06 * t})`
+        }
+      } else if (k === 1) {
+        z = 1
+        origin = "50% 0"
+        const lift = dx < 0 ? t : 0
+        transform = `translateY(${(height * 0.06 + PEEK) * (1 - lift)}px) scale(${0.94 + 0.06 * lift})`
+        /* Out of sight at rest: a card cut off under the top one reads as
+           something broken. It is there only while the top one is thrown. */
+        visible = dx < 0
+      } else {
+        origin = "50% 0"
+        transform = `translateY(${height * 0.12 + PEEK}px) scale(0.88)`
+        visible = false
+      }
+      el.style.transformOrigin = origin
+      el.style.transform = transform
+      el.style.visibility = visible ? "visible" : "hidden"
+      el.style.zIndex = String(z)
+    })
+  }
+
+  useLayoutEffect(() => {
+    place(0, false)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [at, items.length, height])
+  useEffect(() => () => clearTimeout(settle.current), [])
+
+  function go(to: number) {
+    clearTimeout(settle.current)
+    const width = stage.current?.offsetWidth ?? 1
+    /* Thrown past the edge, or pulled in from it, and then the cards are
+       dealt again with the new one on top. */
+    place(to > at ? -width * 1.5 : width, true)
+    settle.current = setTimeout(() => setIndex(to), SETTLE)
+  }
+
+  function onPointerDown(event: React.PointerEvent) {
+    if (event.pointerType === "mouse" && event.button !== 0) return
+    drag.current = {
+      x: event.clientX,
+      y: event.clientY,
+      id: event.pointerId,
+      live: false,
+      dx: 0,
+      at,
+    }
+    moved.current = false
+  }
+  function onPointerMove(event: React.PointerEvent) {
+    const d = drag.current
+    if (!d || d.id !== event.pointerId) return
+    const dx = event.clientX - d.x
+    const dy = event.clientY - d.y
+    if (!d.live) {
+      /* A move that is more across than down is a swipe; anything else is
+         the page being scrolled. */
+      if (Math.abs(dx) < 10 || Math.abs(dx) < Math.abs(dy) * 1.2) return
+      d.live = true
+      moved.current = true
+      stage.current?.setPointerCapture(event.pointerId)
+    }
+    d.dx = dx
+    /* Past the first and last card the deck gives a little and no more. */
+    const resisted = (dx > 0 && at === 0) || (dx < 0 && at === items.length - 1) ? dx / 4 : dx
+    place(resisted, false)
+  }
+  function onPointerEnd(event: React.PointerEvent) {
+    const d = drag.current
+    drag.current = null
+    if (!d || !d.live) return
+    stage.current?.releasePointerCapture(event.pointerId)
+    const width = stage.current?.offsetWidth ?? 1
+    const far = Math.abs(d.dx) > width * 0.28
+    if (far && d.dx < 0 && at < items.length - 1) go(at + 1)
+    else if (far && d.dx > 0 && at > 0) go(at - 1)
+    else place(0, true)
+  }
+
+  if (!current) return null
+  const { year } = current
+
+  return (
+    <div className="flex flex-col gap-4 pt-2">
+      {/* The year of the card on top. */}
+      <div className="flex min-h-9 items-center gap-2">
+        <YearMarker phase={year.phase} />
+        <h3 className="shrink-0 text-h300 font-semibold text-gray-100">{year.label}</h3>
+        <p className="min-w-0 flex-1 truncate text-body-md text-gray-80">{yearSummary(year)}</p>
+      </div>
+
+      <div
+        ref={stage}
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerEnd}
+        onPointerCancel={onPointerEnd}
+        /* Down is still the page's to scroll; across is the deck's. A swipe
+           that was a swipe does not also click what it ended on. */
+        onClickCapture={(event) => {
+          if (moved.current) {
+            event.preventDefault()
+            event.stopPropagation()
+            moved.current = false
+          }
+        }}
+        style={{ height: height || undefined, touchAction: "pan-y" }}
+        className="relative mb-4 w-full"
+      >
+        {items.map(({ term }) => (
+          <div
+            key={term.id}
+            ref={(el) => {
+              if (el) layers.current.set(term.id, el)
+              else layers.current.delete(term.id)
+            }}
+            className="absolute inset-x-0 top-0 will-change-transform"
+          >
+            <div data-deck-inner={term.id}>
+              <SemesterCard
+                term={term}
+                alert={renderAlert?.(term)}
+                settling={settling}
+                revealed={revealed}
+                dropAt={drop?.termId === term.id ? drop.index : undefined}
+                dropHeight={drop?.height ?? 64}
+                onRemoveCourse={onRemoveCourse}
+                onSearchCourses={onSearchCourses && (() => onSearchCourses(term.id))}
+                onOpen={onOpenTerm && (() => onOpenTerm(term.id))}
+                onOpenSeat={onOpenSeat}
+                onOpenCourse={onOpenCourse}
+                openSeatId={openSeatId}
+                onPickSection={onPickSection}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* The way through the deck for anyone who is not swiping, fixed to the
+          foot of the screen. The space under the deck keeps the last of it
+          from sitting behind them. */}
+      <div className="h-16" aria-hidden="true" />
+      <div className="fixed inset-x-0 bottom-0 z-30 flex gap-4 bg-background px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-1px_0_0_var(--color-gray-40)]">
+        <Button className="flex-1" disabled={at === 0} onClick={() => go(at - 1)}>
+          <Icon name="chevron-left" size={16} />
+          Previous term
+        </Button>
+        <Button
+          variant="primary"
+          className="flex-1"
+          disabled={at === items.length - 1}
+          onClick={() => go(at + 1)}
+        >
+          Next term
+          <Icon name="chevron-right" size={16} />
+        </Button>
+      </div>
+    </div>
   )
 }

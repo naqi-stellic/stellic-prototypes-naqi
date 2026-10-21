@@ -16,6 +16,8 @@ import { useEffect, useState, type ReactNode } from "react"
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
+import { useMediaQuery } from "@/lib/use-media-query"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AppShell } from "@/components/layout/app-shell"
 import { ApplyPlanDialog, DraftBar, DraftOutline } from "@/components/stellic/draft-frame"
 import { MetadataProvider } from "@/components/stellic/course-metadata"
@@ -58,6 +60,7 @@ import {
   NoActionsAlert,
   STREAM_CAP,
   STREAM_MS,
+  TermDeck,
   YearSection,
 } from "@/components/stellic/planner"
 import {
@@ -157,7 +160,7 @@ function yearTabs(
   onOpenTerm: (termId: string) => void
 ): YearTab[] {
   return [
-    { label: "Planner", icon: "grid-view", selected: !openYear, onSelect: onLeave },
+    { label: "My Plan", icon: "grid-view", selected: !openYear, onSelect: onLeave },
     ...years.map((year) => ({
       label: year.label,
       ...PHASE_TAB[year.phase],
@@ -337,6 +340,18 @@ export function PlanYourPath({
    * its own gap. */
   const [drop, setDrop] = useState<{ termId: string; index: number; height: number } | null>(null)
   const [generateOpen, setGenerateOpen] = useState(false)
+  /* A phone-sized screen, where the timeline's cards are made for it. */
+  const phone = useMediaQuery("(max-width: 639px)")
+  /* How the plan is read: as years of terms down the page, or every term side
+     by side along a timeline that scrolls across. A phone opens on the
+     timeline, and the window crossing into or out of that size moves it there
+     — the choice is then the reader's until it is crossed again. */
+  const [layout, setLayout] = useState<"grid" | "timeline">(phone ? "timeline" : "grid")
+  const [wasPhone, setWasPhone] = useState(phone)
+  if (phone !== wasPhone) {
+    setWasPhone(phone)
+    setLayout(phone ? "timeline" : "grid")
+  }
 
   /* One draft per option, generated together so the panel can show what each
    * one costs before the student commits to looking at it. */
@@ -931,6 +946,37 @@ export function PlanYourPath({
     )
   }
 
+  /* What a term card needs, whether it is laid down the page, along a
+     timeline or dealt as a deck. */
+  const termProps = {
+    settling: accepting,
+    revealed,
+    drop,
+    renderAlert: (term: Term) =>
+      termBanner(
+        term,
+        shown,
+        draft != null,
+        setRegistering,
+        (id) => openSeatPanel(id, "detail"),
+        registration
+      ),
+    onRemoveCourse: handleRemoveCourse,
+    onSearchCourses: (termId: string) => {
+      closeGenerators()
+      setSearching(termId)
+      setOpenCourse(null)
+      setOpenPlanned(null)
+      setOpenSeat(null)
+      setReqsOpen(false)
+    },
+    onOpenTerm: openTermView,
+    onOpenSeat: openSeatPanel,
+    onOpenCourse: openPlannedPanel,
+    openSeatId: openSeat?.id ?? null,
+    onPickSection: pickSection,
+  }
+
   return (
     <RegistrationProvider offered={registration}>
     {/* Around the whole shell, panel included: a requirement is picked up in the
@@ -1253,6 +1299,20 @@ export function PlanYourPath({
             actions={planActions(metadata, generators, requested)}
             tabs={yearTabs(shown, undefined, () => setOpenTermId(null), openTermView)}
             progress={progress}
+            view={(labelsGo) => (
+              <Tabs value={layout} onValueChange={(next) => setLayout(next as typeof layout)}>
+                <TabsList>
+                  <TabsTrigger value="grid" aria-label="Grid">
+                    <Icon name="grid-view" size={16} />
+                    <span className={labelsGo}>Grid</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="timeline" aria-label="Timeline">
+                    <Icon name="timeline" size={16} />
+                    <span className={labelsGo}>Timeline</span>
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
+            )}
             pressed={generateOpen}
             onChoose={(id) => {
               if (id === "generate") {
@@ -1294,67 +1354,57 @@ export function PlanYourPath({
 
           {/* Keyed on the option so switching one replays the entrances rather
               than swapping the cards in place. */}
-          <div key={draft ? `draft-${streamId}` : "plan"} className="flex flex-col gap-6">
-            {shown.map((year) => (
-              <YearSection
-                key={year.label}
-                year={year}
-                collapsed={collapsed.includes(year.label)}
-                onToggleCollapse={() => toggleCollapsed(year.label)}
-                settling={accepting}
-                revealed={revealed}
-                drop={drop}
-                renderAlert={(term) =>
-                  termBanner(
-                    term,
-                    shown,
-                    draft != null,
-                    setRegistering,
-                    (id) => openSeatPanel(id, "detail"),
-                    registration
-                  )
-                }
-                onRemoveCourse={handleRemoveCourse}
-                onSearchCourses={(termId) => {
-                  closeGenerators()
-                  setSearching(termId)
-                  setOpenCourse(null)
-                  setOpenPlanned(null)
-                  setOpenSeat(null)
-                  setReqsOpen(false)
-                }}
-                onOpenTerm={openTermView}
-                onOpenSeat={openSeatPanel}
-                onOpenCourse={openPlannedPanel}
-                openSeatId={openSeat?.id ?? null}
-                onAddTerm={() => addYearTerm(year.label)}
-                onPickSection={pickSection}
-              />
-            ))}
-          </div>
-
-          {/* ---------------------------------- Add year */}
-          {/* A marker like a year's, and a link beside it. */}
-          <div className="flex items-center gap-2">
-            <Icon name="fiber-manual-record" size={20} className="shrink-0 text-gray-40" />
-            <button
-              type="button"
-              onClick={() => setYears((current) => addYear(current))}
-              className="w-fit cursor-pointer text-h300 font-semibold text-gray-80 underline [text-underline-position:from-font]"
+          {layout === "timeline" && phone ? (
+            <TermDeck key={draft ? `draft-${streamId}` : "plan"} years={shown} {...termProps} />
+          ) : (
+            <div
+              key={draft ? `draft-${streamId}` : "plan"}
+              className={
+                layout === "grid"
+                  ? "flex flex-col gap-10 pt-2"
+                  : "-mx-6 flex items-start gap-8 overflow-x-auto px-6 pt-2 pb-4"
+              }
             >
-              + Add Year {nextYearNumber(shown)}
-            </button>
-          </div>
+              {shown.map((year) => (
+                <YearSection
+                  key={year.label}
+                  year={year}
+                  across={layout === "timeline"}
+                  collapsed={collapsed.includes(year.label)}
+                  onToggleCollapse={() => toggleCollapsed(year.label)}
+                  onAddTerm={() => addYearTerm(year.label)}
+                  {...termProps}
+                />
+              ))}
+            </div>
+          )}
 
-          {/* What came in with the student sits last: it is behind them, and
-              what is still to plan is the reason to be here. */}
-          <div className="contents">
-            <IncomingCredits
-              groups={incoming}
-              collapsed={collapsed.includes(INCOMING_LABEL)}
-              onToggleCollapse={() => toggleCollapsed(INCOMING_LABEL)}
-            />
-          </div>
+          {layout === "grid" && (
+            <>
+              {/* ---------------------------------- Add year */}
+              {/* A marker like a year's, and a link beside it. */}
+              <div className="flex items-center gap-2 pt-4">
+                <Icon name="fiber-manual-record" size={20} className="shrink-0 text-gray-40" />
+                <button
+                  type="button"
+                  onClick={() => setYears((current) => addYear(current))}
+                  className="w-fit cursor-pointer text-h300 font-semibold text-gray-80 underline [text-underline-position:from-font]"
+                >
+                  + Add Year {nextYearNumber(shown)}
+                </button>
+              </div>
+
+              {/* What came in with the student sits last: it is behind them, and
+                  what is still to plan is the reason to be here. */}
+              <div className="pt-4">
+                <IncomingCredits
+                  groups={incoming}
+                  collapsed={collapsed.includes(INCOMING_LABEL)}
+                  onToggleCollapse={() => toggleCollapsed(INCOMING_LABEL)}
+                />
+              </div>
+            </>
+          )}
           </main>
         )}
 
