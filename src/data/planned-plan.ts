@@ -13,7 +13,7 @@ import {
   type Year,
 } from "@/data/plan"
 
-const ACCENTS = ["purple", "green", "amber", "teal", "brown", "rose"] as const
+const ACCENTS = ["navy", "sky", "magenta", "blue", "lavender", "violet"] as const
 
 /* The two prototypes open on different plans, because they are demonstrating
  * different things. The generator opens on a plan with almost nothing in it,

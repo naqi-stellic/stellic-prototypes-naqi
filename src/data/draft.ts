@@ -213,7 +213,7 @@ let seq = 0
 /* The colours a course is drawn in down the side of a list and across a
  * calendar. Handed out in turn as courses are created, so a generated term
  * reads like any other rather than a run of gray bars. */
-const ACCENTS = ["green", "amber", "purple", "brown", "teal", "rose"] as const
+const ACCENTS = ["navy", "sky", "magenta", "blue", "lavender", "violet"] as const
 
 function nextAccent(): PlannedCourse["accent"] {
   return ACCENTS[seq % ACCENTS.length]

@@ -67,7 +67,7 @@ const STARTED: Record<string, PlannedCourse[]> = {
       campus: "Main",
       modality: "In Person",
       gradeOption: "Graded",
-      accent: "green",
+      accent: "sky",
       meetings: [
         { day: 2, from: 11, to: 12.25 },
         { day: 4, from: 11, to: 12.25 },
@@ -79,7 +79,7 @@ const STARTED: Record<string, PlannedCourse[]> = {
       lastActivity: BY_STUDENT,
     },
   ],
-  "fall-2027": [seat("c11", "GEN ELEC", "teal"), seat("c12", "DATA ELEC", "brown")],
+  "fall-2027": [seat("c11", "GEN ELEC", "magenta"), seat("c12", "DATA ELEC", "violet")],
 }
 
 export const GENERATOR_YEARS: Year[] = INITIAL_YEARS.map((year) => ({

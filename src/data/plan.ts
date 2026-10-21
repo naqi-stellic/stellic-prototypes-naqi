@@ -72,7 +72,7 @@ export type PlannedCourse = {
    *  including one the generator placed, which reads "Added by pathway". */
   lastActivity?: string
   /** The colour this course is drawn in, on its card and on the calendar. */
-  accent?: "green" | "amber" | "purple" | "brown" | "teal" | "rose"
+  accent?: "navy" | "sky" | "magenta" | "blue" | "lavender" | "violet"
   /** Set only while a generated draft is on screen. `relocated` marks a card
    *  that left somewhere to be here, so it counts as an addition and a removal
    *  at once. */
@@ -290,7 +290,7 @@ export const INITIAL_YEARS: Year[] = [
             campus: "Main",
             modality: "In Person",
             gradeOption: "Graded",
-            accent: "purple",
+            accent: "navy",
             meetings: [
               { day: 1, from: 9, to: 10.25 },
               { day: 3, from: 9, to: 10.25 },
@@ -311,7 +311,7 @@ export const INITIAL_YEARS: Year[] = [
             campus: "Main",
             modality: "In Person",
             gradeOption: "Graded",
-            accent: "amber",
+            accent: "blue",
             meetings: [
               { day: 2, from: 11, to: 12.25 },
               { day: 4, from: 11, to: 12.25 },
@@ -332,7 +332,7 @@ export const INITIAL_YEARS: Year[] = [
             campus: "Main",
             modality: "In Person",
             gradeOption: "Graded",
-            accent: "green",
+            accent: "sky",
             meetings: [
               { day: 1, from: 13, to: 14.25 },
               { day: 3, from: 13, to: 14.25 },
@@ -353,7 +353,7 @@ export const INITIAL_YEARS: Year[] = [
             campus: "Main",
             modality: "Hybrid",
             gradeOption: "Graded",
-            accent: "brown",
+            accent: "violet",
             notes: 1,
             meetings: [
               { day: 2, from: 14.5, to: 15.75 },
@@ -376,7 +376,7 @@ export const INITIAL_YEARS: Year[] = [
             campus: "Main",
             modality: "In Person",
             gradeOption: "Graded",
-            accent: "teal",
+            accent: "magenta",
             meetings: [
               { day: 1, from: 10.5, to: 11.75 },
               { day: 3, from: 10.5, to: 11.75 },
@@ -432,7 +432,7 @@ export const INITIAL_YEARS: Year[] = [
             campus: "Main",
             modality: "In Person",
             gradeOption: "Graded",
-            accent: "purple",
+            accent: "navy",
             meetings: [
               { day: 1, from: 9, to: 10.25 },
               { day: 3, from: 9, to: 10.25 },
@@ -451,7 +451,7 @@ export const INITIAL_YEARS: Year[] = [
             name: "General elective",
             credits: 3,
             placeholder: true,
-            accent: "amber",
+            accent: "blue",
             lastActivity: BY_PATHWAY,
           },
         ],
@@ -489,7 +489,7 @@ export function findTerm(years: Year[], termId: string) {
  *  Returns the input untouched if either end is locked. */
 /** The colours a term's cards are marked by, in the order they are handed out.
  *  Six, which is what the credit ceiling allows a term to hold. */
-export const ACCENTS = ["purple", "green", "amber", "teal", "brown", "rose"] as const
+export const ACCENTS = ["navy", "sky", "magenta", "blue", "lavender", "violet"] as const
 
 /** Every card in a term wearing its own colour.
  *

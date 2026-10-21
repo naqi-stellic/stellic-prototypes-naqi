@@ -3,6 +3,7 @@ import { cn } from "cn"
 import { useState } from "react"
 
 import { Icon } from "@/components/icon"
+import { accentBar } from "@/components/stellic/course-accent"
 import { AddToTerm } from "@/components/stellic/add-to-term"
 import { ALL_ELECTIVES, ELECTIVE_COURSES, type CatalogEntry } from "@/data/catalog"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
@@ -33,15 +34,6 @@ import {
 
 /* A term whose schedule is out: the classes down one side, the week they
  * actually meet in on the other. A course keeps its colour across both. */
-
-const ACCENT: Record<string, string> = {
-  green: "bg-accent-green",
-  amber: "bg-accent-amber",
-  purple: "bg-accent-purple",
-  brown: "bg-accent-brown",
-  teal: "bg-accent-teal",
-  rose: "bg-accent-rose",
-}
 
 /** An hour of calendar, in pixels. Deep enough that a class of an hour and a
  *  quarter has room for its code, its name and its section. */
@@ -106,7 +98,7 @@ function CourseCard({
       <div className="flex w-full items-stretch pr-3">
         <span
           aria-hidden="true"
-          className={cn("w-1 shrink-0", course.accent ? ACCENT[course.accent] : "bg-gray-40")}
+          className={cn("w-1 shrink-0", accentBar(course, term))}
         />
         <label
           onClick={onOpen}
@@ -322,7 +314,7 @@ function Sidebar({
               key={activity.id}
               className="flex w-full items-stretch overflow-hidden rounded-md border border-gray-40 bg-card"
             >
-              <span aria-hidden="true" className="w-1 shrink-0 bg-gray-40" />
+              <span aria-hidden="true" className={cn("w-1 shrink-0", accentBar(activity, term))} />
               <span className="flex min-w-0 flex-1 flex-col gap-1 p-3">
                 <span className="text-body-md font-semibold text-gray-100">{activity.name}</span>
                 {activity.meetings && (
@@ -539,7 +531,7 @@ function Week({
                         aria-hidden="true"
                         className={cn(
                           "w-1 shrink-0 opacity-50",
-                          course.accent ? ACCENT[course.accent] : "bg-gray-40"
+                          accentBar(course, term)
                         )}
                       />
                       <span className="flex min-w-0 flex-1 flex-col gap-1 p-2">
@@ -577,7 +569,7 @@ function Week({
                         aria-hidden="true"
                         className={cn(
                           "w-1 shrink-0",
-                          course.accent ? ACCENT[course.accent] : "bg-gray-40"
+                          accentBar(course, term)
                         )}
                       />
                       <span className="flex min-w-0 flex-1 flex-col gap-1 p-2">

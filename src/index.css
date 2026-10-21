@@ -45,18 +45,19 @@
   /* Warning at full contrast, for a mark that has to read at 14px. */
   --stellic-warning-100: #d57800;
 
-  /* Course accents. The design names the green and the purple Accent 4 and
-     Accent 6; the amber is a raw value in the file. A course keeps its colour
-     wherever it appears — the card in the list and the block on the calendar. */
-  --stellic-accent-green: #90be6d;
+  /* The amber of a registered course: a status colour, and the only accent
+     that is still used as one. */
   --stellic-accent-amber: #f9a825;
-  --stellic-accent-purple: #ac76da;
-  --stellic-accent-brown: #8d6e63;
-  /* A term holds up to six courses under the credit ceiling, and four colours
-     cannot give six of them one each. These two keep the muted key of the
-     other four. */
-  --stellic-accent-teal: #4a9e9b;
-  --stellic-accent-rose: #cf7189;
+  /* What tells one course from another on the scheduler: the card in the list
+     and the block on the calendar. Blues and purples only, so none of them can
+     be read as a status — green is done, orange is registered, amber is
+     planned — and no two of them sit close to each other. */
+  --stellic-course-navy: #1f3a93;
+  --stellic-course-sky: #70c3fb;
+  --stellic-course-magenta: #c653d4;
+  --stellic-course-blue: #2f7df0;
+  --stellic-course-lavender: #b6a8f4;
+  --stellic-course-violet: #6a3fd8;
 
   --stellic-alert-5: #ffeaea;
   --stellic-alert-50: #d30303;
@@ -158,12 +159,13 @@
   --color-warning-50: var(--stellic-warning-50);
   --color-warning-75: var(--stellic-warning-75);
   --color-warning-100: var(--stellic-warning-100);
-  --color-accent-green: var(--stellic-accent-green);
   --color-accent-amber: var(--stellic-accent-amber);
-  --color-accent-purple: var(--stellic-accent-purple);
-  --color-accent-brown: var(--stellic-accent-brown);
-  --color-accent-teal: var(--stellic-accent-teal);
-  --color-accent-rose: var(--stellic-accent-rose);
+  --color-course-navy: var(--stellic-course-navy);
+  --color-course-sky: var(--stellic-course-sky);
+  --color-course-magenta: var(--stellic-course-magenta);
+  --color-course-blue: var(--stellic-course-blue);
+  --color-course-lavender: var(--stellic-course-lavender);
+  --color-course-violet: var(--stellic-course-violet);
   --color-alert-5: var(--stellic-alert-5);
   --color-alert-50: var(--stellic-alert-50);
   --color-alert-100: var(--stellic-alert-100);

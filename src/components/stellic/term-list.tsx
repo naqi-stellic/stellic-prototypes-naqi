@@ -3,6 +3,7 @@ import { cn } from "cn"
 import { useDroppable } from "@dnd-kit/core"
 
 import { Icon, type IconName } from "@/components/icon"
+import { accentBar } from "@/components/stellic/course-accent"
 import { AddToTerm } from "@/components/stellic/add-to-term"
 import type { CatalogEntry } from "@/data/catalog"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
@@ -22,15 +23,6 @@ import {
 /* A term as a list: every class it holds, and what still has to be settled
  * before any of it can be registered. This is all a term can show until its
  * schedule is published. */
-
-const ACCENT: Record<string, string> = {
-  green: "bg-accent-green",
-  amber: "bg-accent-amber",
-  purple: "bg-accent-purple",
-  brown: "bg-accent-brown",
-  teal: "bg-accent-teal",
-  rose: "bg-accent-rose",
-}
 
 function Empty({ children }: { children: string }) {
   return (
@@ -82,14 +74,11 @@ function CardHeader({
 }
 
 /** The bar down the left of every row, which is where a course's colour lives. */
-function Accent({ course }: { course?: PlannedCourse }) {
+function Accent({ course, term }: { course?: PlannedCourse; term?: Term }) {
   return (
     <span
       aria-hidden="true"
-      className={cn(
-        "w-1 shrink-0 self-stretch",
-        course?.accent ? ACCENT[course.accent] : "bg-gray-40"
-      )}
+      className={cn("w-1 shrink-0 self-stretch", accentBar(course, term))}
     />
   )
 }
@@ -135,7 +124,7 @@ function CourseRow({
           )}
           onClick={onOpenSeat}
         >
-          <Accent course={course} />
+          <Accent course={course} term={term} />
           <p className="min-w-0 flex-1 truncate px-6 py-2 text-body-md text-gray-80">
             {course.seat.name}
           </p>
@@ -147,7 +136,7 @@ function CourseRow({
           mark ? mark.card : held ? "bg-gray-0" : "bg-card"
         )}
       >
-        <Accent course={course} />
+        <Accent course={course} term={term} />
         <div
           onClick={onOpen}
           className={cn(
@@ -205,7 +194,7 @@ function CourseRow({
           unsettled one says what it is waiting for. */}
       {course.draft && (
         <div className={cn("flex w-full items-stretch", mark?.card)}>
-          <Accent course={course} />
+          <Accent course={course} term={term} />
           <span className="flex min-w-0 flex-1 items-center px-4 py-[9px]">
             <DraftNote course={course} />
           </span>
@@ -216,7 +205,7 @@ function CourseRow({
           and the same colour down its edge. */}
       {missing && !course.draft && (
         <div className={cn("flex w-full items-stretch", held ? "bg-gray-0" : "bg-card")}>
-          <Accent course={course} />
+          <Accent course={course} term={term} />
           <p className="flex min-w-0 flex-1 items-center gap-1 px-4 py-[9px] text-body-md text-gray-100">
             <Icon
               name={missing.severity === "error" ? "error-outline" : "warning"}

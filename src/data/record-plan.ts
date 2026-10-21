@@ -58,7 +58,7 @@ function scheduled(): Found[] {
 
 /** Course colours, handed out in order. A term of six is the most the credit
  *  ceiling allows, which is why there are six of them. */
-const ACCENTS = ["purple", "green", "amber", "teal", "brown", "rose"] as const
+const ACCENTS = ["navy", "sky", "magenta", "blue", "lavender", "violet"] as const
 
 const card = (found: Found, i: number, settled: boolean): PlannedCourse => ({
   id: `r${i}`,
