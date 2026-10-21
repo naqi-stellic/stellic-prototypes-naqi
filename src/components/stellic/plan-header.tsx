@@ -109,25 +109,62 @@ function CameFrom() {
  *  reads class names from the source and cannot see one assembled at runtime,
  *  so every step is written out. */
 const FIT: Record<number, { labels: string; icon: string }> = {
+  600: { labels: "@min-[641px]/toolbar:@max-[600px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[600px]/toolbar:size-9" },
+  620: { labels: "@min-[641px]/toolbar:@max-[620px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[620px]/toolbar:size-9" },
+  640: { labels: "@min-[641px]/toolbar:@max-[640px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[640px]/toolbar:size-9" },
+  660: { labels: "@min-[641px]/toolbar:@max-[660px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[660px]/toolbar:size-9" },
+  680: { labels: "@min-[641px]/toolbar:@max-[680px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[680px]/toolbar:size-9" },
+  700: { labels: "@min-[641px]/toolbar:@max-[700px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[700px]/toolbar:size-9" },
+  720: { labels: "@min-[641px]/toolbar:@max-[720px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[720px]/toolbar:size-9" },
+  740: { labels: "@min-[641px]/toolbar:@max-[740px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[740px]/toolbar:size-9" },
+  760: { labels: "@min-[641px]/toolbar:@max-[760px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[760px]/toolbar:size-9" },
+  780: { labels: "@min-[641px]/toolbar:@max-[780px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[780px]/toolbar:size-9" },
+  800: { labels: "@min-[641px]/toolbar:@max-[800px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[800px]/toolbar:size-9" },
+  820: { labels: "@min-[641px]/toolbar:@max-[820px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[820px]/toolbar:size-9" },
+  840: { labels: "@min-[641px]/toolbar:@max-[840px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[840px]/toolbar:size-9" },
+  860: { labels: "@min-[641px]/toolbar:@max-[860px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[860px]/toolbar:size-9" },
   880: { labels: "@min-[641px]/toolbar:@max-[880px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[880px]/toolbar:size-9" },
+  900: { labels: "@min-[641px]/toolbar:@max-[900px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[900px]/toolbar:size-9" },
   920: { labels: "@min-[641px]/toolbar:@max-[920px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[920px]/toolbar:size-9" },
+  940: { labels: "@min-[641px]/toolbar:@max-[940px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[940px]/toolbar:size-9" },
   960: { labels: "@min-[641px]/toolbar:@max-[960px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[960px]/toolbar:size-9" },
+  980: { labels: "@min-[641px]/toolbar:@max-[980px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[980px]/toolbar:size-9" },
   1000: { labels: "@min-[641px]/toolbar:@max-[1000px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1000px]/toolbar:size-9" },
+  1020: { labels: "@min-[641px]/toolbar:@max-[1020px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1020px]/toolbar:size-9" },
   1040: { labels: "@min-[641px]/toolbar:@max-[1040px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1040px]/toolbar:size-9" },
+  1060: { labels: "@min-[641px]/toolbar:@max-[1060px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1060px]/toolbar:size-9" },
   1080: { labels: "@min-[641px]/toolbar:@max-[1080px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1080px]/toolbar:size-9" },
+  1100: { labels: "@min-[641px]/toolbar:@max-[1100px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1100px]/toolbar:size-9" },
   1120: { labels: "@min-[641px]/toolbar:@max-[1120px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1120px]/toolbar:size-9" },
+  1140: { labels: "@min-[641px]/toolbar:@max-[1140px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1140px]/toolbar:size-9" },
   1160: { labels: "@min-[641px]/toolbar:@max-[1160px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1160px]/toolbar:size-9" },
+  1180: { labels: "@min-[641px]/toolbar:@max-[1180px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1180px]/toolbar:size-9" },
   1200: { labels: "@min-[641px]/toolbar:@max-[1200px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1200px]/toolbar:size-9" },
+  1220: { labels: "@min-[641px]/toolbar:@max-[1220px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1220px]/toolbar:size-9" },
   1240: { labels: "@min-[641px]/toolbar:@max-[1240px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1240px]/toolbar:size-9" },
+  1260: { labels: "@min-[641px]/toolbar:@max-[1260px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1260px]/toolbar:size-9" },
   1280: { labels: "@min-[641px]/toolbar:@max-[1280px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1280px]/toolbar:size-9" },
+  1300: { labels: "@min-[641px]/toolbar:@max-[1300px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1300px]/toolbar:size-9" },
   1320: { labels: "@min-[641px]/toolbar:@max-[1320px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1320px]/toolbar:size-9" },
+  1340: { labels: "@min-[641px]/toolbar:@max-[1340px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1340px]/toolbar:size-9" },
   1360: { labels: "@min-[641px]/toolbar:@max-[1360px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1360px]/toolbar:size-9" },
+  1380: { labels: "@min-[641px]/toolbar:@max-[1380px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1380px]/toolbar:size-9" },
   1400: { labels: "@min-[641px]/toolbar:@max-[1400px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1400px]/toolbar:size-9" },
+  1420: { labels: "@min-[641px]/toolbar:@max-[1420px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1420px]/toolbar:size-9" },
   1440: { labels: "@min-[641px]/toolbar:@max-[1440px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1440px]/toolbar:size-9" },
+  1460: { labels: "@min-[641px]/toolbar:@max-[1460px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1460px]/toolbar:size-9" },
   1480: { labels: "@min-[641px]/toolbar:@max-[1480px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1480px]/toolbar:size-9" },
+  1500: { labels: "@min-[641px]/toolbar:@max-[1500px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1500px]/toolbar:size-9" },
   1520: { labels: "@min-[641px]/toolbar:@max-[1520px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1520px]/toolbar:size-9" },
+  1540: { labels: "@min-[641px]/toolbar:@max-[1540px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1540px]/toolbar:size-9" },
   1560: { labels: "@min-[641px]/toolbar:@max-[1560px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1560px]/toolbar:size-9" },
+  1580: { labels: "@min-[641px]/toolbar:@max-[1580px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1580px]/toolbar:size-9" },
   1600: { labels: "@min-[641px]/toolbar:@max-[1600px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1600px]/toolbar:size-9" },
+  1620: { labels: "@min-[641px]/toolbar:@max-[1620px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1620px]/toolbar:size-9" },
+  1640: { labels: "@min-[641px]/toolbar:@max-[1640px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1640px]/toolbar:size-9" },
+  1660: { labels: "@min-[641px]/toolbar:@max-[1660px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1660px]/toolbar:size-9" },
+  1680: { labels: "@min-[641px]/toolbar:@max-[1680px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1680px]/toolbar:size-9" },
+  1700: { labels: "@min-[641px]/toolbar:@max-[1700px]/toolbar:hidden", icon: "@min-[641px]/toolbar:@max-[1700px]/toolbar:size-9" },
 }
 const FIT_STEPS = Object.keys(FIT).map(Number)
 
@@ -202,37 +239,45 @@ export function PlanHeader({
   /* Only the actions this page will draw: Add remaining goes where there is
      no panel for it to open. */
   const shown = actions.filter((action) => !action.sidebar || sidebar)
-  /* The plan switcher, Course details, Complete my plan, Request review and the
-     more menu with their words and gaps; a fourth action takes another button. */
-  const actionsWidth = 795 + (shown.length >= 4 ? 200 : 0)
-  /* The crumbs alone; the term's switch beside them; the review tag; the
-     student's name where staff are looking at a plan. */
+  /* Widths of the toolbar's content, measured off the rendered rows. Words go in
+     stages as the bar narrows: the switch first, then the two that say which
+     plan and how it looks, and only last the ones that do something to it,
+     since those are what the page is for. */
+  const group1Full = 318 // My Plan and Course details, with words, a badge and carets
+  const group1Icons = 80
+  const group2Full = 377 + (shown.length >= 4 ? 200 : 0) // Complete my plan, Request review, more
+  const divider = 33
+  const gap = 16
+  /* The crumbs alone; the term's switch beside them, with its words and without;
+     the review tag; the student's name where staff are looking at a plan. */
   const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
+  const leftFull = (view ? 440 : 85) + beside
+  const leftSwitchIcons = (view ? 330 : 85) + beside
   const stepFor = (need: number) =>
     FIT[FIT_STEPS.find((width) => width >= need) ?? FIT_STEPS[FIT_STEPS.length - 1]]
-  /* The switch goes to its glyphs first: with its words it is the widest thing
-     in the bar and the least needed, so the buttons keep theirs until it has
-     given up its own. */
-  const switchFit = stepFor((view ? 440 : 115) + beside + actionsWidth + 64)
-  const fit = stepFor((view ? 330 : 115) + beside + actionsWidth + 64)
-  const labelsGo = fit.labels
-  const iconOnly = fit.icon
+  const switchFit = stepFor(leftFull + gap + group1Full + divider + group2Full)
+  const fit1 = stepFor(leftSwitchIcons + gap + group1Full + divider + group2Full)
+  const fit2 = stepFor(leftSwitchIcons + gap + group1Icons + divider + group2Full)
   /* On a phone the two buttons of the first row each take half of it. */
   const fillRow = "@max-[640px]/toolbar:flex-1"
 
-  /* Whether the actions have lost their words, which is when a button needs
-     another way to say what it is. Read off the label itself, since the
-     toolbar's own width is what hid it and CSS is the only thing that knows
-     where that happens. */
+  /* Whether a group has lost its words, which is when its buttons need another
+     way to say what they are. Read off the label itself, since the toolbar's
+     own width is what hid it and CSS is the only thing that knows where. */
   const actionsRef = useRef<HTMLDivElement>(null)
-  const [collapsed, setCollapsed] = useState(false)
+  const [collapsed1, setCollapsed1] = useState(false)
+  const [collapsed2, setCollapsed2] = useState(false)
   useEffect(() => {
     const row = actionsRef.current
     const bar = row?.parentElement
     if (!row || !bar) return
+    const hidden = (group: string) => {
+      const label = row.querySelector<HTMLElement>(`[data-group="${group}"] [data-action-label]`)
+      return label != null && label.offsetParent === null
+    }
     const read = () => {
-      const label = row.querySelector<HTMLElement>("[data-action-label]")
-      setCollapsed(label != null && label.offsetParent === null)
+      setCollapsed1(hidden("1"))
+      setCollapsed2(hidden("2"))
     }
     read()
     const watch = new ResizeObserver(read)
@@ -242,6 +287,9 @@ export function PlanHeader({
 
   /* One of the plan's buttons, with the menu it opens where it opens one. */
   const renderAction = (action: PlanAction) => {
+    const labelsGo = (action.fields ? fit1 : fit2).labels
+    const iconOnly = (action.fields ? fit1 : fit2).icon
+    const collapsed = action.fields ? collapsed1 : collapsed2
     const button = (
       <Button
         aria-pressed={
@@ -369,8 +417,12 @@ export function PlanHeader({
         >
           {/* On a phone the two that say which plan and how it looks share a
               row, each half of it. */}
-          <div className="flex items-center gap-2 @max-[640px]/toolbar:w-full">
-            <PlanSwitcher labelsGo={labelsGo} iconOnly={cn(iconOnly, fillRow)} collapsed={collapsed} />
+          <div data-group="1" className="flex items-center gap-2 @max-[640px]/toolbar:w-full">
+            <PlanSwitcher
+              labelsGo={fit1.labels}
+              iconOnly={cn(fit1.icon, fillRow)}
+              collapsed={collapsed1}
+            />
             {viewActions.map(renderAction)}
           </div>
           {/* The line between the two groups, which a phone does not need: the
@@ -379,7 +431,7 @@ export function PlanHeader({
           {/* The three that do something to the plan stay in the row with the rest.
               The moment the bar is narrow enough to put them on a line of their
               own they go, since a plan on a phone is for reading. */}
-          <div className="flex items-center gap-2 @max-[640px]/toolbar:hidden">
+          <div data-group="2" className="flex items-center gap-2 @max-[640px]/toolbar:hidden">
             {doActions.map(renderAction)}
             <Tooltip>
               <TooltipTrigger asChild>
