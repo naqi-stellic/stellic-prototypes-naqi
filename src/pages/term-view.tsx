@@ -66,8 +66,8 @@ function RegistrationAlert({
           /* The rule the toolbar carries when it holds moves down to whatever
              is last in the stack, so the block ends on one line rather than
              two — and the plan scrolling under it has an edge to pass. */
-          ? "border-y px-6 py-3"
-          : "rounded-md border px-[23px] py-[15px]",
+          ? "border-y px-4 py-3 sm:px-6"
+          : "rounded-md border px-4 py-3 sm:px-[23px] sm:py-[15px]",
         done ? "border-success-100 bg-success-5" : "border-gray-40 bg-primary-0"
       )}
     >
@@ -76,9 +76,11 @@ function RegistrationAlert({
         size={16}
         className={cn("shrink-0", done ? "text-success-100" : "text-primary-100")}
       />
-      <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
+      {/* A line of its own on a phone, with room to wrap, so the date is never
+          behind the button; the button drops under it. */}
+      <span className="flex min-w-[12rem] flex-1 flex-wrap items-center gap-x-2">
         <span className="text-caption-lg font-semibold">{banner.title}</span>
-        <span className="whitespace-nowrap">
+        <span className="sm:whitespace-nowrap">
           {banner.closesLabel}: {term.alert?.closes}
         </span>
         {banner.note && <span className="basis-full text-gray-80">{banner.note}</span>}
@@ -96,7 +98,12 @@ function RegistrationAlert({
           it is, but a button offering to register none of them is not an
           offer, so it goes rather than greying out. */}
       {banner.register != null && (
-        <Button variant="primary" size="sm" className="shrink-0" onClick={onRegister}>
+        <Button
+          variant="primary"
+          size="sm"
+          className="shrink-0 max-sm:w-full"
+          onClick={onRegister}
+        >
           Register {banner.register} course{banner.register === 1 ? "" : "s"}
         </Button>
       )}
