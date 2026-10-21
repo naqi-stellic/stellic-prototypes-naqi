@@ -469,18 +469,31 @@ export function PlanYourPath({
      counted as the credit it is. */
   const standing = planStanding(years, incomingTotals(incoming))
   /* Where the student stands, for the meters under the header: what they have
-     done, are doing and have placed, and what has no term yet. */
+     done, are doing and have placed, and what has no term yet. Read off what is
+     on screen, so while a generated plan is showing it counts everything that
+     plan adds, and leaves out what it takes away or moves off the term it
+     stood in. */
+  const onScreen = shown.map((year) => ({
+    ...year,
+    terms: year.terms.map((term) => ({
+      ...term,
+      courses: term.courses.filter(
+        (c) => c.draft?.mark !== "removed" && c.draft?.mark !== "moved"
+      ),
+    })),
+  }))
+  const onScreenStanding = planStanding(onScreen, incomingTotals(incoming))
   const progress: PlanProgressData = {
     courses: {
-      done: standing.completed.reqs,
-      going: standing.inProgress.reqs,
-      planned: standing.planned.reqs,
+      done: onScreenStanding.completed.reqs,
+      going: onScreenStanding.inProgress.reqs,
+      planned: onScreenStanding.planned.reqs,
       remaining: requirements.length,
     },
     credits: {
-      done: standing.completed.credits,
-      going: standing.inProgress.credits,
-      planned: standing.planned.credits,
+      done: onScreenStanding.completed.credits,
+      going: onScreenStanding.inProgress.credits,
+      planned: onScreenStanding.planned.credits,
       remaining: requirements.length * CREDITS_PER_COURSE,
     },
   }
