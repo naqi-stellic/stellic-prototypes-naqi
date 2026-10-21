@@ -60,7 +60,6 @@ import {
   STREAM_MS,
   YearSection,
 } from "@/components/stellic/planner"
-import { AddSlot } from "@/components/stellic/primitives"
 import {
   Alert,
   AlertBody,
@@ -1295,7 +1294,7 @@ export function PlanYourPath({
 
           {/* Keyed on the option so switching one replays the entrances rather
               than swapping the cards in place. */}
-          <div key={draft ? `draft-${streamId}` : "plan"} className="contents">
+          <div key={draft ? `draft-${streamId}` : "plan"} className="flex flex-col gap-6">
             {shown.map((year) => (
               <YearSection
                 key={year.label}
@@ -1335,17 +1334,19 @@ export function PlanYourPath({
           </div>
 
           {/* ---------------------------------- Add year */}
-          <section className="flex items-start gap-4">
-            <div className="flex w-6 shrink-0 flex-col items-center justify-center self-stretch">
+          {/* The timeline's last marker, and a link beside it. */}
+          <div className="flex items-center gap-4">
+            <div className="flex w-6 shrink-0 items-center justify-center">
               <Icon name="fiber-manual-record" size={24} className="text-gray-40" />
             </div>
-            <AddSlot
-              tone="year"
+            <button
+              type="button"
               onClick={() => setYears((current) => addYear(current))}
+              className="w-fit cursor-pointer text-h300 font-semibold text-gray-80 underline [text-underline-position:from-font]"
             >
               + Add Year {nextYearNumber(shown)}
-            </AddSlot>
-          </section>
+            </button>
+          </div>
 
           {/* What came in with the student sits last: it is behind them, and
               what is still to plan is the reason to be here. */}
