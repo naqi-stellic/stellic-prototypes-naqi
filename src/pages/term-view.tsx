@@ -58,7 +58,7 @@ function RegistrationAlert({
     /* The header block's negative margin eats the gap the page would put
        after it, so a banner at rest carries its own clearance from whatever
        is under it. */
-    <div className="w-full">
+    <div className={cn("w-full", stuck ? "" : "px-6 pb-6")}>
     <div
       className={cn(
         "flex w-full flex-wrap items-center gap-2 text-body-md",
@@ -77,7 +77,7 @@ function RegistrationAlert({
         className={cn("shrink-0", done ? "text-success-100" : "text-primary-100")}
       />
       <span className="flex min-w-0 flex-1 flex-wrap items-center gap-x-2">
-        <span className="font-semibold">{banner.title}</span>
+        <span className="text-caption-lg font-semibold">{banner.title}</span>
         <span className="whitespace-nowrap">
           {banner.closesLabel}: {term.alert?.closes}
         </span>
@@ -290,21 +290,21 @@ export function TermView({
           ) : undefined
         }
         /* How the term is read, beside where it is. */
-        view={
+        view={(labelsGo) => (
           <Tabs value={mode} onValueChange={setMode}>
             <TabsList>
-              <TabsTrigger value="list">
+              <TabsTrigger value="list" aria-label="List">
                 <Icon name="list" size={16} />
-                List
+                <span className={labelsGo}>List</span>
               </TabsTrigger>
               {/* Nothing to draw until the schedule is out. */}
-              <TabsTrigger value="calendar" disabled={!term.scheduled}>
+              <TabsTrigger value="calendar" aria-label="Calendar" disabled={!term.scheduled}>
                 <Icon name="calendar-month" size={16} />
-                Calendar
+                <span className={labelsGo}>Calendar</span>
               </TabsTrigger>
             </TabsList>
           </Tabs>
-        }
+        )}
         /* The registration window holds at the top with the toolbar. Only
            this one: a warning is about a course you can scroll to, and it
            belongs beside the term it is about. */

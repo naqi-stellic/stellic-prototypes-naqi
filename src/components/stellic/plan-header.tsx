@@ -102,6 +102,32 @@ function CameFrom() {
   )
 }
 
+/** The toolbar widths at which the actions give up their words, in steps. Tailwind
+ *  reads class names from the source and cannot see one assembled at runtime,
+ *  so every step is written out. */
+const FIT: Record<number, { labels: string; icon: string }> = {
+  880: { labels: "@max-[880px]/toolbar:hidden", icon: "@max-[880px]/toolbar:size-9" },
+  920: { labels: "@max-[920px]/toolbar:hidden", icon: "@max-[920px]/toolbar:size-9" },
+  960: { labels: "@max-[960px]/toolbar:hidden", icon: "@max-[960px]/toolbar:size-9" },
+  1000: { labels: "@max-[1000px]/toolbar:hidden", icon: "@max-[1000px]/toolbar:size-9" },
+  1040: { labels: "@max-[1040px]/toolbar:hidden", icon: "@max-[1040px]/toolbar:size-9" },
+  1080: { labels: "@max-[1080px]/toolbar:hidden", icon: "@max-[1080px]/toolbar:size-9" },
+  1120: { labels: "@max-[1120px]/toolbar:hidden", icon: "@max-[1120px]/toolbar:size-9" },
+  1160: { labels: "@max-[1160px]/toolbar:hidden", icon: "@max-[1160px]/toolbar:size-9" },
+  1200: { labels: "@max-[1200px]/toolbar:hidden", icon: "@max-[1200px]/toolbar:size-9" },
+  1240: { labels: "@max-[1240px]/toolbar:hidden", icon: "@max-[1240px]/toolbar:size-9" },
+  1280: { labels: "@max-[1280px]/toolbar:hidden", icon: "@max-[1280px]/toolbar:size-9" },
+  1320: { labels: "@max-[1320px]/toolbar:hidden", icon: "@max-[1320px]/toolbar:size-9" },
+  1360: { labels: "@max-[1360px]/toolbar:hidden", icon: "@max-[1360px]/toolbar:size-9" },
+  1400: { labels: "@max-[1400px]/toolbar:hidden", icon: "@max-[1400px]/toolbar:size-9" },
+  1440: { labels: "@max-[1440px]/toolbar:hidden", icon: "@max-[1440px]/toolbar:size-9" },
+  1480: { labels: "@max-[1480px]/toolbar:hidden", icon: "@max-[1480px]/toolbar:size-9" },
+  1520: { labels: "@max-[1520px]/toolbar:hidden", icon: "@max-[1520px]/toolbar:size-9" },
+  1560: { labels: "@max-[1560px]/toolbar:hidden", icon: "@max-[1560px]/toolbar:size-9" },
+  1600: { labels: "@max-[1600px]/toolbar:hidden", icon: "@max-[1600px]/toolbar:size-9" },
+}
+const FIT_STEPS = Object.keys(FIT).map(Number)
+
 export function PlanHeader({
   actions,
   tabs,
@@ -124,11 +150,14 @@ export function PlanHeader({
   /** Where the term stands with the advisor, right after its name. */
   status?: ReactNode
   /** How the page is read, beside the crumbs: a term's list or its calendar. */
-  view?: ReactNode
+  view?: (labelsGo: string) => ReactNode
   /** Where the student stands, as the two meters under the bar. */
   progress?: PlanProgressData
-  /** A banner under the meters: the registration window, say, for the term
-   *  being read. It is in the page, so it scrolls away with it. */
+  /** A banner that holds at the top with the toolbar rather than scrolling
+   *  away under it: the registration window, say, which is the one thing worth
+   *  keeping in reach the whole way down a term. It is given whether the
+   *  toolbar is holding, because a card in the page and a strip pinned to the
+   *  top are not the same shape. */
   banner?: (stuck: boolean) => ReactNode
   /** Whether the toggling action is currently showing its panel. */
   pressed?: boolean
@@ -148,43 +177,44 @@ export function PlanHeader({
   useEffect(() => {
     const pane = sentinel.current?.closest("main")
     if (!pane) return
-    const read = () => setStuck(pane.scrollTop > 4)
+    /* Two distances, not one: a banner turning from a card into a strip is
+       shorter, and a page with little to scroll would otherwise let go the
+       moment it took hold. */
+    const read = () => setStuck((held) => (held ? pane.scrollTop > 2 : pane.scrollTop > 16))
     read()
     pane.addEventListener("scroll", read, { passive: true })
     return () => pane.removeEventListener("scroll", read)
   }, [])
 
-  /* Narrow, the actions lose their words rather than their line.
+  /* Narrow, the actions lose their words rather than their line, but only when
+   * the row would not hold them.
    *
-   * The toolbar is two groups — which years are in view, and what can be done
-   * to the plan — and a second row of buttons pushes the plan itself further
-   * down the page every time it holds at the top. The years cannot shorten:
-   * "2027-2028" is the whole of what that button says. The actions can, because
-   * each already carries the glyph that names it.
-   *
-   * Against the toolbar's own width rather than the window's: the planner's
-   * pane is resizable and the panel beside it opens and closes, so the window
-   * is not what decides how much room this row has.
-   *
-   * Where each step happens depends on how many actions there are, Add
-   * remaining courses not counted: two of them are 377px of buttons, three
-   * are 560px — a term view carries Generate
-   * Schedule, which is the longest label any of them has — and the years are
-   * 541px beside them. All four widths are measured off the rendered rows
-   * rather than guessed, and written out in full because Tailwind reads the
-   * source for class names and cannot see one assembled at runtime. */
+   * The bar is two groups: where you are, and what can be done to the plan. How
+   * much room the actions need depends on what stands beside them — a term has
+   * the list and calendar switch and sometimes a review tag, a staff member has
+   * the student's name in front — and on how many actions there are, so the
+   * width at which the words go is worked out from those, measured off the
+   * rendered rows, and not one number for every page. Against the toolbar's own
+   * width, since the pane resizes and the panel beside it comes and goes. */
   /* Only the actions this page will draw: Add remaining goes where there is
      no panel for it to open. */
   const shown = actions.filter((action) => !action.sidebar || sidebar)
-  /* The plan switcher stands in the row as well, so three actions here are four. */
-  const crowded = shown.length >= 3
+  /* The plan switcher, Course details, Complete my plan, Request review and the
+     more menu with their words and gaps; a fourth action takes another button. */
+  const actionsWidth = 725 + (shown.length >= 4 ? 200 : 0)
+  /* The crumbs alone; the term's switch beside them; the review tag; the
+     student's name where staff are looking at a plan. */
+  const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
+  const stepFor = (need: number) =>
+    FIT[FIT_STEPS.find((width) => width >= need) ?? FIT_STEPS[FIT_STEPS.length - 1]]
+  /* The switch goes to its glyphs first: with its words it is the widest thing
+     in the bar and the least needed, so the buttons keep theirs until it has
+     given up its own. */
+  const switchFit = stepFor((view ? 440 : 115) + beside + actionsWidth + 64)
+  const fit = stepFor((view ? 330 : 115) + beside + actionsWidth + 64)
+  const labelsGo = fit.labels
+  const iconOnly = fit.icon
 
-  /* Step one: the actions keep their glyphs and lose their words. */
-  /* Add remaining courses carries its words too, which is 148px more row
-     (its label measures 130 at button-md, plus the gap and the padding an
-     icon button does not have), so each step comes that much sooner. */
-  const labelsGo = crowded ? "@max-[1280px]/toolbar:hidden" : "@max-[1110px]/toolbar:hidden"
-  const iconOnly = crowded ? "@max-[1280px]/toolbar:size-9" : "@max-[1110px]/toolbar:size-9"
   /* Whether the actions have lost their words, which is when a button needs
      another way to say what it is. Read off the label itself, since the
      toolbar's own width is what hid it and CSS is the only thing that knows
@@ -329,12 +359,14 @@ export function PlanHeader({
   return (
     <>
       {/* Where you are, and what can be done to the plan: one bar, which holds
-          at the top. Under it, where the plan stands. */}
+          at the top, with the registration window held under it. */}
       <div className="sticky -top-6 z-20 -m-6 flex flex-col">
         <div
           className={cn(
-            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-4 transition-colors",
-            stuck ? "border-gray-40" : "border-transparent",
+            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-6 transition-colors",
+            /* The edge belongs to the bottom of the block, not to this row: where
+               a banner is held under it, the banner carries it. */
+            stuck && !banner ? "border-gray-40" : "border-transparent",
             stuck && "bg-card"
           )}
         >
@@ -343,16 +375,14 @@ export function PlanHeader({
               <Crumbs tabs={tabs} term={term} />
               {status}
             </div>
-            {view}
+            {view?.(switchFit.labels)}
           </div>
           {actionButtons}
         </div>
+        {banner?.(stuck)}
       </div>
       <span ref={sentinel} aria-hidden="true" className="hidden" />
       {progress && <PlanProgress progress={progress} />}
-      {/* Under the meters, in the page like anything else: it is about the term
-          you are reading, and it scrolls away with it. */}
-      {banner?.(false)}
     </>
   )
 }
