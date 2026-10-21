@@ -1,5 +1,5 @@
 import { cn } from "cn"
-import { Fragment, useState, type ReactElement, type ReactNode } from "react"
+import { useState, type ReactNode } from "react"
 
 import { Icon, type IconName } from "@/components/icon"
 import { useIsStaff } from "@/components/layout/section"
@@ -50,44 +50,34 @@ function Fact({ icon, children }: { icon?: IconName; children: ReactNode }) {
 export function ShareBar({
   shares,
   className,
-  segment,
-  dotted,
 }: {
   shares: { count: number; colour: string; dot?: string }[]
   className?: string
-  /** Wraps a share's length of the bar, for a page that says more on hover. */
-  segment?: (node: ReactElement, index: number) => ReactNode
-  /** Wraps a share's dot and count, likewise. */
-  dotted?: (node: ReactElement, index: number) => ReactNode
 }) {
   const total = shares.reduce((sum, share) => sum + share.count, 0)
 
   return (
     <div className={cn("flex w-full flex-col gap-2", className)}>
       <div className="flex h-2 w-full overflow-hidden rounded-full">
-        {shares.map((share, i) => {
-          const bar = (
-            <span
-              /* A white hairline between shares, as the frame draws it: two
-                 oranges meeting would otherwise read as one. */
-              className={cn(share.colour, i < shares.length - 1 && "border-r border-white")}
-              style={{ width: `${(share.count / total) * 100}%` }}
-            />
-          )
-          return <Fragment key={i}>{segment ? segment(bar, i) : bar}</Fragment>
-        })}
+        {shares.map((share, i) => (
+          <span
+            key={i}
+            /* A white hairline between shares, as the frame draws it: two
+               oranges meeting would otherwise read as one. */
+            className={cn(share.colour, i < shares.length - 1 && "border-r border-white")}
+            style={{ width: `${(share.count / total) * 100}%` }}
+          />
+        ))}
       </div>
       <div className="flex items-center gap-[17px]">
-        {shares.map((share, i) => {
-          if (!share.dot) return null
-          const dot = (
-            <span className="flex items-center gap-2 px-0.5">
+        {shares.map((share, i) =>
+          share.dot ? (
+            <span key={i} className="flex items-center gap-2 px-0.5">
               <span className={cn("size-2 shrink-0 rounded-full", share.dot)} />
               <span className="text-body-md text-gray-80">{share.count}</span>
             </span>
-          )
-          return <Fragment key={i}>{dotted ? dotted(dot, i) : dot}</Fragment>
-        })}
+          ) : null
+        )}
       </div>
     </div>
   )

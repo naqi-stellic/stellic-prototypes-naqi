@@ -13,7 +13,6 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { HoverCard } from "radix-ui"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ShareBar } from "@/components/stellic/student-profile"
 import { STUDENT } from "@/data/plan"
 
 /* The top of every plan screen: which plan, what it is for, and which years
@@ -248,7 +247,7 @@ export function PlanHeader({
   const gap = 16
   /* The crumbs alone; the term's switch beside them, with its words and without;
      the review tag; the student's name where staff are looking at a plan. */
-  const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
+  const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0) + (progress ? 455 : 0)
   const leftFull = (view ? 440 : 85) + beside
   const leftSwitchIcons = (view ? 330 : 85) + beside
   const stepFor = (need: number) =>
@@ -449,9 +448,13 @@ export function PlanHeader({
       {/* Where you are, and what can be done to the plan: one bar, which holds
           at the top, with the registration window held under it. */}
       <div className="sticky -top-6 z-20 -m-6 flex flex-col">
+        {progress && <PlanProgressBar progress={progress} />}
         <div
           className={cn(
-            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pt-6 pb-6 transition-colors max-sm:px-4",
+            "@container/toolbar flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b px-6 pb-6 transition-colors max-sm:px-4",
+            /* The bar takes its 6px off the top, so the name stands where it
+               does on a page with no bar, and opening a term does not move it. */
+            progress ? "pt-[18px]" : "pt-6",
             /* The edge belongs to the bottom of the block, not to this row: where
                a banner is held under it, the banner carries it. */
             stuck && !banner ? "border-gray-40" : "border-transparent",
@@ -463,6 +466,7 @@ export function PlanHeader({
               <Crumbs tabs={tabs} term={term} />
               {status}
             </div>
+            {progress && <PlanLegend progress={progress} />}
             {/* On a phone the switch has its words and stands at the right,
                 beside the crumbs or on the line under them. */}
             <div className="@max-[640px]/toolbar:ml-auto">{view?.(switchFit.labels)}</div>
@@ -472,7 +476,6 @@ export function PlanHeader({
         {banner?.(stuck)}
       </div>
       <span ref={sentinel} aria-hidden="true" className="hidden" />
-      {progress && <PlanProgress progress={progress} />}
     </>
   )
 }
@@ -496,7 +499,9 @@ function PlanSwitcher({
           <TooltipTrigger asChild>
             <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", iconOnly)}>
               <Icon name="route" size={16} />
-              <span data-action-label className={labelsGo}>
+              {/* A select's width, 140px with the icon and the chevron, so a
+                  longer plan name truncates rather than moving the toolbar. */}
+              <span data-action-label className={cn("w-[60px] truncate text-left", labelsGo)}>
                 My Plan
               </span>
               <Icon name="expand-more" size={16} className={labelsGo} />
@@ -561,61 +566,100 @@ export type PlanProgressData = {
 
 const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`
 
-function PlanProgress({ progress }: { progress: PlanProgressData }) {
+/** The four shares the planner is read in: done, registered, placed in a term
+ *  but not yet registered (which is where a generated plan lands), and what is
+ *  still to place. */
+function progressRows(progress: PlanProgressData) {
   const { courses, credits } = progress
-  const rows = [
-    { label: "Completed", count: courses.done, credits: credits.done, colour: "bg-success-50" },
-    { label: "In progress", count: courses.going, credits: credits.going, colour: "bg-warning-50" },
-    { label: "Planned", count: courses.planned, credits: credits.planned, colour: "bg-warning-25" },
-    { label: "Remaining", count: courses.remaining, credits: credits.remaining, colour: "bg-gray-40" },
+  return [
+    {
+      label: "Completed",
+      count: courses.done,
+      credits: credits.done,
+      bar: "bg-success-50",
+      dot: "bg-success-50",
+    },
+    {
+      label: "Registered",
+      count: courses.going,
+      credits: credits.going,
+      bar: "bg-warning-75",
+      dot: "bg-warning-50",
+    },
+    {
+      label: "Planned",
+      count: courses.planned,
+      credits: credits.planned,
+      bar: "bg-warning-25",
+      dot: "bg-warning-25",
+    },
+    {
+      label: "Remaining",
+      count: courses.remaining,
+      credits: credits.remaining,
+      bar: "bg-gray-40",
+      dot: "bg-gray-60",
+    },
   ]
+}
+
+/** A strip along the top edge of the page, under the app bar, edge to edge:
+ *  done, registered, planned, and what is left. Each share says where it stands on
+ *  hover, with the one being pointed at set in bold. */
+function PlanProgressBar({ progress }: { progress: PlanProgressData }) {
+  const rows = progressRows(progress)
+  const total = rows.reduce((sum, row) => sum + row.count, 0)
 
   return (
-    <TooltipProvider delayDuration={100}>
-      <div className="flex w-full max-w-[1024px] flex-col gap-2 pt-2">
-        <p className="text-caption-md font-medium text-gray-100">Courses</p>
-        {/* The bar the compliance screen draws, read off the planner's own
-            counts: done, under way, placed in a term, and still to place. */}
-        <ShareBar
-          shares={rows.map((row) => ({ count: row.count, colour: row.colour, dot: row.colour }))}
-          /* Its name, on its dot. */
-          dotted={(node, i) => (
-            <Tooltip>
-              <TooltipTrigger asChild>{node}</TooltipTrigger>
-              <TooltipContent>{rows[i].label}</TooltipContent>
-            </Tooltip>
-          )}
-          /* Its place among the others, on its length of the bar, with the one
-             being pointed at set in bold. */
-          segment={(node, i) => (
-            <HoverCard.Root openDelay={60} closeDelay={60}>
-              <HoverCard.Trigger asChild>{node}</HoverCard.Trigger>
-              <HoverCard.Portal>
-                <HoverCard.Content
-                  side="top"
-                  align="center"
-                  sideOffset={8}
-                  className="z-50 w-[340px] rounded-md border border-gray-40 bg-card p-4 text-body-md shadow-lg"
-                >
-                  <dl className="grid grid-cols-[110px_1fr] gap-x-4 gap-y-2">
-                    {rows.map((row, j) => (
-                      <div key={row.label} className="contents">
-                        <dt className={j === i ? "font-semibold text-gray-100" : "text-gray-80"}>
-                          {row.label}
-                        </dt>
-                        <dd className={j === i ? "font-semibold text-gray-100" : "text-gray-80"}>
-                          {plural(row.count, "course")} ({plural(row.credits, "credit")})
-                        </dd>
-                      </div>
-                    ))}
-                  </dl>
-                  <HoverCard.Arrow className="fill-card" />
-                </HoverCard.Content>
-              </HoverCard.Portal>
-            </HoverCard.Root>
-          )}
-        />
-      </div>
-    </TooltipProvider>
+    <div role="img" aria-label="Plan progress" className="flex h-1.5 w-full shrink-0">
+      {rows.map((row, i) => (
+        <HoverCard.Root key={row.label} openDelay={60} closeDelay={60}>
+          <HoverCard.Trigger asChild>
+            <span
+              /* A white hairline between shares, so two oranges meeting would
+                 not read as one. */
+              className={cn(row.bar, i < rows.length - 1 && "border-r border-white")}
+              style={{ width: `${(row.count / total) * 100}%` }}
+            />
+          </HoverCard.Trigger>
+          <HoverCard.Portal>
+            <HoverCard.Content
+              side="bottom"
+              align="center"
+              sideOffset={8}
+              className="z-50 w-[340px] rounded-md border border-gray-40 bg-card p-4 text-body-md shadow-lg"
+            >
+              <dl className="grid grid-cols-[110px_1fr] gap-x-4 gap-y-2">
+                {rows.map((other, j) => (
+                  <div key={other.label} className="contents">
+                    <dt className={j === i ? "font-semibold text-gray-100" : "text-gray-80"}>
+                      {other.label}
+                    </dt>
+                    <dd className={j === i ? "font-semibold text-gray-100" : "text-gray-80"}>
+                      {plural(other.count, "course")} ({plural(other.credits, "credit")})
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+              <HoverCard.Arrow className="fill-card" />
+            </HoverCard.Content>
+          </HoverCard.Portal>
+        </HoverCard.Root>
+      ))}
+    </div>
+  )
+}
+
+/** The strip's counts, in words, beside the page's name. */
+function PlanLegend({ progress }: { progress: PlanProgressData }) {
+  return (
+    <ul className="flex flex-wrap items-center gap-x-[17px] gap-y-1">
+      {progressRows(progress).map((row) => (
+        <li key={row.label} className="flex items-center gap-2 px-0.5 text-body-md text-gray-80">
+          <span aria-hidden="true" className={cn("size-2 shrink-0 rounded-full", row.dot)} />
+          {row.count} {row.label.toLowerCase()}
+        </li>
+      ))}
+    </ul>
   )
 }
