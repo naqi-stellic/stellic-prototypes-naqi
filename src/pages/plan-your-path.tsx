@@ -1334,11 +1334,9 @@ export function PlanYourPath({
           </div>
 
           {/* ---------------------------------- Add year */}
-          {/* The timeline's last marker, and a link beside it. */}
-          <div className="flex items-center gap-4">
-            <div className="flex w-6 shrink-0 items-center justify-center">
-              <Icon name="fiber-manual-record" size={24} className="text-gray-40" />
-            </div>
+          {/* A marker like a year's, and a link beside it. */}
+          <div className="flex items-center gap-2">
+            <Icon name="fiber-manual-record" size={20} className="shrink-0 text-gray-40" />
             <button
               type="button"
               onClick={() => setYears((current) => addYear(current))}
