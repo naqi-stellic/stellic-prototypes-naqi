@@ -2,8 +2,8 @@ import { cn } from "cn"
 import { useState, type ComponentProps, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
-import { PanelHeader } from "@/components/stellic/panel-header"
 import { AuditIcon } from "@/components/stellic/primitives"
+import { PanelHeader } from "@/components/stellic/panel-header"
 import { useRegistration } from "@/components/stellic/registration"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -56,6 +56,7 @@ export function Fold({
   extra,
   open,
   onToggle,
+  ruled = true,
   children
 }: {
   title: string
@@ -65,12 +66,20 @@ export function Fold({
   extra?: ReactNode
   open: boolean
   onToggle: () => void
+  /** Whether a rule stands above it. The first section may go without, where
+   *  what is above it already ends the block. */
+  ruled?: boolean
   children: ReactNode
 }) {
   return (
     /* Ruled above, and below too where it is the last of them, so the list
        of sections ends on a line rather than trailing into the panel. */
-    <section className="flex w-full flex-col border-t border-gray-40 last:border-b">
+    <section
+      className={cn(
+        "flex w-full flex-col last:border-b last:border-gray-40",
+        ruled && "border-t border-gray-40"
+      )}
+    >
       {/* The whole row folds it: the title's button reaches across the row,
           and anything else on the row sits above that reach. */}
       <div className="relative flex w-full items-center gap-2 px-6 py-4 transition-colors hover:bg-gray-0">
@@ -179,14 +188,8 @@ const AUDIT_STATE: Record<Stage, ComponentProps<typeof AuditIcon>["state"]> = {
   planned: "planned",
   registered: "pre-registered",
   progress: "registered",
-  taken: "completed"
+  taken: "completed",
 }
-
-/** The tab you are on reads as the section you are in: the light blue ground,
- *  the primary border and the primary type, not the heavy ring a pressed button
- *  gets. */
-const TAB_ACTIVE =
-  "data-[selected=true]:border-primary-50 data-[selected=true]:bg-primary-0 data-[selected=true]:text-primary-50 data-[selected=true]:shadow-none"
 
 const CATALOG = "catalog"
 /** Prefix for "just added to this term", until the plan says where it is. */
@@ -204,10 +207,13 @@ const STEP_MARK: Record<Step["state"], ReactNode> = {
 }
 
 function Checklist({
+  title,
   steps,
   onCalendar,
   onRegister
 }: {
+  /** The heading over the steps, with the way to see what is done beside it. */
+  title: string
   steps: Step[]
   onCalendar?: () => void
   onRegister?: () => void
@@ -221,7 +227,20 @@ function Checklist({
   const listed = putAway && !showDone ? steps.filter((step) => step.state !== "done") : steps
 
   return (
-    <div className="flex w-full flex-col gap-3">
+    <div className="flex w-full flex-col gap-4">
+      <div className="flex w-full items-center justify-between gap-4">
+        <h3 className="text-h300 font-semibold text-gray-100">{title}</h3>
+        {putAway && (
+          <button
+            type="button"
+            aria-expanded={showDone}
+            onClick={() => setShowDone((was) => !was)}
+            className="w-fit cursor-pointer text-body-md text-gray-80 underline [text-underline-position:from-font]"
+          >
+            {showDone ? "Hide completed" : `Show ${done} completed`}
+          </button>
+        )}
+      </div>
       <ol className="flex w-full flex-col gap-3">
         {listed.map((step) => (
           <li
@@ -255,16 +274,6 @@ function Checklist({
           </li>
         ))}
       </ol>
-      {putAway && (
-        <button
-          type="button"
-          aria-expanded={showDone}
-          onClick={() => setShowDone((was) => !was)}
-          className="w-fit cursor-pointer text-body-md text-gray-80 underline [text-underline-position:from-font]"
-        >
-          {showDone ? "Hide completed" : `Show ${done} completed`}
-        </button>
-      )}
     </div>
   )
 }
@@ -559,36 +568,43 @@ export function CoursePanel({
           </button>
         }
         footer={
+          /* Where the course is, as underlined tabs set from the left, down to
+             the head's rule: the active one is blue, with its underline over
+             the rule. */
           <div
             role="tablist"
             aria-label="Where this course is"
-            className="flex w-full flex-wrap gap-2"
+            className="-mx-6 -mb-6 flex w-[calc(100%+3rem)] px-3"
           >
-            {instances.map((instance) => {
-              const key = keyOf(instance)
+            {[
+              ...instances.map((instance) => ({ key: keyOf(instance), label: instance.term.name })),
+              { key: CATALOG, label: "Catalog" },
+            ].map((item) => {
+              const on = selected === item.key
               return (
-                <Button
-                  key={key}
+                <button
+                  key={item.key}
+                  type="button"
                   role="tab"
-                  aria-selected={selected === key}
-                  selected={selected === key}
-                  className={TAB_ACTIVE}
-                  onClick={() => setTab(key)}
+                  aria-selected={on}
+                  onClick={() => setTab(item.key)}
+                  className="flex h-[38px] min-w-0 cursor-pointer flex-col justify-between"
                 >
-                  {instance.term.name}
-                </Button>
+                  <span
+                    className={cn(
+                      "flex flex-1 items-center truncate px-3 text-caption-lg font-semibold",
+                      on ? "text-primary-50" : "text-gray-100"
+                    )}
+                  >
+                    {item.label}
+                  </span>
+                  <span
+                    aria-hidden="true"
+                    className={cn("-mb-px h-0.5 w-full", on ? "bg-primary-50" : "bg-transparent")}
+                  />
+                </button>
               )
             })}
-            <Button
-              role="tab"
-              aria-selected={selected === CATALOG}
-              selected={selected === CATALOG}
-              className={TAB_ACTIVE}
-              onClick={() => setTab(CATALOG)}
-            >
-              <Icon name="menu-book" size={16} />
-              Catalog
-            </Button>
           </div>
         }
       />
@@ -949,12 +965,7 @@ function InstanceBody({
   const unmatched = stage === "taken" && grade === "F"
   const sectionsOut = term.scheduled === true || term.locked === true
   const planning = stage === "planned" || stage === "registered"
-  /* What is next, or — with everything done — nothing to open it for. */
-  const nothingNext = planningChecklist(term, course, met, registration).every(
-    (step) => step.state === "done"
-  )
   const [open, setOpen] = useState({
-    checklist: planning && !nothingNext,
     sections: planning && sectionsOut,
     canvas: stage === "progress",
     eligibility: planning && !met,
@@ -970,19 +981,19 @@ function InstanceBody({
 
   return (
     <>
-      <div className="flex flex-col gap-4 bg-gray-0 px-6 pt-4 pb-6">
+      <div className="flex flex-col gap-6 px-6 pt-4 pb-8">
         <div className="flex w-full items-center gap-2">
-          {/* The state's own mark stands beside its name, rather than on the
-              term's tab: the tab says where, this says how it stands. */}
-          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-caption-lg font-semibold text-gray-100">
-            <AuditIcon state={AUDIT_STATE[stage]} />
+          {/* The state, then the audit's own mark after it, so the plan and the
+              audit say the same thing in the same square. */}
+          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-h300 font-semibold text-gray-100">
             {STAGE_LABEL[stage]}
+            <AuditIcon state={AUDIT_STATE[stage]} />
           </h3>
           <CourseActions at={at} onRemove={onRemove} />
         </div>
         {(stage === "progress" || stage === "taken") && (
           <div className="flex w-full items-center gap-4 text-body-md">
-            <span className="w-14 shrink-0 font-semibold text-gray-100">Grade</span>
+            <span className="w-[108px] shrink-0 font-semibold text-gray-100">Grade</span>
             <span className="flex min-w-0 flex-1 items-center gap-1 text-caption-lg font-semibold text-gray-100">
               {/* Provisional while the course runs; final once it is done. */}
               {stage === "progress" && <Icon name="watch-later-filled" size={16} />}
@@ -996,7 +1007,7 @@ function InstanceBody({
           </div>
         )}
         <div className="flex w-full items-center gap-4 text-body-md">
-          <span className="w-14 shrink-0 font-semibold text-gray-100">Campus</span>
+          <span className="w-[108px] shrink-0 font-semibold text-gray-100">Campus</span>
           {editingCampus ? (
             <div className="min-w-0 flex-1">
               <Picker
@@ -1017,7 +1028,7 @@ function InstanceBody({
             <button
               type="button"
               onClick={() => setEditingCampus(true)}
-              className="shrink-0 cursor-pointer text-gray-100 underline [text-underline-position:from-font]"
+              className="shrink-0 cursor-pointer text-gray-80 underline [text-underline-position:from-font]"
             >
               edit
             </button>
@@ -1026,13 +1037,16 @@ function InstanceBody({
       </div>
 
       {planning && (
-        <Fold title="What's Next" open={open.checklist} onToggle={() => toggle("checklist")}>
+        /* What is next is the reason to open the course, so it is a heading over
+           its steps and not a section that folds. */
+        <section className="flex w-full flex-col px-6 pb-6">
           <Checklist
+            title="What's Next"
             steps={planningChecklist(term, course, met, registration)}
             onCalendar={onViewCalendar && (() => onViewCalendar(term))}
             onRegister={onRegister && (() => onRegister(term, course.id))}
           />
-        </Fold>
+        </section>
       )}
 
       {(stage === "progress" || stage === "taken") && (
