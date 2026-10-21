@@ -94,10 +94,10 @@ export function IncomingCredits({
       <section className="flex items-start gap-4">
         <TimelineRail phase="complete" nodes={1} />
         <div className="flex min-w-0 flex-1 flex-col pb-4">
-          <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+          <div className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1">
             <h3 className="min-w-0">{heading}</h3>
+            <p className="text-body-md text-gray-80">{summary}</p>
           </div>
-          <p className="text-body-md text-gray-80">{summary}</p>
         </div>
       </section>
     )
@@ -108,10 +108,10 @@ export function IncomingCredits({
       <TimelineRail phase="complete" nodes={2} />
       <div className="flex min-w-0 flex-1 flex-col items-start pb-8">
         <div className="-mb-px flex w-full flex-col pb-4">
-          <div className="flex min-h-9 w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
+          <div className="flex min-h-9 w-full flex-wrap items-center gap-x-4 gap-y-2">
             <h3 className="min-w-0">{heading}</h3>
+            <p className="text-body-md text-gray-80">{summary}</p>
           </div>
-          <p className="text-body-md text-gray-80">{summary}</p>
         </div>
 
         {/* The same grid a year's terms stand in, so two cards here are as

@@ -603,7 +603,7 @@ export function SemesterCard({
       /* Its own container: a term beside two others has to make different calls
          about what fits than the same term on its own. */
       className={cn(
-        "@container/term w-full min-w-0 gap-0 rounded-md border-gray-40 p-[23px] shadow-none transition-colors",
+        "@container/term w-full min-w-0 gap-0 rounded-md border-gray-40 p-[15px] shadow-none transition-colors",
         isTarget && "border-primary bg-primary-0/40"
       )}
     >
@@ -875,11 +875,11 @@ export function YearSection({
         {/* The band is 36px tall, as the unfolded header's Add Summer button
             makes it, with the same 16px beneath — so the heading and the node
             beside it stay put when the year opens. */}
-        <div className="flex min-w-0 flex-1 flex-col pb-4">
-          <div className="flex min-h-9 flex-wrap items-center justify-between gap-x-4 gap-y-1">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex min-h-9 flex-wrap items-center gap-x-4 gap-y-1">
             <h3 className="min-w-0">{heading}</h3>
+            <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
           </div>
-          <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
         </div>
       </section>
     )
@@ -888,12 +888,17 @@ export function YearSection({
   return (
     <section className="flex items-start gap-4">
       <TimelineRail phase={year.phase} nodes={2} />
-      <div className="flex min-w-0 flex-1 flex-col items-start pb-8">
+      <div className="flex min-w-0 flex-1 flex-col items-start">
         {/* The band holds its 36px whether or not the year offers a term to
             add, so a finished year lines up with the rest. */}
         <div className="-mb-px flex w-full flex-col pb-4">
           <div className="flex min-h-9 w-full flex-wrap items-center justify-between gap-x-4 gap-y-2">
-            <h3 className="min-w-0">{heading}</h3>
+            {/* What the year holds, beside its name, said the same way folded or
+                open. */}
+            <div className="flex min-w-0 flex-wrap items-center gap-x-4 gap-y-1">
+              <h3 className="min-w-0">{heading}</h3>
+              <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
+            </div>
             {/* A year already behind you takes no more terms, and neither
                 does one that has its summer. */}
             {canAddTerm(year) && (
@@ -903,8 +908,6 @@ export function YearSection({
               </Button>
             )}
           </div>
-          {/* What the year holds, said the same way folded or open. */}
-          <p className="text-body-md text-gray-80">{yearSummary(year)}</p>
         </div>
         {/* A term needs ~384px to read properly: two fit from 768px, three from
             1152px. Below that they stack rather than squeeze. */}
