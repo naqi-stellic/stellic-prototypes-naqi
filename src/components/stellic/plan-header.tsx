@@ -495,7 +495,7 @@ function PlanSwitcher({
         <DropdownMenuTrigger asChild>
           <TooltipTrigger asChild>
             <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", iconOnly)}>
-              <Icon name="calendar-today" size={16} />
+              <Icon name="route" size={16} />
               <span data-action-label className={labelsGo}>
                 My Plan
               </span>
