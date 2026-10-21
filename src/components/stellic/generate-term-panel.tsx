@@ -2,6 +2,8 @@ import { cn } from "cn"
 import { useState } from "react"
 
 import { Icon } from "@/components/icon"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
+import { StepBars, StepLabel } from "@/components/stellic/step-tracker"
 import { keepChoices } from "@/components/stellic/generate-plan-pace"
 import { GenerateTermBuilding } from "@/components/stellic/generate-term-building"
 import {
@@ -225,39 +227,13 @@ export function GenerateTermPanel({
 
   return (
     <aside className="@container flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card">
-      <header
-        className={cn(
-          "flex shrink-0 flex-col border-b border-gray-40 px-6 pt-3 pb-[15px]",
-          isStep && "gap-2"
-        )}
-      >
-        <div className="flex w-full items-center gap-2">
-          <div className="flex min-w-0 flex-1 items-center gap-2">
-            <h2 className="text-caption-lg font-semibold text-foreground">{title}</h2>
-            {isStep && (
-              <span className="text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
-                Step {step} of {totalSteps}
-              </span>
-            )}
-          </div>
-          <Button variant="ghost" size="icon" aria-label={`Close ${title}`} onClick={onClose}>
-            <Icon name="s-close" size={16} />
-          </Button>
-        </div>
-        {isStep && (
-          <div className="flex w-full items-start gap-2">
-            {Array.from({ length: totalSteps }, (_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "h-1 min-w-0 flex-1 rounded-md",
-                  i < step ? "bg-primary-50" : "bg-gray-40"
-                )}
-              />
-            ))}
-          </div>
-        )}
-      </header>
+      <PanelTopHeader
+        title={title}
+        subline={isStep && <StepLabel step={step} total={totalSteps} />}
+        onClose={onClose}
+      />
+
+      {isStep && <StepBars step={step} total={totalSteps} />}
 
       {/* pb-28 keeps the footer clear of the assistant button, which is fixed
             over this corner of the screen and will otherwise take the click

@@ -3,7 +3,7 @@ import { useState, type ComponentProps, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
 import { AuditIcon } from "@/components/stellic/primitives"
-import { PanelHeader } from "@/components/stellic/panel-header"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
 import { useRegistration } from "@/components/stellic/registration"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -548,68 +548,58 @@ export function CoursePanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      {/* The head the placeholder and the search have: a bar for the way back
-          and the close, the course under it, and where it is under that. */}
-      <PanelHeader
-        className="border-b border-gray-40"
-        backLabel={backLabel}
-        onBack={onBack}
-        onClose={onClose}
-        closeLabel="Close course"
-        title={<h2 className="text-h400 font-semibold text-gray-100">{entry.name}</h2>}
-        subline={`${entry.code} • ${detail.credits} Credits`}
-        controls={
-          <button
-            type="button"
-            aria-label={saved ? "Remove bookmark" : "Bookmark course"}
-            aria-pressed={saved}
-            onClick={() => setSaved((was) => !was)}
-            className="flex size-8 cursor-pointer items-center justify-center rounded-md text-gray-100 hover:bg-gray-5"
-          >
-            <Icon name={saved ? "bookmark" : "bookmark-border"} size={20} />
-          </button>
-        }
-        footer={
-          /* Where the course is, as underlined tabs set from the left, down to
-             the head's rule: the active one is blue, with its underline over
-             the rule. */
-          <div
-            role="tablist"
-            aria-label="Where this course is"
-            className="-mx-6 -mb-6 flex w-[calc(100%+3rem)] px-3"
-          >
-            {[
-              ...instances.map((instance) => ({ key: keyOf(instance), label: instance.term.name })),
-              { key: CATALOG, label: "Catalog" },
-            ].map((item) => {
-              const on = selected === item.key
-              return (
-                <button
-                  key={item.key}
-                  type="button"
-                  role="tab"
-                  aria-selected={on}
-                  onClick={() => setTab(item.key)}
-                  className="flex h-[38px] min-w-0 cursor-pointer flex-col justify-between"
-                >
-                  <span
-                    className={cn(
-                      "flex flex-1 items-center truncate px-3 text-caption-lg font-semibold",
-                      on ? "text-primary-50" : "text-gray-100"
-                    )}
-                  >
-                    {item.label}
-                  </span>
-                  <span
-                    aria-hidden="true"
-                    className={cn("-mb-px h-0.5 w-full", on ? "bg-primary-50" : "bg-transparent")}
-                  />
-                </button>
-              )
-            })}
-          </div>
-        }
-      />
+      {/* The bar the other panels have, with the tabs under it as a strip of
+          their own. Both stay at the top while the panel scrolls. */}
+      <div className="sticky top-0 z-10 bg-card">
+        <PanelTopHeader
+          title={entry.name}
+          subline={`${entry.code} • ${detail.credits} Credits`}
+          backLabel={backLabel}
+          onBack={onBack}
+          closeLabel="Close course"
+          onClose={onClose}
+          actions={
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label={saved ? "Remove bookmark" : "Bookmark course"}
+              aria-pressed={saved}
+              onClick={() => setSaved((was) => !was)}
+            >
+              <Icon name={saved ? "bookmark" : "bookmark-border"} size={16} />
+            </Button>
+          }
+        />
+        {/* Where the course is, as ghost buttons in a strip of their own: the
+            active one is filled gray. */}
+        <div
+          role="tablist"
+          aria-label="Where this course is"
+          className="box-border flex h-11 w-full items-center gap-1 border-b border-gray-40 px-4"
+        >
+          {[
+            ...instances.map((instance) => ({ key: keyOf(instance), label: instance.term.name })),
+            { key: CATALOG, label: "Catalog" },
+          ].map((item) => {
+            const on = selected === item.key
+            return (
+              <button
+                key={item.key}
+                type="button"
+                role="tab"
+                aria-selected={on}
+                onClick={() => setTab(item.key)}
+                className={cn(
+                  "flex h-7 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-md px-2 text-body-md font-medium text-foreground hover:bg-gray-5",
+                  on && "bg-gray-5"
+                )}
+              >
+                <span className="truncate">{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       {/* Keyed on the tab, so each one opens the sections its own point in
           the course's life calls for rather than whatever the last tab left

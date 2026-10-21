@@ -8,8 +8,8 @@ import {
   type FilterGroup,
   type FilterState,
 } from "@/components/stellic/filter-bar"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -337,21 +337,7 @@ export function RequirementsPanel({
     /* pb-28 keeps the last few rows clear of the assistant, which floats over
        the foot of whatever is beside the plan. */
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card">
-      {/* The same bar Generate Plan opens with: the panel's name, a rule under
-          it, and the way out. */}
-      <header className="flex shrink-0 items-center gap-2 border-b border-gray-40 px-6 pt-3 pb-[15px]">
-        <h2 className="min-w-0 flex-1 text-caption-lg font-semibold text-foreground">
-          {title}
-        </h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Close ${title}`}
-          onClick={onClose}
-        >
-          <Icon name="s-close" size={16} />
-        </Button>
-      </header>
+      <PanelTopHeader title={title} onClose={onClose} />
 
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
 

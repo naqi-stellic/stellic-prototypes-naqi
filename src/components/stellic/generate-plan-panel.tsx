@@ -1,7 +1,7 @@
-import { cn } from "cn"
 import { useState } from "react"
 
-import { Icon } from "@/components/icon"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
+import { StepBars, StepLabel } from "@/components/stellic/step-tracker"
 import { GeneratePlanBuilding } from "@/components/stellic/generate-plan-building"
 import { GeneratePlanNotes } from "@/components/stellic/generate-plan-notes"
 import {
@@ -143,44 +143,13 @@ export function GeneratePlanPanel({
 
   return (
     <aside className="@container flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card">
-      <header
-        className={cn(
-          "flex shrink-0 flex-col border-b border-gray-40 px-6 pt-3 pb-[15px]",
-          isStep && "gap-2"
-        )}
-      >
-        <div className="flex w-full items-center gap-2">
-          {/* Baseline, not centre: two runs of text on one line read as
-              aligned when they sit on the same baseline, and cap-centring a
-              small label beside a larger title leaves it floating two pixels
-              high. */}
-          <div className="flex min-w-0 flex-1 items-baseline gap-2">
-            <h2 className="text-caption-lg font-semibold text-foreground">Generate Plan</h2>
-            {isStep && (
-              <span className="text-overline font-medium tracking-[0.5px] text-gray-80 uppercase">
-                Step {view} of {TOTAL_STEPS}
-              </span>
-            )}
-          </div>
-          <Button variant="ghost" size="icon" aria-label="Close Generate Plan" onClick={onClose}>
-            <Icon name="s-close" size={16} />
-          </Button>
-        </div>
+      <PanelTopHeader
+        title="Generate Plan"
+        subline={isStep && <StepLabel step={view as number} total={TOTAL_STEPS} />}
+        onClose={onClose}
+      />
 
-        {isStep && (
-          <div className="flex w-full items-start gap-2">
-            {Array.from({ length: TOTAL_STEPS }, (_, i) => (
-              <span
-                key={i}
-                className={cn(
-                  "h-1 min-w-0 flex-1 rounded-md",
-                  i < (view as number) ? "bg-primary-50" : "bg-gray-40"
-                )}
-              />
-            ))}
-          </div>
-        )}
-      </header>
+      {isStep && <StepBars step={view as number} total={TOTAL_STEPS} />}
 
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
         {view === 1 && (

@@ -4,7 +4,7 @@ import { useState } from "react"
 import { Icon } from "@/components/icon"
 import { Fold, Heading } from "@/components/stellic/course-panel"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
-import { PanelHeader } from "@/components/stellic/panel-header"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -76,11 +76,9 @@ export function PlaceholderPanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      {/* The placeholder's name under the bar of close, as a course's is. No
-          rule of its own: the first section's rule is the line under it. */}
-      <PanelHeader
-        onClose={onClose}
-        closeLabel="Close placeholder"
+      {/* The same bar as the other panels, with rename beside the way out. No
+          rule of its own beyond the bar's: the first section sits under it. */}
+      <PanelTopHeader
         title={
           renaming ? (
             <Input
@@ -93,25 +91,29 @@ export function PlaceholderPanel({
               className="h-8 text-body-md"
             />
           ) : (
-            <h2 className="flex items-center gap-2 text-h400 font-semibold text-gray-100">
-              <span className="min-w-0 truncate">{name}</span>
-              <button
-                type="button"
-                onClick={() => setRenaming(true)}
-                aria-label="Rename placeholder"
-                className="flex size-6 shrink-0 cursor-pointer items-center justify-center rounded-md text-gray-80 hover:bg-gray-5"
-              >
-                <Icon name="edit" size={16} />
-              </button>
-            </h2>
+            name
           )
         }
         subline={`Course Requirement Placeholder • ${credits} Credits`}
+        actions={
+          !renaming && (
+            <Button
+              variant="ghost"
+              size="icon"
+              aria-label="Rename placeholder"
+              onClick={() => setRenaming(true)}
+            >
+              <Icon name="edit" size={16} />
+            </Button>
+          )
+        }
+        closeLabel="Close placeholder"
+        onClose={onClose}
       />
 
       {/* What the placeholder is for: a course to stand in it, at the credits
           it holds. Empty, the way to find one; filled, the course itself. */}
-      <Fold title="Choose course" open={open.choose} onToggle={() => toggle("choose")}>
+      <Fold ruled={false} title="Choose course" open={open.choose} onToggle={() => toggle("choose")}>
         <div className="flex w-full items-center gap-4 text-body-md">
           <span className="w-14 shrink-0 font-semibold text-gray-100">Credits</span>
           {editingCredits ? (

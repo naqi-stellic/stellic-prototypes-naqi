@@ -1,7 +1,7 @@
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
-import { PanelHeader } from "@/components/stellic/panel-header"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -133,16 +133,15 @@ export function CourseSearchPanel({
 }) {
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
-      <PanelHeader
-        className="border-b border-gray-40"
-        backLabel={backLabel}
-        onBack={onBack}
-        onClose={onClose}
-        closeLabel="Close course search"
-        title={<h2 className="text-h400 font-semibold text-gray-100">Course Search</h2>}
+      <PanelTopHeader
+        title="Course Search"
         subline={
           backLabel && `For ${backLabel}${credits != null ? ` • ${credits} Credits` : ""}`
         }
+        backLabel={backLabel}
+        onBack={onBack}
+        closeLabel="Close course search"
+        onClose={onClose}
       />
       <div className="flex w-full flex-col gap-4 px-6 pt-4">
         {/* What the search was run with. In a working planner the chevron

@@ -2,6 +2,7 @@ import { cn } from "cn"
 import { useState, type ReactNode } from "react"
 
 import { Icon } from "@/components/icon"
+import { PanelTopHeader } from "@/components/stellic/panel-top-header"
 import { Badge } from "@/components/ui/badge"
 import { STUDENT, type Year } from "@/data/plan"
 import {
@@ -103,7 +104,7 @@ function RequestCard({
   const pending = review.status === "pending"
 
   return (
-    <div className="flex w-full flex-col bg-card">
+    <div className="flex w-full flex-col">
       <button
         type="button"
         onClick={onToggle}
@@ -122,7 +123,7 @@ function RequestCard({
           {pending ? "Pending" : "Complete"}
         </Badge>
         <Icon
-          name={open ? "expand-less" : pending ? "expand-more" : "chevron-right"}
+          name={open ? "expand-less" : "expand-more"}
           size={24}
           className="shrink-0 text-gray-100"
         />
@@ -213,64 +214,60 @@ export function ReviewPanel({
   }
 
   return (
-    <aside className="flex h-full w-full flex-col items-end gap-4 overflow-x-clip overflow-y-auto bg-background p-6">
-      <button
-        type="button"
-        onClick={onClose}
-        aria-label="Close plan reviews"
-        className="shrink-0 cursor-pointer rounded-md text-gray-100"
+    <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card">
+      <PanelTopHeader title="Plan Activity" closeLabel="Close plan activity" onClose={onClose} />
+
+      {/* Where to look, as the ghost-button strip the course tabs use. A long
+          name scrolls the strip rather than squeezing the others. */}
+      <div
+        role="tablist"
+        aria-label="Plan activity"
+        className="box-border flex h-11 w-full shrink-0 items-center gap-1 overflow-x-auto border-b border-gray-40 px-4"
       >
-        <Icon name="close" size={24} />
-      </button>
+        {TABS.map((name) => {
+          const active = tab === name
+          const count = counts[name]
+          return (
+            <button
+              key={name}
+              type="button"
+              role="tab"
+              aria-selected={active}
+              onClick={() => setTab(name)}
+              className={cn(
+                "flex h-7 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md px-2",
+                "text-body-md font-medium whitespace-nowrap text-foreground hover:bg-gray-5",
+                active && "bg-gray-5"
+              )}
+            >
+              {name}
+              {count != null && count > 0 && (
+                <Badge
+                  className={cn(
+                    "px-2 text-body-md font-semibold",
+                    active ? "bg-primary-0 text-primary-50" : "bg-gray-5 text-gray-100"
+                  )}
+                >
+                  {count}
+                </Badge>
+              )}
+            </button>
+          )
+        })}
+      </div>
 
-      {/* One card: the strip the panel is read through is the top of it, and
-          what the strip is showing is the rest. Lifted off the page rather
-          than framed — the only line in it is under the tabs. */}
-      <div className="flex w-full min-w-0 flex-col overflow-hidden rounded-md bg-card shadow-sm">
-        <div className="flex h-[52px] w-full shrink-0 items-end overflow-x-auto border-b border-gray-40">
-          {TABS.map((name) => {
-            const active = tab === name
-            const count = counts[name]
-            return (
-              <button
-                key={name}
-                type="button"
-                onClick={() => setTab(name)}
-                className={cn(
-                  "flex h-10 shrink-0 cursor-pointer items-center justify-center gap-3 px-4 py-2",
-                  "text-caption-lg font-semibold whitespace-nowrap transition-colors",
-                  active
-                    ? "border-b-2 border-primary-50 text-primary-50"
-                    : "border-b-2 border-transparent text-gray-100 hover:text-gray-80"
-                )}
-              >
-                {name}
-                {count != null && count > 0 && (
-                  <Badge
-                    className={cn(
-                      "px-2 text-body-md font-semibold",
-                      active ? "bg-primary-0 text-primary-50" : "bg-gray-5 text-gray-100"
-                    )}
-                  >
-                    {count}
-                  </Badge>
-                )}
-              </button>
-            )
-          })}
-        </div>
-
+      <div className="flex w-full min-w-0 flex-col">
         {tab === "Plan Reviews" ? (
           reviews.length === 0 ? (
             <p className="p-6 text-body-md text-gray-80">
               No reviews have been asked for on this plan yet.
             </p>
           ) : (
-            /* The requests are one list in one card, ruled apart. */
-            reviews.map((review, index) => (
+            /* The requests are one list, each ruled off below, the last included. */
+            reviews.map((review) => (
               <div
                 key={review.id}
-                className={cn("w-full", index > 0 && "border-t border-gray-40")}
+                className="w-full border-b border-gray-40"
               >
                 <RequestCard
                   review={review}
