@@ -993,7 +993,10 @@ function InstanceBody({
         </div>
         {(stage === "progress" || stage === "taken") && (
           <div className="flex w-full items-center gap-4 text-body-md">
-            <span className="w-[108px] shrink-0 font-semibold text-gray-100">Grade</span>
+            <span className="w-[108px] shrink-0 font-semibold text-gray-100">
+              {/* Overall while the course runs, final once it is done. */}
+              {stage === "taken" ? "Final grade" : "Course grade"}
+            </span>
             <span className="flex min-w-0 flex-1 items-center gap-1 text-caption-lg font-semibold text-gray-100">
               {/* Provisional while the course runs; final once it is done. */}
               {stage === "progress" && <Icon name="watch-later-filled" size={16} />}
