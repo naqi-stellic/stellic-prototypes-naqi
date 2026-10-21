@@ -39,7 +39,7 @@ const TOUR: {
     /* Ends on "details" rather than naming it whole: an institution that says
        subject for course has this button say "Subject details". */
     find: '[data-tour="plan-actions"] [aria-label$=" details"]',
-    title: "Choose which details show for each course",
+    title: "Customize how your courses look",
     body: "Course details turns course names, sections, credits and more on or off for every course in your plan.",
   },
   {
@@ -81,7 +81,7 @@ const CHANGES: {
   manual?: boolean
   registers?: boolean
 }[] = [
-  { icon: "remove-red-eye", name: "Course details", does: "Choose which details show for each course" },
+  { icon: "remove-red-eye", name: "Course details", does: "Customize how your courses look" },
   {
     icon: "grid-view",
     name: "Complete my plan",
