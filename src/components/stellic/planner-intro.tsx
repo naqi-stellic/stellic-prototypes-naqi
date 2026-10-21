@@ -107,11 +107,6 @@ const CHANGES: {
     does: "Register for every ready course from your plan",
     registers: true,
   },
-  {
-    icon: "class",
-    name: "Requirements",
-    does: "A place held in your plan for a course you have not chosen yet",
-  },
 ]
 
 /** The welcome card and the details step stand the same width, so moving from
