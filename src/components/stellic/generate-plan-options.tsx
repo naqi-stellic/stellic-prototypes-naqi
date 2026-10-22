@@ -151,11 +151,14 @@ export function GeneratePlanOptions({
       </Section>
 
       {/* The end of the panel is the end of the decision: read the options,
-          pick one, apply it. */}
+          pick one, apply it. Held at the foot of the panel, so it is never
+          lost off the bottom while the options are being read. */}
       {onApply && (
-        <Button variant="primary" className="animate-fade w-full" onClick={onApply}>
-          Apply plan
-        </Button>
+        <div className="sticky bottom-0 z-10 -mx-6 -mb-28 border-t border-gray-40 bg-card px-6 pt-3 pb-4">
+          <Button variant="primary" className="animate-fade w-full" onClick={onApply}>
+            Apply plan
+          </Button>
+        </div>
       )}
     </>
   )

@@ -215,46 +215,53 @@ export function ReviewPanel({
 
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card">
-      <PanelTopHeader title="Plan Activity" closeLabel="Close plan activity" onClose={onClose} />
-
-      {/* Where to look, as the ghost-button strip the course tabs use. A long
-          name scrolls the strip rather than squeezing the others. */}
-      <div
-        role="tablist"
-        aria-label="Plan activity"
-        className="box-border flex h-11 w-full shrink-0 items-center gap-1 overflow-x-auto border-b border-gray-40 px-4"
-      >
-        {TABS.map((name) => {
-          const active = tab === name
-          const count = counts[name]
-          return (
-            <button
-              key={name}
-              type="button"
-              role="tab"
-              aria-selected={active}
-              onClick={() => setTab(name)}
-              className={cn(
-                "flex h-7 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md px-2",
-                "text-caption-md font-medium whitespace-nowrap text-foreground hover:bg-gray-5",
-                active && "bg-gray-5"
-              )}
-            >
-              {name}
-              {count != null && count > 0 && (
-                <Badge
+      <PanelTopHeader
+        title="Plan Activity"
+        closeLabel="Close plan activity"
+        onClose={onClose}
+        /* The tabs hold with the bar, so where you are looking is never
+           scrolled away. */
+        below={
+          /* Where to look, as the ghost-button strip the course tabs use. A long
+             name scrolls the strip rather than squeezing the others. */
+          <div
+            role="tablist"
+            aria-label="Plan activity"
+            className="box-border flex h-11 w-full shrink-0 items-center gap-1 overflow-x-auto border-b border-gray-40 px-4"
+          >
+            {TABS.map((name) => {
+              const active = tab === name
+              const count = counts[name]
+              return (
+                <button
+                  key={name}
+                  type="button"
+                  role="tab"
+                  aria-selected={active}
+                  onClick={() => setTab(name)}
                   className={cn(
-                    "px-2 text-body-md font-semibold",
-                    active ? "bg-primary-0 text-primary-50" : "bg-gray-5 text-gray-100"
+                    "flex h-7 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md px-2",
+                    "text-caption-md font-medium whitespace-nowrap text-foreground hover:bg-gray-5",
+                    active && "bg-gray-5"
                   )}
                 >
-                  {count}
-                </Badge>
-              )}
-            </button>
-          )
-        })}
-      </div>
+                  {name}
+                  {count != null && count > 0 && (
+                    <Badge
+                      className={cn(
+                        "px-2 text-body-md font-semibold",
+                        active ? "bg-primary-0 text-primary-50" : "bg-gray-5 text-gray-100"
+                      )}
+                    >
+                      {count}
+                    </Badge>
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        }
+      />
 
       <div className="flex w-full min-w-0 flex-col">
         {tab === "Plan Reviews" ? (

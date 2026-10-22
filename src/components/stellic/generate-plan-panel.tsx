@@ -146,10 +146,10 @@ export function GeneratePlanPanel({
       <PanelTopHeader
         title="Generate Plan"
         subline={isStep && <StepLabel step={view as number} total={TOTAL_STEPS} />}
+        below={isStep && <StepBars step={view as number} total={TOTAL_STEPS} />}
         onClose={onClose}
       />
 
-      {isStep && <StepBars step={view as number} total={TOTAL_STEPS} />}
 
       <div className="flex flex-1 flex-col gap-8 p-6 pb-28">
         {view === 1 && (

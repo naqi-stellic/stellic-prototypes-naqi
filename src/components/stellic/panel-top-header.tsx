@@ -17,6 +17,7 @@ export function PanelTopHeader({
   onBack,
   closeLabel,
   ruled = true,
+  below,
   onClose,
 }: {
   /** A string, or a field standing in for it while the name is being edited. */
@@ -31,6 +32,8 @@ export function PanelTopHeader({
   closeLabel?: string
   /** The rule under the bar. Left off where a strip of tabs follows with its own. */
   ruled?: boolean
+  /** What stands directly under the bar and holds with it, such as the steps. */
+  below?: ReactNode
   onClose?: () => void
 }) {
   const controls = (
@@ -48,6 +51,9 @@ export function PanelTopHeader({
   )
 
   return (
+    /* Holds at the top while the panel scrolls under it, with whatever is
+       fixed beneath it, so the name and the way out are never scrolled away. */
+    <div className="sticky top-0 z-20 shrink-0 bg-card">
     <header
       className={cn(
         "relative flex shrink-0 flex-col gap-0.5 px-6 pb-[15px]",
@@ -86,5 +92,7 @@ export function PanelTopHeader({
         subline
       )}
     </header>
+    {below}
+    </div>
   )
 }

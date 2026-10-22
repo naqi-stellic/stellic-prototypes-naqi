@@ -230,10 +230,10 @@ export function GenerateTermPanel({
       <PanelTopHeader
         title={title}
         subline={isStep && <StepLabel step={step} total={totalSteps} />}
+        below={isStep && <StepBars step={step} total={totalSteps} />}
         onClose={onClose}
       />
 
-      {isStep && <StepBars step={step} total={totalSteps} />}
 
       {/* pb-28 keeps the footer clear of the assistant button, which is fixed
             over this corner of the screen and will otherwise take the click
@@ -399,11 +399,14 @@ export function GenerateTermPanel({
             </Section>
 
             {/* The end of the panel is the end of the decision, as it is for
-                the plan: read the options, pick one, apply it. */}
+                the plan: read the options, pick one, apply it. Held at the foot of
+                the panel, so it is never lost off the bottom. */}
             {onApply && (
-              <Button variant="primary" className="animate-fade w-full" onClick={onApply}>
-                Apply plan
-              </Button>
+              <div className="sticky bottom-0 z-10 -mx-6 -mb-28 border-t border-gray-40 bg-card px-6 pt-3 pb-4">
+                <Button variant="primary" className="animate-fade w-full" onClick={onApply}>
+                  Apply plan
+                </Button>
+              </div>
             )}
           </>
         )}
