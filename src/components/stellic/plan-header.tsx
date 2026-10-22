@@ -241,14 +241,15 @@ export function PlanHeader({
      buttons carry no icon, so they always keep their words and wrap to a line
      of their own when the bar is narrow; only the switch, whose buttons have
      icons, gives up its words. */
-  const group1Full = 302 // My Plan and Course details, with a badge and carets
+  const group1Full = 152 // Course details, with a badge and caret
   const group2Full = 361 + (shown.length >= 4 ? 200 : 0) // Complete my plan, Request review, more
   const divider = 25
   const gap = 16
   /* The crumbs, with the review tag and the student's name where staff are
      looking at a plan, and the switch beside them, with its words and without. */
   const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
-  const left = (view ? 240 : 85) + beside
+  const planButton = 160 // the plan's button and the space before it
+  const left = (view ? 240 : 85) + beside + planButton
   const switchFull = view ? 232 : 0
   const switchIcons = view ? 122 : 0
   const stepFor = (need: number) =>
@@ -377,7 +378,13 @@ export function PlanHeader({
           {/* On a phone the two that say which plan and how it looks share a
               row, each half of it. */}
           <div data-group="1" className="flex items-center gap-2 @max-[640px]/toolbar:contents">
-            <PlanSwitcher className={fillRow} />
+            {/* How the page is read, with how it looks: the two that change what is
+                on screen. On a phone it is a cell of the grid, the width of its column. */}
+            {view && (
+              <div className="@max-[640px]/toolbar:[&_[role=tab]]:flex-1 @max-[640px]/toolbar:[&_[role=tablist]]:w-full">
+                {view(rowWraps ? "" : switchFit.labels)}
+              </div>
+            )}
             {viewActions.map(renderAction)}
           </div>
           {/* The line between the two groups, which a phone does not need: the
@@ -426,12 +433,8 @@ export function PlanHeader({
               <Crumbs tabs={tabs} term={term} />
               {status}
             </div>
-            {/* How the page is read, beside where it is. */}
-            {view && (
-              <div className="@max-[640px]/toolbar:ml-auto">
-                {view(rowWraps ? "" : switchFit.labels)}
-              </div>
-            )}
+            {/* Which plan this is, beside the name of the page it is the plan of. */}
+            <PlanSwitcher />
           </div>
           {/* With the controls on a line of their own, the bar stays with the
               name and they go under it. */}
@@ -470,10 +473,7 @@ function PlanSwitcher({ className }: { className?: string }) {
         >
           {/* Fixed in width, so a longer plan name truncates rather than moving
               the toolbar. */}
-          <span className="flex w-[100px] gap-1 text-left">
-            <span className="shrink-0 text-gray-80">Plan:</span>
-            <span className="min-w-0 truncate">{PLAN_NAME}</span>
-          </span>
+          <span className="w-[100px] truncate text-left">{PLAN_NAME}</span>
           <Icon name="expand-more" size={16} />
         </Button>
       </DropdownMenuTrigger>
@@ -530,9 +530,12 @@ function TermSwitcher({ tabs, term }: { tabs: YearTab[]; term: string }) {
           }}
           onPointerEnter={() => later(true, 80)}
           onPointerLeave={() => later(false, 200)}
-          className="cursor-pointer rounded-md text-gray-100 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="flex cursor-pointer items-center gap-1 rounded-md text-gray-100 outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {term}
+          {/* So the name is seen to open onto the other terms: the cursor alone
+              was not discovered. */}
+          <Icon name="expand-more" size={24} className="shrink-0 text-gray-80" />
         </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent

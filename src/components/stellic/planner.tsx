@@ -655,7 +655,8 @@ export function SemesterCard({
               <h4
                 className={cn(
                   "min-w-0 truncate text-caption-lg font-semibold text-gray-100",
-                  onOpen && "cursor-pointer"
+                  onOpen &&
+                    "cursor-pointer hover:underline [text-underline-position:from-font]"
                 )}
                 {...(onOpen && {
                   role: "link",
