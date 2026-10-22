@@ -53,7 +53,7 @@ const TOUR: {
     find: '[data-tour="plan-actions"] [aria-label^="Complete my"]',
     generates: true,
     title: "Complete your plan",
-    body: "Have a plan generated from a few questions about your pace and preferences, or add the courses you still need by hand.",
+    body: "Have a plan auto-generated from a few questions about your pace and preferences, or add courses manually.",
   },
   {
     find: '[data-tour="plan-actions"] [aria-label^="Add remaining"]',
@@ -103,7 +103,7 @@ const CHANGES: {
   {
     icon: "grid-view",
     name: "Complete my plan",
-    does: "Generate a plan, or add the courses you still need by hand",
+    does: "Auto-generate a plan, or add courses manually",
     generates: true,
   },
   {

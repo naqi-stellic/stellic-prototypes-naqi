@@ -2,6 +2,7 @@ import { cn } from "cn"
 import { useEffect, useState } from "react"
 
 import { Icon } from "@/components/icon"
+import { MetadataProvider } from "@/components/stellic/course-metadata"
 import {
   ADD_REMAINING,
   PlanHeader,
@@ -232,6 +233,11 @@ export function TermView({
   useEffect(() => {
     if (proposing) setMode("calendar")
   }, [proposing])
+  /* The schedule is read against meeting times, so the section and where it
+     meets are always on here, whatever the plan has set. Nothing is written back:
+     going to the plan finds Course details as it was left. */
+  const alwaysOn: MetadataField[] = ["section", "location"]
+  const effective = [...new Set([...metadata, ...alwaysOn])]
   const registration = useRegistration()
   const actions = useTermIssues(term)
   const pending = usePendingReview(term.id)
@@ -245,7 +251,7 @@ export function TermView({
       /* Activities have a list of their own here, so nothing to switch. */
       fields: METADATA_FIELDS.filter((field) => field.id !== "activities").map((field) => ({
         ...field,
-        shown: metadata.includes(field.id),
+        shown: effective.includes(field.id),
       })),
     },
     ...(generators
@@ -258,11 +264,11 @@ export function TermView({
               {
                 id: "generate",
                 label: term.scheduled
-                  ? "Auto generate schedule"
-                  : "Auto generate term",
+                  ? "Auto-generate schedule"
+                  : "Auto-generate term",
                 icon: "design-services" as const,
               },
-              { id: "manual", label: "Add remaining courses", icon: "checklist" as const },
+              { id: "manual", label: "Add courses manually", icon: "checklist" as const },
             ],
           },
         ]
@@ -279,6 +285,7 @@ export function TermView({
   ]
 
   return (
+    <MetadataProvider shown={effective}>
     <main className="@container flex min-w-0 flex-1 flex-col gap-6 overflow-y-auto p-6">
       <PlanHeader
         actions={plannerActions}
@@ -325,7 +332,9 @@ export function TermView({
             : undefined
         }
         sidebar={sidebar}
-        onToggleField={onToggleField}
+        onToggleField={(id) => {
+          if (!alwaysOn.includes(id as MetadataField)) onToggleField(id)
+        }}
         onChoose={(id) => {
           if (id === "generate") onGenerateTerm?.()
           else if (id === "manual" && !sidebar?.open) sidebar?.onToggle()
@@ -369,5 +378,6 @@ export function TermView({
         />
       )}
     </main>
+    </MetadataProvider>
   )
 }

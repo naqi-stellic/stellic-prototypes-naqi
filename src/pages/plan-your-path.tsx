@@ -16,6 +16,7 @@ import { useEffect, useState, type ReactNode } from "react"
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
+import { PREREQ_LABEL } from "@/data/course-detail"
 import { useMediaQuery } from "@/lib/use-media-query"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AppShell } from "@/components/layout/app-shell"
@@ -209,8 +210,8 @@ function planActions(
           label: "Complete my plan",
           icon: "grid-view" as const,
           choices: [
-            { id: "generate", label: "Auto generate plan", icon: "design-services" as const },
-            { id: "manual", label: "Add remaining courses", icon: "checklist" as const },
+            { id: "generate", label: "Auto-generate plan", icon: "design-services" as const },
+            { id: "manual", label: "Add courses manually", icon: "checklist" as const },
           ],
         }
       : ADD_REMAINING,
@@ -946,6 +947,217 @@ export function PlanYourPath({
     )
   }
 
+  /* What stands beside the plan, if anything. It reads Course details too, so
+     a result in it carries what a card in the plan does. */
+  const panelContent = (
+    (generatingTerm && findTerm(years, generatingTerm) ? (
+      <GenerateTermPanel
+        term={findTerm(years, generatingTerm)!}
+        standing={standing}
+        mode={findTerm(years, generatingTerm)!.scheduled ? "schedule" : "term"}
+        options={
+          drafts?.options[0]?.id.startsWith("term-")
+            ? drafts.options.map((option, i) => ({
+                id: option.id,
+                label: option.label,
+                blurb: option.blurb,
+                added: drafts.made[i].added,
+                /* The week this option came out as, which is what its card
+                   reports on when the term has a schedule. */
+                term: findTerm(drafts.made[i].years, generatingTerm) ?? undefined,
+              }))
+            : undefined
+        }
+        selectedOption={optionId}
+        onSelectOption={setOptionId}
+        compare={compare}
+        onCompareChange={setCompare}
+        onFraming={() => setFraming(true)}
+        onGenerate={startTermDraft}
+        onApply={draft && !accepting ? () => setApplying(true) : undefined}
+        onClose={() =>
+          confirmLeave(() => {
+            dropDraft()
+            setGeneratingTerm(null)
+          })
+        }
+      />
+    ) : null) ||
+    (generateOpen && (
+      <GeneratePlanPanel
+        standing={standing}
+        graduation={expectedGraduation(years)}
+        terms={selectableTerms(years)}
+        keepTerms={releasableTerms(years)}
+        campus={planCampuses(years)}
+        options={optionSummaries}
+        selectedOption={optionId}
+        placeholders={placeholders}
+        onSelectOption={setOptionId}
+        onFraming={() => setFraming(true)}
+        onGenerated={startDraft}
+        onDiscardDraft={dropDraft}
+        onApply={draft && !accepting ? () => setApplying(true) : undefined}
+        onClose={() =>
+          confirmLeave(() => {
+            dropDraft()
+            setGenerateOpen(false)
+          })
+        }
+      />
+    )) ||
+    /* Last in line: a generator being open is what you are doing now, and
+       the reviews are what you asked for earlier. */
+    (course == null && seat && (
+      <PlaceholderPanel
+        /* Keyed on the seat and the view it opened on, so opening another
+           — or the same one from its search button — starts there rather
+           than wherever the last one was left. */
+        key={`${seat.course.id}-${openSeat?.view}`}
+        course={seat.course}
+        term={seat.term}
+        initialView={openSeat!.view}
+        onOpenFilled={() =>
+          openPlannedPanel(seat!.course.id, {
+            id: seat!.course.id,
+            name: (seat!.course.seat ?? seat!.course).name,
+          })
+        }
+        /* The seat stays open underneath, and is remembered on its list
+           rather than its detail, so coming back from a course lands where
+           the course was picked from. */
+        onOpenCourse={(entry) => {
+          setOpenSeat({ id: seat!.course.id, view: "search" })
+          setOpenCourse({ entry, from: seat!.course.name })
+        }}
+        onEmpty={() => {
+          handleEmptySeat(seat!.course.id)
+          setOpenSeat({ id: seat!.course.id, view: "detail" })
+        }}
+        onClose={() => setOpenSeat(null)}
+      />
+    )) ||
+    (plannedOpen && (
+      <CoursePanel
+        key={plannedOpen.course.id}
+        entry={
+          findEntry(plannedOpen.course.code) ?? {
+            code: plannedOpen.course.code,
+            name: plannedOpen.course.name,
+            reason: "Business core",
+          }
+        }
+        terms={plannableTerms}
+        plan={allTerms}
+        opened={{ course: plannedOpen.course, term: plannedOpen.term }}
+        backLabel={plannedBack?.name}
+        /* Planned again, and the sidebar stays on the course with a tab
+           for the new term. */
+        onAdd={(termId, pick) =>
+          handleAddCourse(
+            termId,
+            findEntry(plannedOpen.course.code) ?? {
+              code: plannedOpen.course.code,
+              name: plannedOpen.course.name,
+              reason: "Business core",
+            },
+            undefined,
+            pick
+          )
+        }
+        {...courseHandlers}
+        onBack={() => {
+          /* Back to the placeholder it was opened from. */
+          if (plannedBack) setOpenSeat({ id: plannedBack.id, view: "detail" })
+          setPlannedBack(null)
+          setOpenPlanned(null)
+        }}
+        onClose={() => {
+          setPlannedBack(null)
+          setOpenPlanned(null)
+        }}
+      />
+    )) ||
+    (course && (
+      <CoursePanel
+        /* Per placeholder as well as per course: the same course opened to
+           fill another placeholder starts on that placeholder's term. */
+        key={`${course.entry.code}-${seat?.course.id ?? "plan"}`}
+        entry={course.entry}
+        terms={plannableTerms}
+        plan={allTerms}
+        backLabel={course.from}
+        filling={seat?.term.id}
+        {...courseHandlers}
+        onAdd={(termId, pick) => {
+          /* Opened from a seat still waiting for a course, and put in that
+             seat's own term, this fills the seat rather than landing beside
+             it — which is what the student asked for by searching from it. */
+          if (seat?.course.placeholder && seat.term.id === termId) {
+            handleFillSeat(seat.course.id, course.entry, pick)
+            return
+          }
+          /* Either way the sidebar stays on the course, now on a tab for
+             the term it went to. Closing it is the student's call. */
+          handleAddCourse(termId, course.entry, course.requirement, pick)
+        }}
+        onBack={() => {
+          /* Walked here from another course, the way back is that course
+             rather than the way out. */
+          const back = course.back
+          setOpenCourse(back && "entry" in back ? { entry: back.entry, from: back.from } : null)
+          if (back && "planned" in back) setOpenPlanned(back.planned)
+        }}
+        onClose={() => {
+          setOpenCourse(null)
+          setOpenSeat(null)
+          setReqsOpen(false)
+        }}
+      />
+    )) ||
+    (searchTerm && (
+      <CourseSearchPanel
+        key={searchTerm.id}
+        entries={addable}
+        initialFilters={{
+          semesters: [searchTerm.name.split(" ")[0]],
+          campus: ["Main"],
+          eligibility: [PREREQ_LABEL.met],
+        }}
+        /* Opened straight from a term on the plan: nothing to go back to. */
+        onOpenCourse={(entry) => setOpenCourse({ entry, from: "course search" })}
+        onClose={() => setSearching(null)}
+      />
+    )) ||
+    (reqsOpen && (
+      <RequirementsPanel
+        entries={requirements}
+        narrowing={narrowing}
+        onNarrow={setNarrowing}
+        details={metadata}
+        onClose={() => setReqsOpen(false)}
+        onOpenCourse={(index) => {
+          const found = requirements.find((r) => r.index === index)
+          if (found) {
+            setOpenCourse({
+              entry: found.entry,
+              requirement: found.index,
+              from: "remaining courses",
+            })
+          }
+        }}
+      />
+    )) ||
+    (reviewPanel && (
+      <ReviewPanel
+        reviews={reviews}
+        years={years}
+        onCancel={cancelReview}
+        onClose={() => setReviewPanel(false)}
+      />
+    ))
+  )
+
   /* What a term card needs, whether it is laid down the page, along a
      timeline or dealt as a deck. */
   const termProps = {
@@ -1021,207 +1233,7 @@ export function PlanYourPath({
          does anything in these prototypes, so they are not offered. */
       assistant={false}
       panel={
-        (generatingTerm && findTerm(years, generatingTerm) ? (
-          <GenerateTermPanel
-            term={findTerm(years, generatingTerm)!}
-            standing={standing}
-            mode={findTerm(years, generatingTerm)!.scheduled ? "schedule" : "term"}
-            options={
-              drafts?.options[0]?.id.startsWith("term-")
-                ? drafts.options.map((option, i) => ({
-                    id: option.id,
-                    label: option.label,
-                    blurb: option.blurb,
-                    added: drafts.made[i].added,
-                    /* The week this option came out as, which is what its card
-                       reports on when the term has a schedule. */
-                    term: findTerm(drafts.made[i].years, generatingTerm) ?? undefined,
-                  }))
-                : undefined
-            }
-            selectedOption={optionId}
-            onSelectOption={setOptionId}
-            compare={compare}
-            onCompareChange={setCompare}
-            onFraming={() => setFraming(true)}
-            onGenerate={startTermDraft}
-            onApply={draft && !accepting ? () => setApplying(true) : undefined}
-            onClose={() =>
-              confirmLeave(() => {
-                dropDraft()
-                setGeneratingTerm(null)
-              })
-            }
-          />
-        ) : null) ||
-        (generateOpen && (
-          <GeneratePlanPanel
-            standing={standing}
-            graduation={expectedGraduation(years)}
-            terms={selectableTerms(years)}
-            keepTerms={releasableTerms(years)}
-            campus={planCampuses(years)}
-            options={optionSummaries}
-            selectedOption={optionId}
-            placeholders={placeholders}
-            onSelectOption={setOptionId}
-            onFraming={() => setFraming(true)}
-            onGenerated={startDraft}
-            onDiscardDraft={dropDraft}
-            onApply={draft && !accepting ? () => setApplying(true) : undefined}
-            onClose={() =>
-              confirmLeave(() => {
-                dropDraft()
-                setGenerateOpen(false)
-              })
-            }
-          />
-        )) ||
-        /* Last in line: a generator being open is what you are doing now, and
-           the reviews are what you asked for earlier. */
-        (course == null && seat && (
-          <PlaceholderPanel
-            /* Keyed on the seat and the view it opened on, so opening another
-               — or the same one from its search button — starts there rather
-               than wherever the last one was left. */
-            key={`${seat.course.id}-${openSeat?.view}`}
-            course={seat.course}
-            term={seat.term}
-            initialView={openSeat!.view}
-            onOpenFilled={() =>
-              openPlannedPanel(seat!.course.id, {
-                id: seat!.course.id,
-                name: (seat!.course.seat ?? seat!.course).name,
-              })
-            }
-            /* The seat stays open underneath, and is remembered on its list
-               rather than its detail, so coming back from a course lands where
-               the course was picked from. */
-            onOpenCourse={(entry) => {
-              setOpenSeat({ id: seat!.course.id, view: "search" })
-              setOpenCourse({ entry, from: seat!.course.name })
-            }}
-            onEmpty={() => {
-              handleEmptySeat(seat!.course.id)
-              setOpenSeat({ id: seat!.course.id, view: "detail" })
-            }}
-            onClose={() => setOpenSeat(null)}
-          />
-        )) ||
-        (plannedOpen && (
-          <CoursePanel
-            key={plannedOpen.course.id}
-            entry={
-              findEntry(plannedOpen.course.code) ?? {
-                code: plannedOpen.course.code,
-                name: plannedOpen.course.name,
-                reason: "Business core",
-              }
-            }
-            terms={plannableTerms}
-            plan={allTerms}
-            opened={{ course: plannedOpen.course, term: plannedOpen.term }}
-            backLabel={plannedBack?.name}
-            /* Planned again, and the sidebar stays on the course with a tab
-               for the new term. */
-            onAdd={(termId, pick) =>
-              handleAddCourse(
-                termId,
-                findEntry(plannedOpen.course.code) ?? {
-                  code: plannedOpen.course.code,
-                  name: plannedOpen.course.name,
-                  reason: "Business core",
-                },
-                undefined,
-                pick
-              )
-            }
-            {...courseHandlers}
-            onBack={() => {
-              /* Back to the placeholder it was opened from. */
-              if (plannedBack) setOpenSeat({ id: plannedBack.id, view: "detail" })
-              setPlannedBack(null)
-              setOpenPlanned(null)
-            }}
-            onClose={() => {
-              setPlannedBack(null)
-              setOpenPlanned(null)
-            }}
-          />
-        )) ||
-        (course && (
-          <CoursePanel
-            /* Per placeholder as well as per course: the same course opened to
-               fill another placeholder starts on that placeholder's term. */
-            key={`${course.entry.code}-${seat?.course.id ?? "plan"}`}
-            entry={course.entry}
-            terms={plannableTerms}
-            plan={allTerms}
-            backLabel={course.from}
-            filling={seat?.term.id}
-            {...courseHandlers}
-            onAdd={(termId, pick) => {
-              /* Opened from a seat still waiting for a course, and put in that
-                 seat's own term, this fills the seat rather than landing beside
-                 it — which is what the student asked for by searching from it. */
-              if (seat?.course.placeholder && seat.term.id === termId) {
-                handleFillSeat(seat.course.id, course.entry, pick)
-                return
-              }
-              /* Either way the sidebar stays on the course, now on a tab for
-                 the term it went to. Closing it is the student's call. */
-              handleAddCourse(termId, course.entry, course.requirement, pick)
-            }}
-            onBack={() => {
-              /* Walked here from another course, the way back is that course
-                 rather than the way out. */
-              const back = course.back
-              setOpenCourse(back && "entry" in back ? { entry: back.entry, from: back.from } : null)
-              if (back && "planned" in back) setOpenPlanned(back.planned)
-            }}
-            onClose={() => {
-              setOpenCourse(null)
-              setOpenSeat(null)
-              setReqsOpen(false)
-            }}
-          />
-        )) ||
-        (searchTerm && (
-          <CourseSearchPanel
-            key={searchTerm.id}
-            entries={addable}
-            /* Opened straight from a term on the plan: nothing to go back to. */
-            onOpenCourse={(entry) => setOpenCourse({ entry, from: "course search" })}
-            onClose={() => setSearching(null)}
-          />
-        )) ||
-        (reqsOpen && (
-          <RequirementsPanel
-            entries={requirements}
-            narrowing={narrowing}
-            onNarrow={setNarrowing}
-            details={metadata}
-            onClose={() => setReqsOpen(false)}
-            onOpenCourse={(index) => {
-              const found = requirements.find((r) => r.index === index)
-              if (found) {
-                setOpenCourse({
-                  entry: found.entry,
-                  requirement: found.index,
-                  from: "remaining courses",
-                })
-              }
-            }}
-          />
-        )) ||
-        (reviewPanel && (
-          <ReviewPanel
-            reviews={reviews}
-            years={years}
-            onCancel={cancelReview}
-            onClose={() => setReviewPanel(false)}
-          />
-        ))
+        panelContent ? <MetadataProvider shown={metadata}>{panelContent}</MetadataProvider> : null
       }
     >
       {/* relative so the draft's ring can be drawn over whatever is on screen

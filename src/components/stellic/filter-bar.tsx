@@ -340,6 +340,7 @@ export function FilterBar({
   onChange,
   trailing,
   chips = true,
+  onlyActive = false,
 }: {
   groups: FilterGroup[]
   filters: FilterState
@@ -350,11 +351,19 @@ export function FilterBar({
   /** Whether what is chosen is drawn under the buttons. Off where the page
    *  draws it somewhere else itself. */
   chips?: boolean
+  /** Folded: only the buttons that are on, so what the list is narrowed by
+   *  stays in view and the rest wait to be opened. */
+  onlyActive?: boolean
 }) {
+  const on = new Set(activeFields(groups, filters).map(({ field }) => field.id))
+  const shown = onlyActive
+    ? groups.filter((group) => group.fields.some((field) => on.has(field.id)))
+    : groups
+
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex w-full flex-wrap items-center gap-2">
-        {groups.map((group) => (
+        {shown.map((group) => (
           <FilterButton key={group.id} group={group} filters={filters} onChange={onChange} />
         ))}
         {trailing && <span className="ml-auto shrink-0">{trailing}</span>}

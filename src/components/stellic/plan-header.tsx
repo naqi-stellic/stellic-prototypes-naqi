@@ -240,9 +240,9 @@ export function PlanHeader({
      buttons carry no icon, so they always keep their words and wrap to a line
      of their own when the bar is narrow; only the switch, whose buttons have
      icons, gives up its words. */
-  const group1Full = 318 // My Plan and Course details, with a badge and carets
-  const group2Full = 377 + (shown.length >= 4 ? 200 : 0) // Complete my plan, Request review, more
-  const divider = 33
+  const group1Full = 302 // My Plan and Course details, with a badge and carets
+  const group2Full = 361 + (shown.length >= 4 ? 200 : 0) // Complete my plan, Request review, more
+  const divider = 25
   const gap = 16
   /* The crumbs, with the review tag and the student's name where staff are
      looking at a plan, and the switch beside them, with its words and without. */
@@ -284,7 +284,7 @@ export function PlanHeader({
         }
         aria-label={action.label}
         onClick={() => (action.sidebar ? sidebar?.onToggle() : onAction?.(action))}
-        className={cn("data-[state=open]:bg-gray-5", fillRow)}
+        className={cn("px-[11px] data-[state=open]:bg-gray-5", fillRow)}
       >
         {action.label}
         {/* How many of the details are on, so the button says what
@@ -371,7 +371,7 @@ export function PlanHeader({
         <TooltipProvider delayDuration={200}>
         <div
           data-tour="plan-actions"
-          className="flex flex-wrap items-center gap-x-4 gap-y-2 @max-[640px]/toolbar:grid @max-[640px]/toolbar:w-full @max-[640px]/toolbar:grid-cols-2 @max-[640px]/toolbar:gap-2"
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 @max-[640px]/toolbar:grid @max-[640px]/toolbar:w-full @max-[640px]/toolbar:grid-cols-2 @max-[640px]/toolbar:gap-2"
         >
           {/* On a phone the two that say which plan and how it looks share a
               row, each half of it. */}
@@ -463,7 +463,10 @@ function PlanSwitcher({ className }: { className?: string }) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button aria-label="Switch plan" className={cn("data-[state=open]:bg-gray-5", className)}>
+        <Button
+          aria-label="Switch plan"
+          className={cn("px-[11px] data-[state=open]:bg-gray-5", className)}
+        >
           {/* Fixed in width, so a longer plan name truncates rather than moving
               the toolbar. */}
           <span className="flex w-[100px] gap-1 text-left">

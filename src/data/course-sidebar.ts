@@ -7,7 +7,7 @@ import {
   type PrereqNode,
   type PrereqState,
 } from "@/data/course-detail"
-import type { Meeting, PlannedCourse, Term } from "@/data/plan"
+import { CREDITS_PER_COURSE, type Meeting, type PlannedCourse, type Term } from "@/data/plan"
 import { NOW } from "@/data/review"
 
 /* What the course sidebar knows about a course at each point in its life: not
@@ -375,6 +375,22 @@ export function sectionsFor(entry: CatalogEntry): SidebarSection[] {
       notes: NOTES,
     }))
     .sort((a, b) => a.code.localeCompare(b.code))
+}
+
+/** A course from the catalogue, drawn the way a card in the plan is, with the
+ *  details Course details can switch on — but only the ones a course has before
+ *  anyone has chosen a class for it. The section, who teaches it, where and
+ *  when it meets, how it is delivered and what it is flagged with all belong to
+ *  a class, not to the course, so they are left off rather than guessed. A seat
+ *  has no campus either. */
+export function catalogCourse(entry: CatalogEntry): PlannedCourse {
+  return {
+    id: `search-${entry.code}`,
+    code: entry.code,
+    name: entry.name,
+    credits: CREDITS_PER_COURSE,
+    ...(entry.placeholder ? {} : { campus: courseDetail(entry).campus }),
+  }
 }
 
 /** What a section asks for over and above the course, for one that the

@@ -24,9 +24,8 @@ import {
   type TermName,
 } from "@/data/catalog"
 import { PREREQ_LABEL, prereqsMet } from "@/data/course-detail"
-import { eligibility } from "@/data/course-sidebar"
+import { catalogCourse, eligibility } from "@/data/course-sidebar"
 import {
-  CREDITS_PER_COURSE,
   DEGREE,
   courseTags,
   type MetadataField,
@@ -86,16 +85,8 @@ export function RequirementRow({
     entry.placeholder || prereqsMet(entry)
     ? null
     : (eligibility(entry).lines.find((line) => !line.met)?.label.split(",")[0] ?? null)
-  const tags = courseTags(
-    {
-      id: "requirement",
-      code: entry.code,
-      name: entry.name,
-      credits: CREDITS_PER_COURSE,
-      ...(entry.placeholder ? {} : { campus: "Main", modality: "In Person" }),
-    },
-    details
-  )
+  /* Only what a course has before a class is chosen for it. */
+  const tags = courseTags(catalogCourse(entry), details)
   const tagBadges = tags.length > 0 && (
     <span className="flex flex-wrap items-start gap-1 pt-1">
       {tags.map((tag) => (

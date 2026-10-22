@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ELECTIVE_COURSES, ALL_ELECTIVES, type CatalogEntry } from "@/data/catalog"
-import { activityFor } from "@/data/course-detail"
+import { PREREQ_LABEL, activityFor } from "@/data/course-detail"
 import { DEGREE, type PlannedCourse, type Term } from "@/data/plan"
 
 /* A placeholder opened on its own, read the way the course sidebar reads a
@@ -67,6 +67,11 @@ export function PlaceholderPanel({
         entries={eligible}
         backLabel={name}
         credits={credits}
+        initialFilters={{
+          semesters: [term.name.split(" ")[0]],
+          campus: ["Main"],
+          eligibility: [PREREQ_LABEL.met],
+        }}
         onBack={() => setSearching(false)}
         onOpenCourse={onOpenCourse}
         onClose={onClose}

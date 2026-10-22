@@ -1,11 +1,17 @@
 import { cn } from "cn"
+import { useMemo, useState } from "react"
 
 import { Icon } from "@/components/icon"
+import { CourseTags, useMetadata } from "@/components/stellic/course-metadata"
+import { FilterBar, matches, type FilterState } from "@/components/stellic/filter-bar"
 import { PanelTopHeader } from "@/components/stellic/panel-top-header"
+import { courseAnswers, courseSearchFilters } from "@/components/stellic/course-search-filters"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { CatalogEntry } from "@/data/catalog"
+import { catalogCourse } from "@/data/course-sidebar"
+import type { PlannedCourse } from "@/data/plan"
 
 /* Looking for a course to put somewhere: the search that was run, and what it
  * found. Opened from a seat it lists what could fill that seat; opened from a
@@ -18,10 +24,14 @@ import type { CatalogEntry } from "@/data/catalog"
 export function CourseRow({
   code,
   name,
+  course,
   onOpen,
 }: {
   code: string
-  name: string
+  /** Left off where Course details has the name switched off. */
+  name?: string
+  /** What Course details can show of it, drawn as the cards in the plan draw it. */
+  course?: PlannedCourse
   /** Opens the course on its own. */
   onOpen?: () => void
 }) {
@@ -34,10 +44,13 @@ export function CourseRow({
       )}
     >
       <Icon name="drag-indicator" size={16} className="shrink-0 text-gray-100" />
-      {/* Code and name run on in one line, and the name wraps if it has to. */}
-      <span className="min-w-0 flex-1 text-body-md">
-        <span className="mr-2 text-gray-100">{code}</span>
-        <span className="font-semibold text-foreground">{name}</span>
+      <span className="flex min-w-0 flex-1 flex-col gap-1">
+        {/* Code and name run on in one line, and the name wraps if it has to. */}
+        <span className="text-body-md">
+          <span className="mr-2 text-gray-100">{code}</span>
+          {name && <span className="font-semibold text-foreground">{name}</span>}
+        </span>
+        {course && <CourseTags course={course} />}
       </span>
     </div>
   )
@@ -55,6 +68,9 @@ export function CourseSearch({
    *  results on the sidebar's white rather than on a card. */
   bare?: boolean
 }) {
+  /* What Course details has on, so a result carries what a card in the plan does. */
+  const shown = useMetadata()
+
   return (
     <>
       {/* The search that produced this. In a working planner the count is the
@@ -101,7 +117,8 @@ export function CourseSearch({
           <CourseRow
             key={`${entry.code}-${i}`}
             code={entry.code}
-            name={entry.name}
+            name={shown.includes("name") ? entry.name : undefined}
+            course={catalogCourse(entry)}
             onOpen={onOpenCourse && (() => onOpenCourse(entry))}
           />
         ))}
@@ -119,6 +136,7 @@ export function CourseSearchPanel({
   entries,
   backLabel,
   credits,
+  initialFilters = {},
   onOpenCourse,
   onBack,
   onClose,
@@ -128,10 +146,18 @@ export function CourseSearchPanel({
   backLabel?: string
   /** What the search is for, in credits, where it is for something that has them. */
   credits?: number | string
+  /** What the search starts out narrowed to, which the filters say up front. */
+  initialFilters?: FilterState
   onOpenCourse?: (entry: CatalogEntry) => void
   onBack?: () => void
   onClose: () => void
 }) {
+  const [filters, setFilters] = useState<FilterState>(initialFilters)
+  /* Folded to begin with, showing only the filters that are on. */
+  const [open, setOpen] = useState(false)
+  const groups = useMemo(() => courseSearchFilters(entries), [entries])
+  const shown = entries.filter((entry) => matches(filters, (field) => courseAnswers(entry, field)))
+
   return (
     <aside className="flex h-full w-full flex-col overflow-x-clip overflow-y-auto bg-card pb-28">
       <PanelTopHeader
@@ -145,15 +171,23 @@ export function CourseSearchPanel({
         onClose={onClose}
       />
       <div className="flex w-full flex-col gap-4 px-6 pt-4">
-        {/* What the search was run with. In a working planner the chevron
-            opens the filters; here it is what it says it is. */}
-        <p className="flex items-center gap-2 text-caption-md font-medium text-gray-100">
-          <Icon name="filter-alt" size={16} className="shrink-0" />
-          Filters
-          <Badge variant="secondary">3</Badge>
-          <Icon name="chevron-right" size={16} className="shrink-0" />
-        </p>
-        <CourseSearch entries={entries} onOpenCourse={onOpenCourse} bare />
+        {/* The same filters the remaining list has: a button for each, and what is
+            chosen as tags under them, so what the results were narrowed by is
+            always on show. */}
+        <div className="flex w-full flex-col gap-2">
+          <button
+            type="button"
+            aria-expanded={open}
+            onClick={() => setOpen((was) => !was)}
+            className="flex w-fit cursor-pointer items-center gap-1 text-body-md font-semibold text-foreground"
+          >
+            <Icon name="filter-alt" size={16} className="text-gray-100" />
+            Filters
+            <Icon name={open ? "expand-less" : "expand-more"} size={16} className="text-gray-100" />
+          </button>
+          <FilterBar groups={groups} filters={filters} onChange={setFilters} onlyActive={!open} />
+        </div>
+        <CourseSearch entries={shown} onOpenCourse={onOpenCourse} bare />
       </div>
     </aside>
   )
