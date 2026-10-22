@@ -232,14 +232,12 @@ function RegistrationAlert({
   const banner = registrationBanner(term, useRegistrable(term).length)
   const done = banner.state === "registered"
 
-  /* 92px is the design's height for a banner with a button under its line; a
-     minimum rather than a fixed value so it can grow when the closing date
-     wraps. With nothing under the line, it is one line and sized like one. */
-  const tall = banner.register != null || banner.note != null || banner.seat != null
   return (
-    <Alert variant={done ? "success" : "info"} className={cn(tall && "min-h-[92px]")}>
+    /* The title over the closing date, and the button at the right, centred on
+       the pair: all three kept, and no taller than the two lines. */
+    <Alert variant={done ? "success" : "info"}>
       <AlertBody>
-        <AlertHeader>
+        <AlertHeader className="flex-col items-start gap-0.5">
           <AlertTitle>
             <Icon
               name={done ? "check-circle" : "event-available"}
@@ -248,8 +246,6 @@ function RegistrationAlert({
             />
             {banner.title}
           </AlertTitle>
-          {/* The date stays on one line while there is room for it; in a term
-              sharing its row with two others there is not. */}
           <AlertDescription className="@max-[400px]/term:whitespace-normal">
             {banner.closesLabel}: {term.alert?.closes}
           </AlertDescription>
@@ -265,14 +261,21 @@ function RegistrationAlert({
             Choose course for {banner.seat.name}
           </button>
         )}
-        {/* There or not there: a button offering to register nothing is not
-            an offer, so it goes rather than greying out. */}
-        {banner.register != null && (
-          <Button variant="primary" size="sm" onClick={onRegister}>
-            Register {banner.register} course{banner.register === 1 ? "" : "s"}
-          </Button>
-        )}
       </AlertBody>
+      {/* There or not there: a button offering to register nothing is not
+          an offer, so it goes rather than greying out. It says what it does,
+          and how many is in its name for anything that reads it. */}
+      {banner.register != null && (
+        <Button
+          variant="primary"
+          size="sm"
+          className="shrink-0"
+          onClick={onRegister}
+          aria-label={`Register ${banner.register} course${banner.register === 1 ? "" : "s"}`}
+        >
+          Register Now
+        </Button>
+      )}
     </Alert>
   )
 }

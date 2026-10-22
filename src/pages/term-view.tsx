@@ -79,7 +79,7 @@ function RegistrationAlert({
       />
       {/* A line of its own on a phone, with room to wrap, so the date is never
           behind the button; the button drops under it. */}
-      <span className="flex min-w-[12rem] flex-1 flex-wrap items-center gap-x-2">
+      <span className="flex min-w-[12rem] flex-1 flex-col gap-0.5">
         <span className="text-caption-lg font-semibold">{banner.title}</span>
         <span className="sm:whitespace-nowrap">
           {banner.closesLabel}: {term.alert?.closes}
@@ -104,8 +104,9 @@ function RegistrationAlert({
           size="sm"
           className="shrink-0 max-sm:w-full"
           onClick={onRegister}
+          aria-label={`Register ${banner.register} course${banner.register === 1 ? "" : "s"}`}
         >
-          Register {banner.register} course{banner.register === 1 ? "" : "s"}
+          Register Now
         </Button>
       )}
     </div>
