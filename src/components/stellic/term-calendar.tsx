@@ -5,7 +5,8 @@ import { useState } from "react"
 import { Icon } from "@/components/icon"
 import { accentBar } from "@/components/stellic/course-accent"
 import { AddToTerm } from "@/components/stellic/add-to-term"
-import { ALL_ELECTIVES, ELECTIVE_COURSES, type CatalogEntry } from "@/data/catalog"
+import { electivesFor } from "@/components/stellic/course-search-filters"
+import type { CatalogEntry } from "@/data/catalog"
 import { DRAFT_STYLE, DraftNote } from "@/components/stellic/draft-mark"
 import { AuditIcon } from "@/components/stellic/primitives"
 import { useMetadata } from "@/components/stellic/course-metadata"
@@ -162,17 +163,20 @@ function CourseCard({
 
 function HeldCard({
   course,
+  term,
   onOpen,
   onSearch,
 }: {
   course: PlannedCourse
+  /** The term the seat is in, which decides which courses could fill it. */
+  term: Term
   /** Opens the seat on its own. */
   onOpen?: () => void
   /** Opens the seat straight on the courses that could fill it. */
   onSearch?: () => void
 }) {
   const mark = course.draft ? DRAFT_STYLE[course.draft.mark] : null
-  const options = (ELECTIVE_COURSES[(course.seat ?? course).code] ?? ALL_ELECTIVES).length
+  const options = electivesFor((course.seat ?? course).code, term.name).length
   const edge = mark ? mark.card : "border-gray-40 bg-gray-0"
 
   /* The seat's name over the line that goes to its courses, the way the
@@ -270,6 +274,7 @@ function Sidebar({
             <HeldCard
               key={course.id}
               course={course}
+              term={term}
               onOpen={onOpenSeat && (() => onOpenSeat(course.id, "detail"))}
               onSearch={onOpenSeat && (() => onOpenSeat(course.id, "search"))}
             />

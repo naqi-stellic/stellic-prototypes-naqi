@@ -16,7 +16,6 @@ import { useEffect, useState, type ReactNode } from "react"
 import { cn } from "cn"
 
 import { Icon } from "@/components/icon"
-import { PREREQ_LABEL } from "@/data/course-detail"
 import { useMediaQuery } from "@/lib/use-media-query"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AppShell } from "@/components/layout/app-shell"
@@ -29,6 +28,7 @@ import { CoursePanel } from "@/components/stellic/course-panel"
 import { termIssues } from "@/data/issues"
 import type { Instance } from "@/data/course-sidebar"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
+import { searchDefaults } from "@/components/stellic/course-search-filters"
 import { PlaceholderPanel } from "@/components/stellic/placeholder-panel"
 import { DiscardDraftDialog } from "@/components/stellic/discard-draft-dialog"
 import { RegisterDialog } from "@/components/stellic/register-dialog"
@@ -1122,11 +1122,7 @@ export function PlanYourPath({
       <CourseSearchPanel
         key={searchTerm.id}
         entries={addable}
-        initialFilters={{
-          semesters: [searchTerm.name.split(" ")[0]],
-          campus: ["Main"],
-          eligibility: [PREREQ_LABEL.met],
-        }}
+        initialFilters={searchDefaults(searchTerm.name)}
         /* Opened straight from a term on the plan: nothing to go back to. */
         onOpenCourse={(entry) => setOpenCourse({ entry, from: "course search" })}
         onClose={() => setSearching(null)}

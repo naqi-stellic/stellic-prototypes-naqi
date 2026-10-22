@@ -153,7 +153,7 @@ export function CourseSearchPanel({
   onClose: () => void
 }) {
   const [filters, setFilters] = useState<FilterState>(initialFilters)
-  /* Folded to begin with, showing only the filters that are on. */
+  /* Folded to begin with: just the tags of what the results are narrowed by. */
   const [open, setOpen] = useState(false)
   const groups = useMemo(() => courseSearchFilters(entries), [entries])
   const shown = entries.filter((entry) => matches(filters, (field) => courseAnswers(entry, field)))
@@ -185,7 +185,7 @@ export function CourseSearchPanel({
             Filters
             <Icon name={open ? "expand-less" : "expand-more"} size={16} className="text-gray-100" />
           </button>
-          <FilterBar groups={groups} filters={filters} onChange={setFilters} onlyActive={!open} />
+          <FilterBar groups={groups} filters={filters} onChange={setFilters} buttons={open} />
         </div>
         <CourseSearch entries={shown} onOpenCourse={onOpenCourse} bare />
       </div>

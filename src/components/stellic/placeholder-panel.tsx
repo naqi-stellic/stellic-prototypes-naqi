@@ -4,13 +4,14 @@ import { useState } from "react"
 import { Icon } from "@/components/icon"
 import { Fold, Heading } from "@/components/stellic/course-panel"
 import { CourseSearchPanel } from "@/components/stellic/course-search"
+import { searchDefaults } from "@/components/stellic/course-search-filters"
 import { PanelTopHeader } from "@/components/stellic/panel-top-header"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { ELECTIVE_COURSES, ALL_ELECTIVES, type CatalogEntry } from "@/data/catalog"
-import { PREREQ_LABEL, activityFor } from "@/data/course-detail"
+import { activityFor } from "@/data/course-detail"
 import { DEGREE, type PlannedCourse, type Term } from "@/data/plan"
 
 /* A placeholder opened on its own, read the way the course sidebar reads a
@@ -67,11 +68,7 @@ export function PlaceholderPanel({
         entries={eligible}
         backLabel={name}
         credits={credits}
-        initialFilters={{
-          semesters: [term.name.split(" ")[0]],
-          campus: ["Main"],
-          eligibility: [PREREQ_LABEL.met],
-        }}
+        initialFilters={searchDefaults(term.name)}
         onBack={() => setSearching(false)}
         onOpenCourse={onOpenCourse}
         onClose={onClose}

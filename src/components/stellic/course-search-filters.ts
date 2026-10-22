@@ -1,6 +1,7 @@
-import type { FilterGroup } from "@/components/stellic/filter-bar"
-import { offeredIn, type CatalogEntry } from "@/data/catalog"
-import { PREREQ_LABEL, courseDetail, courseLevel, prereqsMet } from "@/data/course-detail"
+import { matches, type FilterGroup, type FilterState } from "@/components/stellic/filter-bar"
+import { ALL_ELECTIVES, ELECTIVE_COURSES, offeredIn, type CatalogEntry } from "@/data/catalog"
+import { PREREQ_LABEL, courseDetail, courseLevel } from "@/data/course-detail"
+import { eligibility } from "@/data/course-sidebar"
 
 /* The filters the platform's course search has, in its order: one button for
  * each, and what is chosen collected as tags beneath. Everything a course can
@@ -128,10 +129,31 @@ export function courseAnswers(entry: CatalogEntry, id: string): string | string[
     case "delivery":
       return "In Person"
     case "eligibility":
-      return entry.placeholder || prereqsMet(entry) ? PREREQ_LABEL.met : PREREQ_LABEL.not
+      /* Read the way the course's own sidebar reads it, which counts a
+         prerequisite that is under way, so a course says the same in both. */
+      return entry.placeholder || eligibility(entry).met ? PREREQ_LABEL.met : PREREQ_LABEL.not
     case "level":
       return courseLevel(entry.code)
     default:
       return []
   }
+}
+
+/** What a search for a course to put in a term starts out narrowed to: what is
+ *  offered in that term's season, on the main campus, and open to the student
+ *  now. */
+export function searchDefaults(termName?: string): FilterState {
+  return {
+    ...(termName ? { semesters: [termName.split(" ")[0]] } : {}),
+    campus: ["Main"],
+    eligibility: [PREREQ_LABEL.met],
+  }
+}
+
+/** The courses that could fill a seat in that term: the ones the search opens
+ *  on. The seat says how many there are, so it and the search always agree. */
+export function electivesFor(seatCode: string, termName?: string): CatalogEntry[] {
+  return (ELECTIVE_COURSES[seatCode] ?? ALL_ELECTIVES).filter((entry) =>
+    matches(searchDefaults(termName), (id) => courseAnswers(entry, id))
+  )
 }

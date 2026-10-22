@@ -23,7 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
-import { ELECTIVE_COURSES, ALL_ELECTIVES } from "@/data/catalog"
+import { electivesFor } from "@/components/stellic/course-search-filters"
 import { useNudge } from "@/lib/nudge"
 import {
   CREDIT_GROUP_LABEL,
@@ -165,7 +165,7 @@ export function AuditRow({
    * waiting to be filled rather than as a course. */
   const held = course.placeholder
   /* How many courses could fill it, the number the seat says it is waiting on. */
-  const options = (ELECTIVE_COURSES[(course.seat ?? course).code] ?? ALL_ELECTIVES).length
+  const options = electivesFor((course.seat ?? course).code, term?.name).length
   /* What the draft struck out is on its way off the plan; what it added is on
    * its way to being an ordinary course. */
   const leaving = settling && struck
