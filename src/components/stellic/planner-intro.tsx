@@ -2,10 +2,10 @@ import { cn } from "cn"
 import { useEffect, useState } from "react"
 
 import { Icon, type IconName } from "@/components/icon"
-import { Badge } from "@/components/ui/badge"
+import { CourseTags, MetadataProvider } from "@/components/stellic/course-metadata"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
-import { courseTags, type MetadataField, type PlannedCourse } from "@/data/plan"
+import type { MetadataField, PlannedCourse } from "@/data/plan"
 
 /* Introducing the new planner to a student who already knows the old one: a
  * card that says what changed, then a short tour that spotlights each thing on
@@ -401,7 +401,6 @@ export function PlannerIntro({
       const all = on(fields)
       fields.forEach((field) => details.includes(field) === all && onToggleDetail(field))
     }
-    const tags = courseTags(PREVIEW_COURSE, details)
 
     return (
       <div className="fixed inset-0 z-50 flex items-center justify-center bg-gray-100/50 p-4">
@@ -424,32 +423,22 @@ export function PlannerIntro({
             <div className="flex w-full flex-col gap-4">
               <div className="flex min-w-0 flex-col gap-3 rounded-md bg-gray-0 p-4">
                 <span className="text-label-md font-semibold text-gray-80 uppercase">Preview</span>
-                  <div className="flex items-center gap-2 rounded-md border border-gray-40 bg-card p-[7px]">
-                    <Icon name="drag-indicator" size={16} className="text-foreground" />
-                    <div className="flex min-w-0 flex-1 flex-col justify-center gap-2">
-                      <div>
-                        <p className="text-body-md text-gray-100">{PREVIEW_COURSE.code}</p>
+                  {/* The card as the plan draws it: the code and name on a line, then
+                      the section and whatever else is on as tags. */}
+                  <div className="flex items-center gap-2 rounded-md border border-gray-40 bg-card p-[11px]">
+                    <Icon name="drag-indicator" size={16} className="shrink-0 text-foreground" />
+                    <div className="flex min-w-0 flex-1 flex-col gap-1">
+                      <div className="flex min-w-0 items-center gap-2 text-body-md">
+                        <span className="shrink-0 text-gray-100">{PREVIEW_COURSE.code}</span>
                         {details.includes("name") && (
-                          <p className="text-body-md font-semibold text-foreground">
+                          <span className="min-w-0 truncate font-semibold text-foreground">
                             {PREVIEW_COURSE.name}
-                          </p>
+                          </span>
                         )}
                       </div>
-                      {details.includes("section") && (
-                        <p className="flex items-center gap-1 text-body-md text-foreground">
-                          <Icon name="calendar-today" size={14} />
-                          {PREVIEW_COURSE.section}
-                        </p>
-                      )}
-                      {tags.length > 0 && (
-                        <span className="flex flex-wrap items-start gap-1">
-                          {tags.map((tag) => (
-                            <Badge key={tag} variant="secondary">
-                              {tag}
-                            </Badge>
-                          ))}
-                        </span>
-                      )}
+                      <MetadataProvider shown={details}>
+                        <CourseTags course={PREVIEW_COURSE} />
+                      </MetadataProvider>
                     </div>
                   </div>
               </div>
