@@ -248,7 +248,7 @@ export function PlanHeader({
   /* The crumbs, with the review tag and the student's name where staff are
      looking at a plan, and the switch beside them, with its words and without. */
   const beside = (status ? 100 : 0) + (cameFrom() ? 150 : 0)
-  const planButton = 160 // the plan's button and the space before it
+  const planButton = 210 // the plan's button and the space before it
   const left = (view ? 240 : 85) + beside + planButton
   const switchFull = view ? 232 : 0
   const switchIcons = view ? 122 : 0
@@ -473,7 +473,7 @@ function PlanSwitcher({ className }: { className?: string }) {
         >
           {/* Fixed in width, so a longer plan name truncates rather than moving
               the toolbar. */}
-          <span className="w-[100px] truncate text-left">{PLAN_NAME}</span>
+          <span className="w-[150px] truncate text-left">{PLAN_NAME}</span>
           <Icon name="expand-more" size={16} />
         </Button>
       </DropdownMenuTrigger>
