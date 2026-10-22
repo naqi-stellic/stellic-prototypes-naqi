@@ -246,12 +246,7 @@ export function AuditRow({
         {held ? (
           /* The seat's name heads the card above; this is the line that goes
              straight to the courses that could fill it. */
-          <p
-            className={cn(
-              "truncate text-body-md text-foreground",
-              struck && "line-through"
-            )}
-          >
+          <p className="truncate text-body-md text-foreground">
             Choose 1 of {options} {options === 1 ? "course" : "courses"}
           </p>
         ) : (
@@ -260,11 +255,7 @@ export function AuditRow({
               {/* The code carries the mark, so a card says something is wrong
                   with it before anybody opens the term's line about it. */}
               <p
-                className={cn(
-                  "flex shrink-0 items-center gap-1.5 text-body-md text-gray-100",
-                  /* With the name off, the code is what gets struck. */
-                  struck && !shown.includes("name") && "line-through"
-                )}
+                className="flex shrink-0 items-center gap-1.5 text-body-md text-gray-100"
               >
                 {issue && (
                   <Icon
@@ -279,12 +270,7 @@ export function AuditRow({
                 {course.code}
               </p>
               {shown.includes("name") && (
-                <p
-                  className={cn(
-                    "min-w-0 truncate text-body-md font-semibold text-foreground",
-                    struck && "line-through"
-                  )}
-                >
+                <p className="min-w-0 truncate text-body-md font-semibold text-foreground">
                   {course.name}
                 </p>
               )}
@@ -383,12 +369,7 @@ export function AuditRow({
           ghosted && "opacity-40"
         )}
       >
-        <p
-          className={cn(
-            "min-w-0 flex-1 truncate text-body-md font-semibold text-foreground",
-            struck && "line-through"
-          )}
-        >
+        <p className="min-w-0 flex-1 truncate text-body-md font-semibold text-foreground">
           Requirement: {(filled ?? course).name}
         </p>
       </div>

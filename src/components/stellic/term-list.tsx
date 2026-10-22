@@ -6,7 +6,7 @@ import { Icon, type IconName } from "@/components/icon"
 import { accentBar } from "@/components/stellic/course-accent"
 import { AddToTerm } from "@/components/stellic/add-to-term"
 import type { CatalogEntry } from "@/data/catalog"
-import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
+import { DRAFT_STYLE, DraftNote } from "@/components/stellic/draft-mark"
 import { AuditIcon, StatusPill } from "@/components/stellic/primitives"
 import { Button } from "@/components/ui/button"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
@@ -105,7 +105,6 @@ function CourseRow({
   const pill = missing?.severity === "error" ? "blocked" : status
   /* A draft on the canvas marks its terms here as well. */
   const mark = course.draft ? DRAFT_STYLE[course.draft.mark] : null
-  const struck = isStruck(course)
 
   return (
     /* A marked course is one thing — the row and the line saying what the draft
@@ -149,12 +148,7 @@ function CourseRow({
             <span className="text-label-md text-gray-100">
               {held ? "Elective" : course.code}
             </span>
-            <span
-              className={cn(
-                "text-body-md font-semibold text-gray-100",
-                struck && "line-through"
-              )}
-            >
+            <span className="text-body-md font-semibold text-gray-100">
               {course.name}
             </span>
           </div>

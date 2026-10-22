@@ -6,7 +6,7 @@ import { Icon } from "@/components/icon"
 import { accentBar } from "@/components/stellic/course-accent"
 import { AddToTerm } from "@/components/stellic/add-to-term"
 import { ALL_ELECTIVES, ELECTIVE_COURSES, type CatalogEntry } from "@/data/catalog"
-import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
+import { DRAFT_STYLE, DraftNote } from "@/components/stellic/draft-mark"
 import { AuditIcon } from "@/components/stellic/primitives"
 import { useMetadata } from "@/components/stellic/course-metadata"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
@@ -124,12 +124,7 @@ function CourseCard({
                 {course.code}
               </span>
               {shown.includes("name") && (
-                <span
-                  className={cn(
-                    "min-w-0 truncate font-semibold text-gray-100",
-                    isStruck(course) && "line-through"
-                  )}
-                >
+                <span className="min-w-0 truncate font-semibold text-gray-100">
                   {course.name}
                 </span>
               )}
@@ -189,8 +184,7 @@ function HeldCard({
         className={cn(
           "w-full truncate rounded-t-md border border-dashed px-3 py-2 text-body-md font-semibold text-foreground",
           edge,
-          onOpen && "cursor-pointer hover:bg-gray-5",
-          isStruck(course) && "line-through"
+          onOpen && "cursor-pointer hover:bg-gray-5"
         )}
       >
         Requirement: {course.name}
