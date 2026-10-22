@@ -147,6 +147,9 @@ export const DEGREE = {
    *  saying out loud: no pathway is built for every programme, concentration
    *  and minor there could be. */
   minor: "Data Analytics",
+  /** The pathway the plan was started from: the Finance branch of the Business
+   *  program, which is what put "Added by Pathway" on some of its courses. */
+  pathway: "Business - Finance",
   requirements: 40,
   credits: 120,
 }

@@ -347,6 +347,7 @@ export function RequirementsPanel({
             `Minor in ${DEGREE.minor}`,
           ]}
         />
+        <PlanFacet label="Pathways" add="add pathway" values={[DEGREE.pathway]} />
 
 
       </div>
