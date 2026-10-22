@@ -8,6 +8,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
@@ -497,6 +498,81 @@ function PlanSwitcher({ className }: { className?: string }) {
   )
 }
 
+/** The term's name in the breadcrumb, which opens onto every term of the plan
+ *  when the cursor rests on it — the four years, each with its terms — so
+ *  another can be gone to without going back out to the plan first. It looks as
+ *  the name did; a click opens it too, for a screen with no cursor. */
+function TermSwitcher({ tabs, term }: { tabs: YearTab[]; term: string }) {
+  const [open, setOpen] = useState(false)
+  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const trigger = useRef<HTMLButtonElement>(null)
+  useEffect(() => () => clearTimeout(timer.current), [])
+  const later = (to: boolean, ms: number) => {
+    clearTimeout(timer.current)
+    timer.current = setTimeout(() => setOpen(to), ms)
+  }
+  const years = tabs.filter((tab) => tab.terms && tab.terms.length > 0)
+  /* The menu reads "Fall 27"; the crumb reads "Fall 2027". */
+  const short = (name: string) => name.replace(/(\d{2})(\d{2})$/, "$2")
+
+  return (
+    <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
+      <DropdownMenuTrigger asChild>
+        <button
+          ref={trigger}
+          type="button"
+          /* A press opens it and never shuts it: the cursor has usually opened it
+             already by the time it clicks, and a toggle would close it again. */
+          onPointerDown={(event) => {
+            event.preventDefault()
+            clearTimeout(timer.current)
+            setOpen(true)
+          }}
+          onPointerEnter={() => later(true, 80)}
+          onPointerLeave={() => later(false, 200)}
+          className="cursor-pointer rounded-md text-gray-100 outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {term}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="start"
+        sideOffset={14}
+        /* A press on the name is not a press outside the menu. */
+        onInteractOutside={(event) => {
+          if (trigger.current?.contains(event.target as Node)) event.preventDefault()
+        }}
+        onPointerEnter={() => clearTimeout(timer.current)}
+        onPointerLeave={() => later(false, 200)}
+        className="w-[240px]"
+      >
+        {years.map((year, i) => (
+          <div key={year.label}>
+            {i > 0 && <DropdownMenuSeparator />}
+            <DropdownMenuLabel className="flex items-center gap-2 text-body-md font-semibold text-gray-100">
+              {year.icon && <Icon name={year.icon} size={16} className={cn("shrink-0", year.tone)} />}
+              {year.label}
+            </DropdownMenuLabel>
+            {year.terms?.map((item) => {
+              const here = item.label === short(term)
+              return (
+                <DropdownMenuItem
+                  key={item.id}
+                  onSelect={() => year.onSelectTerm?.(item.id)}
+                  className={cn("gap-2 py-1.5 pl-8 text-body-md", here && "font-semibold")}
+                >
+                  <Icon name={item.icon} size={16} className={cn("shrink-0", item.tone)} />
+                  {item.label}
+                </DropdownMenuItem>
+              )
+            })}
+          </div>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
 /** Where you are: the student, for staff, then the years, then the term. On a
  *  term, "My Plan" is the way back out to the whole plan. */
 function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
@@ -516,7 +592,7 @@ function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
             {label}
           </button>
           <Icon name="chevron-right" size={20} className="shrink-0 text-gray-80" />
-          <span className="text-gray-100">{term}</span>
+          <TermSwitcher tabs={tabs} term={term} />
         </>
       ) : (
         <span className="text-gray-100">{label}</span>
