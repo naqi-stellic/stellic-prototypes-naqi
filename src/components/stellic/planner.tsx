@@ -650,7 +650,22 @@ export function SemesterCard({
         >
           <div className="flex min-w-0 flex-col gap-1">
             <div className="flex min-w-0 items-center gap-2">
-              <h4 className="min-w-0 truncate text-caption-lg font-semibold text-gray-100">
+              {/* The name opens the term as well as the button does, and looks
+                  the same as it did. */}
+              <h4
+                className={cn(
+                  "min-w-0 truncate text-caption-lg font-semibold text-gray-100",
+                  onOpen && "cursor-pointer"
+                )}
+                {...(onOpen && {
+                  role: "link",
+                  tabIndex: 0,
+                  onClick: onOpen,
+                  onKeyDown: (event: React.KeyboardEvent) => {
+                    if (event.key === "Enter") onOpen()
+                  },
+                })}
+              >
                 {term.name}
               </h4>
               {/* A term waiting on an advisor says so; otherwise it says
@@ -668,7 +683,7 @@ export function SemesterCard({
           </div>
           {/* The way into the term. Once its classes are out it opens on its
               week, and says so; before that it opens on its list of courses,
-              and says that. A button, because a link on the name was missed. */}
+              and says that. A button, because a link on the name alone was missed. */}
           <TooltipProvider delayDuration={200}>
             <Tooltip>
               <TooltipTrigger asChild>
