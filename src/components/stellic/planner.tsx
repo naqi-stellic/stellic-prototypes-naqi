@@ -854,10 +854,13 @@ export function YearSection({
   openSeatId,
   onPickSection,
   across,
+  fill,
 }: {
   year: Year
-  /** Laid along a timeline rather than down the page: the year's name stands
-   *  above its first term, and the terms keep one width side by side. */
+  /** In a column that sets its own width, rather than the timeline's 384px. */
+  fill?: boolean
+  /** Laid along a timeline rather than down the page: the year is a column of
+   *  one width, with its name above it and its terms stacked beneath. */
   across?: boolean
   renderAlert?: (term: Term) => ReactNode
   settling?: boolean
@@ -884,30 +887,20 @@ export function YearSection({
 }) {
   if (across) {
     return (
-      <section className="flex shrink-0 flex-col gap-2.5">
-        {/* Over the year's first term, and as wide as the year's terms, so what
-            the year comes to has room beside its name. */}
+      <section className={cn("flex shrink-0 flex-col gap-2.5", fill ? "w-full" : "w-[384px]")}>
+        {/* Over the year's first term, as wide as the column its terms stand in. */}
         <div className="flex min-h-9 min-w-0 items-center gap-x-4">
           <div className="flex shrink-0 items-center gap-2">
             <YearMarker phase={year.phase} />
             <h3 className="text-h300 font-semibold text-gray-100">{year.label}</h3>
           </div>
           <p className="min-w-0 flex-1 truncate text-body-md text-gray-80">{yearSummary(year)}</p>
-          {/* At the end of the year's span, over its last term, which is the
-              one the summer would follow. */}
-          {canAddTerm(year) && (
-            <button
-              type="button"
-              onClick={onAddTerm}
-              className="shrink-0 cursor-pointer text-body-md text-gray-80 underline [text-underline-position:from-font]"
-            >
-              + Add Summer {year.label.split("-")[1]}
-            </button>
-          )}
         </div>
-        <div className="flex items-start gap-4">
+        {/* The year's terms, one above the next: the timeline runs across in
+            years, and each year is read down. */}
+        <div className="flex flex-col gap-4">
           {year.terms.map((term) => (
-            <div key={term.id} className="w-[384px] shrink-0">
+            <div key={term.id} className="w-full">
               <SemesterCard
                 term={term}
                 alert={renderAlert?.(term)}
@@ -925,6 +918,16 @@ export function YearSection({
               />
             </div>
           ))}
+          {/* A year that can take its summer offers it under its last term, as a
+              slot like the one a term offers for a course. */}
+          {canAddTerm(year) && (
+            <AddSlot
+              onClick={onAddTerm}
+              className="cursor-pointer bg-transparent text-gray-100 transition-colors hover:bg-gray-5"
+            >
+              + Add Summer {year.label.split("-")[1]}
+            </AddSlot>
+          )}
         </div>
       </section>
     )
@@ -1020,12 +1023,12 @@ export function YearSection({
   )
 }
 
-/* ============================================================ TermDeck
-   Every term of the plan as a deck of cards, for a phone: one card the width
-   of the screen on top, the next one underneath it. A swipe left
-   throws the top card off — it follows the finger and tilts — and the next
-   settles into its place; a swipe right brings the last one back from the
-   side, straightening as it lands. The cards are moved by hand, off the
+/* ============================================================ YearDeck
+   Every year of the plan as a deck of cards, for a phone: one year the width
+   of the screen on top, its terms stacked in it, the next year underneath. A
+   swipe left throws the top card off — it follows the finger and tilts — and
+   the next settles into its place; a swipe right brings the last one back from
+   the side, straightening as it lands. The cards are moved by hand, off the
    pointer, rather than by scrolling, so they can behave like cards. */
 
 type TermCardProps = Pick<
@@ -1048,7 +1051,7 @@ const PEEK = 12 // px of the next card showing below the top one
 const SETTLE = 280 // ms
 const EASE = "cubic-bezier(0.22, 0.8, 0.24, 1)"
 
-export function TermDeck({
+export function YearDeck({
   years,
   renderAlert,
   settling,
@@ -1061,8 +1064,9 @@ export function TermDeck({
   onOpenCourse,
   openSeatId,
   onPickSection,
-}: TermCardProps & { years: Year[] }) {
-  const items = years.flatMap((year) => year.terms.map((term) => ({ year, term })))
+  onAddTerm,
+}: TermCardProps & { years: Year[]; onAddTerm?: (yearLabel: string) => void }) {
+  const items = years.map((year) => ({ year }))
   const [index, setIndex] = useState(0)
   const at = Math.min(index, Math.max(0, items.length - 1))
   const current = items[at]
@@ -1083,7 +1087,7 @@ export function TermDeck({
   const settle = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   /* The deck is as tall as the card on top; the ones under it are cut to that. */
-  const topId = current?.term.id
+  const topId = current?.year.label
   useEffect(() => {
     const watch = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -1105,8 +1109,8 @@ export function TermDeck({
     const width = stage.current?.offsetWidth ?? 1
     const t = Math.min(1, Math.abs(dx) / width)
     const hasPrev = at > 0
-    items.forEach(({ term }, i) => {
-      const el = layers.current.get(term.id)
+    items.forEach(({ year }, i) => {
+      const el = layers.current.get(year.label)
       if (!el) return
       const k = i - at
       el.style.transition = ease ? `transform ${SETTLE}ms ${EASE}` : "none"
@@ -1215,17 +1219,9 @@ export function TermDeck({
   }
 
   if (!current) return null
-  const { year } = current
 
   return (
     <div className="flex flex-col gap-4 pt-2">
-      {/* The year of the card on top. */}
-      <div className="flex min-h-9 items-center gap-2">
-        <YearMarker phase={year.phase} />
-        <h3 className="shrink-0 text-h300 font-semibold text-gray-100">{year.label}</h3>
-        <p className="min-w-0 flex-1 truncate text-body-md text-gray-80">{yearSummary(year)}</p>
-      </div>
-
       <div
         ref={stage}
         onPointerDown={onPointerDown}
@@ -1244,30 +1240,32 @@ export function TermDeck({
         style={{ height: height || undefined, touchAction: "pan-y" }}
         className="relative mb-4 w-full"
       >
-        {items.map(({ term }) => (
+        {items.map(({ year }) => (
           <div
-            key={term.id}
+            key={year.label}
             ref={(el) => {
-              if (el) layers.current.set(term.id, el)
-              else layers.current.delete(term.id)
+              if (el) layers.current.set(year.label, el)
+              else layers.current.delete(year.label)
             }}
             className="absolute inset-x-0 top-0 will-change-transform"
           >
-            <div data-deck-inner={term.id}>
-              <SemesterCard
-                term={term}
-                alert={renderAlert?.(term)}
+            <div data-deck-inner={year.label}>
+              <YearSection
+                year={year}
+                across
+                fill
+                renderAlert={renderAlert}
                 settling={settling}
                 revealed={revealed}
-                dropAt={drop?.termId === term.id ? drop.index : undefined}
-                dropHeight={drop?.height ?? 64}
+                drop={drop}
                 onRemoveCourse={onRemoveCourse}
-                onSearchCourses={onSearchCourses && (() => onSearchCourses(term.id))}
-                onOpen={onOpenTerm && (() => onOpenTerm(term.id))}
+                onSearchCourses={onSearchCourses}
+                onOpenTerm={onOpenTerm}
                 onOpenSeat={onOpenSeat}
                 onOpenCourse={onOpenCourse}
                 openSeatId={openSeatId}
                 onPickSection={onPickSection}
+                onAddTerm={onAddTerm && (() => onAddTerm(year.label))}
               />
             </div>
           </div>
@@ -1281,7 +1279,7 @@ export function TermDeck({
       <div className="fixed inset-x-0 bottom-0 z-30 flex gap-4 bg-background px-6 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-1px_0_0_var(--color-gray-40)]">
         <Button className="flex-1" disabled={at === 0} onClick={() => go(at - 1)}>
           <Icon name="chevron-left" size={16} />
-          Previous term
+          Previous year
         </Button>
         <Button
           variant="primary"
@@ -1289,7 +1287,7 @@ export function TermDeck({
           disabled={at === items.length - 1}
           onClick={() => go(at + 1)}
         >
-          Next term
+          Next year
           <Icon name="chevron-right" size={16} />
         </Button>
       </div>

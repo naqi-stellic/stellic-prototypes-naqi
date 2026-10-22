@@ -60,7 +60,7 @@ import {
   NoActionsAlert,
   STREAM_CAP,
   STREAM_MS,
-  TermDeck,
+  YearDeck,
   YearSection,
 } from "@/components/stellic/planner"
 import {
@@ -342,8 +342,8 @@ export function PlanYourPath({
   const [generateOpen, setGenerateOpen] = useState(false)
   /* A phone-sized screen, where the timeline's cards are made for it. */
   const phone = useMediaQuery("(max-width: 639px)")
-  /* How the plan is read: as years of terms down the page, or every term side
-     by side along a timeline that scrolls across. A phone opens on the
+  /* How the plan is read: as years of terms down the page, or along a timeline
+     that scrolls across a year to a column, its terms stacked. A phone opens on the
      timeline, and the window crossing into or out of that size moves it there
      — the choice is then the reader's until it is crossed again. */
   const [layout, setLayout] = useState<"grid" | "timeline">(phone ? "timeline" : "grid")
@@ -1355,14 +1355,19 @@ export function PlanYourPath({
           {/* Keyed on the option so switching one replays the entrances rather
               than swapping the cards in place. */}
           {layout === "timeline" && phone ? (
-            <TermDeck key={draft ? `draft-${streamId}` : "plan"} years={shown} {...termProps} />
+            <YearDeck
+              key={draft ? `draft-${streamId}` : "plan"}
+              years={shown}
+              onAddTerm={addYearTerm}
+              {...termProps}
+            />
           ) : (
             <div
               key={draft ? `draft-${streamId}` : "plan"}
               className={
                 layout === "grid"
                   ? "flex flex-col gap-10 pt-2"
-                  : "-mx-6 flex items-start gap-8 overflow-x-auto px-6 pt-2 pb-4"
+                  : "-mx-6 flex shrink-0 items-start gap-8 overflow-x-auto px-6 pt-2 pb-4"
               }
             >
               {shown.map((year) => (
@@ -1376,6 +1381,19 @@ export function PlanYourPath({
                   {...termProps}
                 />
               ))}
+              {/* Beside the last year, where the next one would stand. */}
+              {layout === "timeline" && (
+                <div className="flex min-h-9 w-[384px] shrink-0 items-center gap-2">
+                  <Icon name="fiber-manual-record" size={20} className="shrink-0 text-gray-40" />
+                  <button
+                    type="button"
+                    onClick={() => setYears((current) => addYear(current))}
+                    className="w-fit cursor-pointer text-h300 font-semibold text-gray-80 underline [text-underline-position:from-font]"
+                  >
+                    + Add Year {nextYearNumber(shown)}
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
