@@ -243,6 +243,12 @@ function level(code: string): number {
   return Number(code.replace(/\D+/g, "")) || 100
 }
 
+/** Whether a course is for undergraduates or graduates, which its number says:
+ *  500 and up is graduate work. */
+export function courseLevel(code: string): "Undergraduate" | "Graduate" {
+  return level(code) >= 500 ? "Graduate" : "Undergraduate"
+}
+
 /* The courses a subject builds on within itself. A finance elective asks for
  * finance rather than for whatever the general pool happened to offer, which
  * is also what makes a course in the plan hold up the ones after it. */

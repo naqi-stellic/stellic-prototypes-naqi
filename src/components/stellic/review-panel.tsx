@@ -236,7 +236,7 @@ export function ReviewPanel({
               onClick={() => setTab(name)}
               className={cn(
                 "flex h-7 shrink-0 cursor-pointer items-center justify-center gap-2 rounded-md px-2",
-                "text-body-md font-medium whitespace-nowrap text-foreground hover:bg-gray-5",
+                "text-caption-md font-medium whitespace-nowrap text-foreground hover:bg-gray-5",
                 active && "bg-gray-5"
               )}
             >

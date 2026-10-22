@@ -36,6 +36,13 @@ const TOUR: {
   registers?: boolean
 }[] = [
   {
+    /* The switch beside the page's name, which is the first thing on the page
+       from the left. */
+    find: '[role="tablist"]:has([aria-label="Grid"])',
+    title: "Choose how to see your plan",
+    body: "Grid lists your years one under the other. Timeline lays them out side by side, a year to a column, so you can scroll across your whole degree.",
+  },
+  {
     /* Ends on "details" rather than naming it whole: an institution that says
        subject for course has this button say "Subject details". */
     find: '[data-tour="plan-actions"] [aria-label$=" details"]',
@@ -87,6 +94,11 @@ const CHANGES: {
   manual?: boolean
   registers?: boolean
 }[] = [
+  {
+    icon: "timeline",
+    name: "Grid and Timeline",
+    does: "See your plan year by year, or along a timeline",
+  },
   { icon: "remove-red-eye", name: "Course details", does: "Customize how your courses look" },
   {
     icon: "grid-view",

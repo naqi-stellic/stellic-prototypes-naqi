@@ -42,7 +42,7 @@ export function PanelTopHeader({
         aria-label={closeLabel ?? `Close ${String(title)}`}
         onClick={onClose}
       >
-        <Icon name="s-close" size={16} />
+        <Icon name="s-close" size={20} />
       </Button>
     </>
   )
@@ -67,14 +67,14 @@ export function PanelTopHeader({
             className="flex w-fit min-w-0 max-w-[calc(100%-5rem)] cursor-pointer items-center gap-1 text-body-md font-medium text-gray-80 hover:text-gray-100"
           >
             <Icon name="chevron-left" size={14} className="shrink-0" />
-            <span className="min-w-0 truncate">Back to {backLabel}</span>
+            <span className="min-w-0 truncate">{backLabel ? `Back to ${backLabel}` : "Back"}</span>
           </button>
-          <div className="absolute top-2.5 right-6 flex items-center gap-2">{controls}</div>
-          <h2 className="min-w-0 truncate text-h300 font-semibold text-foreground">{title}</h2>
+          <div className="absolute top-3 right-6 flex items-center gap-2">{controls}</div>
+          <h2 className="min-w-0 truncate text-h400 font-semibold text-foreground">{title}</h2>
         </>
       ) : (
         <div className="flex w-full items-center gap-2">
-          <h2 className="min-w-0 flex-1 truncate text-h300 font-semibold text-foreground">
+          <h2 className="min-w-0 flex-1 truncate text-h400 font-semibold text-foreground">
             {title}
           </h2>
           {controls}

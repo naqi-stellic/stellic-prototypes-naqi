@@ -14,7 +14,7 @@ import {
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu"
 import type { CatalogEntry } from "@/data/catalog"
-import { activityFor, courseDetail, meetingLines } from "@/data/course-detail"
+import { activityFor, courseDetail, courseLevel, meetingLines } from "@/data/course-detail"
 import {
   canvasActivity,
   eligibility,
@@ -231,7 +231,7 @@ function Checklist({
   return (
     <div className="flex w-full flex-col gap-4">
       <div className="flex w-full items-center justify-between gap-4">
-        <h3 className="text-caption-md font-medium text-gray-100">{title}</h3>
+        <h3 className="text-caption-lg font-semibold text-gray-100">{title}</h3>
         {putAway && (
           <button
             type="button"
@@ -564,7 +564,7 @@ export function CoursePanel({
               aria-pressed={saved}
               onClick={() => setSaved((was) => !was)}
             >
-              <Icon name={saved ? "bookmark" : "bookmark-border"} size={16} />
+              <Icon name={saved ? "bookmark" : "bookmark-border"} size={20} />
             </Button>
           }
         />
@@ -588,7 +588,7 @@ export function CoursePanel({
                 aria-selected={on}
                 onClick={() => setTab(item.key)}
                 className={cn(
-                  "flex h-7 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-md px-2 text-body-md font-medium text-foreground hover:bg-gray-5",
+                  "flex h-7 min-w-0 shrink-0 cursor-pointer items-center justify-center rounded-md px-2 text-caption-md font-medium text-foreground hover:bg-gray-5",
                   on && "bg-gray-5"
                 )}
               >
@@ -825,6 +825,7 @@ function CatalogBody({
   onAdd: (termId: string, pick?: ChosenSection) => void
 }) {
   const [campus, setCampus] = useState(courseDetail(entry).campus)
+  const [level, setLevel] = useState<string>(courseLevel(entry.code))
   const [termId, setTermId] = useState(startTerm ?? terms[0]?.id ?? "")
   const term = terms.find((t) => t.id === termId)
   /* Read against the term it would be added to, so changing the term says
@@ -845,7 +846,15 @@ function CatalogBody({
   return (
     <>
       <div className="flex flex-col gap-4 px-6 py-6">
-        <Picker label="Campus" value={campus} options={["Main", "Downtown"]} onChange={setCampus} />
+        <div className="flex flex-col gap-2">
+          <Picker label="Campus" value={campus} options={["Main", "Downtown"]} onChange={setCampus} />
+          <Picker
+            label="Level"
+            value={level}
+            options={["Undergraduate", "Graduate"]}
+            onChange={setLevel}
+          />
+        </div>
         <div className="flex flex-col gap-2">
           <Picker
             label="Term"
@@ -966,6 +975,8 @@ function InstanceBody({
   const toggle = (key: keyof typeof open) => setOpen((was) => ({ ...was, [key]: !was[key] }))
   const [campus, setCampus] = useState(course.campus ?? "Main")
   const [editingCampus, setEditingCampus] = useState(false)
+  const [level, setLevel] = useState<string>(courseLevel(entry.code))
+  const [editingLevel, setEditingLevel] = useState(false)
   const moved = plan.find((t) => t.id !== term.id && !t.locked)?.name
   const activity = activityFor(entry.code, term.name, moved)
 
@@ -975,7 +986,7 @@ function InstanceBody({
         <div className="flex w-full items-center gap-2">
           {/* The state, then the audit's own mark after it, so the plan and the
               audit say the same thing in the same square. */}
-          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-caption-lg font-medium text-gray-100">
+          <h3 className="flex min-w-0 flex-1 items-center gap-2 text-h300 font-semibold text-gray-100">
             {STAGE_LABEL[stage]}
             <AuditIcon state={AUDIT_STATE[stage]} />
           </h3>
@@ -999,33 +1010,64 @@ function InstanceBody({
             )}
           </div>
         )}
-        <div className="flex w-full items-center gap-4 text-body-md">
-          <span className="w-[108px] shrink-0 font-semibold text-gray-100">Campus</span>
-          {editingCampus ? (
-            <div className="min-w-0 flex-1">
-              <Picker
-                label=""
-                value={campus}
-                options={["Main", "Downtown"]}
-                onChange={(next) => {
-                  setCampus(next)
-                  setEditingCampus(false)
-                }}
-              />
-            </div>
-          ) : (
-            <span className="min-w-0 flex-1 text-gray-100">{campus}</span>
-          )}
-          {/* Fixed once registered: the seat is on that campus. */}
-          {stage === "planned" && !editingCampus && (
-            <button
-              type="button"
-              onClick={() => setEditingCampus(true)}
-              className="shrink-0 cursor-pointer text-gray-80 underline [text-underline-position:from-font]"
-            >
-              edit
-            </button>
-          )}
+        {/* Campus and level are one block: what kind of course this is, and where. */}
+        <div className="flex flex-col gap-2">
+          <div className="flex w-full items-center gap-4 text-body-md">
+            <span className="w-[108px] shrink-0 font-semibold text-gray-100">Campus</span>
+            {editingCampus ? (
+              <div className="min-w-0 flex-1">
+                <Picker
+                  label=""
+                  value={campus}
+                  options={["Main", "Downtown"]}
+                  onChange={(next) => {
+                    setCampus(next)
+                    setEditingCampus(false)
+                  }}
+                />
+              </div>
+            ) : (
+              <span className="min-w-0 flex-1 text-gray-100">{campus}</span>
+            )}
+            {/* Fixed once registered: the seat is on that campus. */}
+            {stage === "planned" && !editingCampus && (
+              <button
+                type="button"
+                onClick={() => setEditingCampus(true)}
+                className="shrink-0 cursor-pointer text-gray-80 underline [text-underline-position:from-font]"
+              >
+                edit
+              </button>
+            )}
+          </div>
+          <div className="flex w-full items-center gap-4 text-body-md">
+            <span className="w-[108px] shrink-0 font-semibold text-gray-100">Level</span>
+            {editingLevel ? (
+              <div className="min-w-0 flex-1">
+                <Picker
+                  label=""
+                  value={level}
+                  options={["Undergraduate", "Graduate"]}
+                  onChange={(next) => {
+                    setLevel(next)
+                    setEditingLevel(false)
+                  }}
+                />
+              </div>
+            ) : (
+              <span className="min-w-0 flex-1 text-gray-100">{level}</span>
+            )}
+            {/* Fixed once registered: the seat is on that campus. */}
+            {stage === "planned" && !editingLevel && (
+              <button
+                type="button"
+                onClick={() => setEditingLevel(true)}
+                className="shrink-0 cursor-pointer text-gray-80 underline [text-underline-position:from-font]"
+              >
+                edit
+              </button>
+            )}
+          </div>
         </div>
       </div>
 

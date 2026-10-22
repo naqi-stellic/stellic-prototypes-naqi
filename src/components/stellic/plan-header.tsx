@@ -420,7 +420,7 @@ export function PlanHeader({
             stuck && "bg-card"
           )}
         >
-          <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-3 @max-[640px]/toolbar:w-full">
+          <div className="flex min-w-0 flex-wrap items-center gap-x-5 gap-y-3 @max-[640px]/toolbar:w-full">
             <div className="flex min-w-0 flex-wrap items-center gap-3">
               <Crumbs tabs={tabs} term={term} />
               {status}
@@ -501,7 +501,7 @@ function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
   const label = overview?.label ?? "My Plan"
 
   return (
-    <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-h400 font-semibold">
+    <nav aria-label="Breadcrumb" className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-h500 font-semibold">
       <CameFrom />
       {term ? (
         <>
@@ -512,7 +512,7 @@ function Crumbs({ tabs, term }: { tabs: YearTab[]; term?: string }) {
           >
             {label}
           </button>
-          <Icon name="chevron-right" size={16} className="shrink-0 text-gray-80" />
+          <Icon name="chevron-right" size={20} className="shrink-0 text-gray-80" />
           <span className="text-gray-100">{term}</span>
         </>
       ) : (
