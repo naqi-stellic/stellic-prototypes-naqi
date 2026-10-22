@@ -14,7 +14,6 @@ import {
 import { Icon } from "@/components/icon"
 import { DRAFT_STYLE, DraftNote, isStruck } from "@/components/stellic/draft-mark"
 import { CourseActivity, CourseTags, useMetadata } from "@/components/stellic/course-metadata"
-import { TermActions } from "@/components/stellic/term-actions"
 import { stageOf } from "@/data/course-sidebar"
 import { AddSlot, AuditIcon, StatusPill } from "@/components/stellic/primitives"
 import { useCourseIssues } from "@/components/stellic/plan-issues"
@@ -101,6 +100,9 @@ type AuditRowProps = {
   onOpenCourse?: () => void
   /** This seat's panel is the one open. */
   selected?: boolean
+  /** Settles a course on a section, where it has none: the way in to searching
+   *  for one. */
+  onPickSection?: () => void
 }
 
 /** The bar a card carries for where its course stands. The audit's own colors,
@@ -127,6 +129,7 @@ export function AuditRow({
   onOpenSeat,
   onOpenCourse,
   selected,
+  onPickSection,
 }: AuditRowProps) {
   /* A term narrower than this has no room for a button with words in it beside
      a course's name, so the note button gives them up for its glyph. Read off
@@ -156,7 +159,7 @@ export function AuditRow({
     term && !course.placeholder && !course.draft ? STATUS_BAR[stageOf(term, course)] : null
   /* What the plan has against this course sitting where it does. A seat is
      never one of them: it says what it is itself. */
-  const issue = useCourseIssues(term ?? NO_TERM, course.id)[0] ?? null
+  const issues = useCourseIssues(term ?? NO_TERM, course.id)
   /* A seat held against a requirement, with no course chosen for it: there is
    * no code to show and nothing to register, so it is drawn as an outline
    * waiting to be filled rather than as a course. */
@@ -252,21 +255,7 @@ export function AuditRow({
         ) : (
           <>
             <div className="flex min-w-0 items-center gap-2">
-              {/* The code carries the mark, so a card says something is wrong
-                  with it before anybody opens the term's line about it. */}
-              <p
-                className="flex shrink-0 items-center gap-1.5 text-body-md text-gray-100"
-              >
-                {issue && (
-                  <Icon
-                    name={issue.severity === "error" ? "error-outline" : "warning"}
-                    size={14}
-                    className={cn(
-                      "shrink-0",
-                      issue.severity === "error" ? "text-alert-100" : "text-warning-100"
-                    )}
-                  />
-                )}
+              <p className="flex shrink-0 items-center gap-1.5 text-body-md text-gray-100">
                 {course.code}
               </p>
               {shown.includes("name") && (
@@ -280,6 +269,38 @@ export function AuditRow({
 
         {/* What Course details is showing — nothing, until it is asked for. */}
         <CourseTags course={course} />
+        {/* What the plan has against it, on the card itself: what is wrong, and
+            the way to settle it. A prerequisite that is not met stops the term,
+            so it is the one thing drawn in red. */}
+        {!overlay &&
+          !draft &&
+          issues.map((issue, i) => (
+            <p key={`${issue.kind}-${i}`} className="flex items-center gap-1 pt-1 text-body-md">
+              <Icon
+                name={issue.severity === "error" ? "error-outline" : "warning"}
+                size={14}
+                className={cn(
+                  "shrink-0",
+                  issue.severity === "error" ? "text-alert-100" : "text-warning-50"
+                )}
+              />
+              <span className="min-w-0 text-gray-100">{issue.says}</span>
+              <button
+                type="button"
+                /* A press on the link is not a press on the card, nor the start of
+                   a drag. */
+                onPointerDown={(event) => event.stopPropagation()}
+                onClick={(event) => {
+                  event.stopPropagation()
+                  if (issue.kind === "section") onPickSection?.()
+                  else onOpenCourse?.()
+                }}
+                className="shrink-0 cursor-pointer underline [text-underline-position:from-font]"
+              >
+                {issue.action}
+              </button>
+            </p>
+          ))}
         <CourseActivity course={course} />
         {draft && (
           <span
@@ -387,6 +408,7 @@ function SortableAuditRow({
   onOpenSeat,
   onOpenCourse,
   selected,
+  onPickSection,
 }: {
   course: PlannedCourse
   term?: Term
@@ -396,6 +418,7 @@ function SortableAuditRow({
   onOpenSeat?: (view: "detail" | "search") => void
   onOpenCourse?: () => void
   selected?: boolean
+  onPickSection?: () => void
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: course.id,
@@ -420,6 +443,7 @@ function SortableAuditRow({
         onOpenSeat={onOpenSeat}
         onOpenCourse={onOpenCourse}
         selected={selected}
+        onPickSection={onPickSection}
       />
     </div>
   )
@@ -606,6 +630,7 @@ export function SemesterCard({
           onOpenSeat ? (view) => onOpenSeat(course.id, view) : undefined
         }
         onOpenCourse={onOpenCourse && (() => onOpenCourse(course.id))}
+        onPickSection={onPickSection && (() => onPickSection(term.id, course.id))}
         selected={openSeatId === course.id}
       />
     )
@@ -689,13 +714,6 @@ export function SemesterCard({
 
         {alert}
 
-        {/* Under the invitation to register, the same way the term itself reads:
-            here is the window, and here is what is stopping you using it. */}
-        <TermActions
-          term={term}
-          onPickSection={onPickSection}
-          onOpenCourse={onOpenCourse}
-        />
 
         {groups[0] && (
           <CreditGroup
