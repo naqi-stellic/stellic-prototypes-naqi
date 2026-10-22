@@ -131,13 +131,13 @@ const DIALOG = "w-full max-w-[480px]"
  *  who last touched a course is for advisors. Everything else is in Plan
  *  details once they want it. Building and room are one switch, because
  *  nobody wants one without the other. */
-const CHOICES: { label: string; fields: MetadataField[] }[] = [
-  { label: "Section", fields: ["section"] },
-  { label: "Credits", fields: ["credits"] },
-  { label: "Modality", fields: ["modality"] },
-  { label: "Campus", fields: ["campus"] },
-  { label: "Instructor", fields: ["instructor"] },
-  { label: "Building and room", fields: ["location"] },
+const CHOICES: { label: string; says: string; fields: MetadataField[] }[] = [
+  { label: "Section", says: "The class you would be in, like Lec-01", fields: ["section"] },
+  { label: "Credits", says: "How much the course counts toward your degree", fields: ["credits"] },
+  { label: "Modality", says: "Whether it meets in person, online or both", fields: ["modality"] },
+  { label: "Campus", says: "Where the class is taught", fields: ["campus"] },
+  { label: "Instructor", says: "Who teaches it", fields: ["instructor"] },
+  { label: "Building and room", says: "Where it meets on campus", fields: ["location"] },
 ]
 
 /** A course, drawn with the details the student has switched on, so each
@@ -446,8 +446,13 @@ export function PlannerIntro({
               <ul className="flex w-full flex-col gap-3">
                 {CHOICES.map((choice) => (
                   <li key={choice.label} className="flex items-center gap-3">
-                    <span className="min-w-0 flex-1 text-body-md font-semibold text-gray-100">
-                      {choice.label}
+                    {/* What each one is, in a line: the word alone does not say what
+                        a section is to someone who has not planned around one. */}
+                    <span className="flex min-w-0 flex-1 flex-col">
+                      <span className="text-body-md font-semibold text-gray-100">
+                        {choice.label}
+                      </span>
+                      <span className="text-body-md text-gray-80">{choice.says}</span>
                     </span>
                     <Switch
                       checked={on(choice.fields)}
